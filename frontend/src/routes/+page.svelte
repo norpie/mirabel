@@ -1,56 +1,69 @@
 <script lang="ts">
-    import { Button } from '$lib/components/ui/button/index.js';
-    import * as Card from '$lib/components/ui/card/index.js';
-    import { Input } from '$lib/components/ui/input/index.js';
-    import { Label } from '$lib/components/ui/label/index.js';
+    import AppSidebar from '$lib/components/app-sidebar.svelte';
+    import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
+    import { Separator } from '$lib/components/ui/separator/index.js';
+    import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+
+    import Github from 'lucide-svelte/icons/github';
 
     import { toast } from 'svelte-sonner';
 
-    import type User from '../models/user';
-
-    import { get, post } from '$lib/request';
-
-    import { goto } from '$app/navigation';
-    import { onMount } from 'svelte';
-
-    async function logout() {
-        // await post('v1/protected/logout', {});
-        localStorage.removeItem('accessToken');
-        toast.success('Logged out');
-        goto('/login');
-    }
-
-    let user: User | undefined = $state<User>();
-
-    onMount(async () => {
-        // user = (await get<User>('v1/protected/me')).result;
-        user = {
-            id: 'alsjudhfpsuiavgd',
-            email: 'm@example.com'
-        };
+    let user = $state({
+        username: 'norpie',
+        email: 'contact@norpie.dev',
+        avatar: 'https://avatars.githubusercontent.com/u/46564751?v=4'
     });
+
+    let repositories = $state([
+        {
+            name: 'Mirabel',
+            logo: Github,
+            platform: 'GitHub'
+        },
+        {
+            name: 'Finanalize',
+            logo: Github,
+            platform: 'GitHub'
+        },
+        {
+            name: 'Analytical',
+            logo: Github,
+            platform: 'GitHub'
+        },
+        {
+            name: 'Alice',
+            logo: Github,
+            platform: 'GitHub'
+        },
+        {
+            name: 'µLLM-API',
+            logo: Github,
+            platform: 'GitHub'
+        }
+    ]);
 </script>
 
-{#if user}
-    <div class="flex h-screen w-full items-center justify-center px-4">
-        <Card.Root class="mx-auto max-w-sm">
-            <Card.Header>
-                <Card.Title class="text-2xl">Profile</Card.Title>
-                <Card.Description>This is you.</Card.Description>
-            </Card.Header>
-            <Card.Content>
-                <div class="grid gap-4">
-                    <div class="grid gap-2">
-                        <Label for="email">Id</Label>
-                        <Input id="email" type="text" bind:value={user.id} required disabled />
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="email">Email</Label>
-                        <Input id="email" type="email" bind:value={user.email} required disabled />
-                    </div>
-                    <Button class="w-full" onclick={logout}>Logout</Button>
-                </div>
-            </Card.Content>
-        </Card.Root>
-    </div>
-{/if}
+<Sidebar.Provider>
+    <AppSidebar bind:user bind:repositories />
+    <Sidebar.Inset>
+        <header
+            class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
+        >
+            <div class="flex items-center gap-2 px-4">
+                <Sidebar.Trigger class="-ml-1" />
+                <Separator orientation="vertical" class="mr-2 h-4" />
+                <Breadcrumb.Root>
+                    <Breadcrumb.List>
+                        <Breadcrumb.Item class="hidden md:block">
+                            <Breadcrumb.Link href="#">Building Your Application</Breadcrumb.Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Separator class="hidden md:block" />
+                        <Breadcrumb.Item>
+                            <Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
+                        </Breadcrumb.Item>
+                    </Breadcrumb.List>
+                </Breadcrumb.Root>
+            </div>
+        </header>
+    </Sidebar.Inset>
+</Sidebar.Provider>
