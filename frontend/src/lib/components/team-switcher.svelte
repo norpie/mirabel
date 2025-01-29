@@ -7,10 +7,15 @@
 
     // This should be `Component` after lucide-svelte updates types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let { repositories }: { repositories: { name: string; logo: any; platform: string }[] } = $props();
-    const sidebar = useSidebar();
+    let {
+        repositories = $bindable(),
+        activeRepository = $bindable()
+    }: {
+        repositories: { name: string; logo: any; platform: string }[];
+        activeRepository: { name: string; logo: any; platform: string };
+    } = $props();
 
-    let activeRepository = $state(repositories[0]);
+    const sidebar = useSidebar();
 </script>
 
 <Sidebar.Menu>

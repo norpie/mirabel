@@ -7,8 +7,6 @@
     import Settings2 from 'lucide-svelte/icons/settings-2';
     import SquareTerminal from 'lucide-svelte/icons/square-terminal';
 
-    // let { user = $bindable() } = $props();
-    // This is sample data.
     const data = {
         navMain: [
             {
@@ -126,17 +124,19 @@
     import type { ComponentProps } from 'svelte';
 
     let {
-        ref = $bindable(null),
-        collapsible = 'icon',
         user = $bindable(),
         repositories = $bindable(),
+        activeRepository = $bindable(),
+
+        ref = $bindable(null),
+        collapsible = 'icon',
         ...restProps
     }: ComponentProps<typeof Sidebar.Root> = $props();
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
     <Sidebar.Header>
-        <TeamSwitcher repositories={repositories} />
+        <TeamSwitcher bind:repositories={repositories} bind:activeRepository={activeRepository}/>
     </Sidebar.Header>
     <Sidebar.Content>
         <NavMain items={data.navMain} />

@@ -14,29 +14,43 @@
         avatar: 'https://avatars.githubusercontent.com/u/46564751?v=4'
     });
 
+    let tabName = $state('Data Fetching');
+
+    let activeRepository = $state({
+        name: 'Mirabel',
+        url: 'https://github.com/norpie/mirabel',
+        logo: Github,
+        platform: 'GitHub'
+    });
+
     let repositories = $state([
         {
             name: 'Mirabel',
+            url: 'https://github.com/norpie/mirabel',
             logo: Github,
             platform: 'GitHub'
         },
         {
             name: 'Finanalize',
+            url: 'https://github.com/norpie/finanalize',
             logo: Github,
             platform: 'GitHub'
         },
         {
             name: 'Analytical',
+            url: 'https://github.com/norpie/analytical',
             logo: Github,
             platform: 'GitHub'
         },
         {
             name: 'Alice',
+            url: 'https://github.com/norpie/alice',
             logo: Github,
             platform: 'GitHub'
         },
         {
             name: 'µLLM-API',
+            url: 'https://github.com/norpie/uLLM-API',
             logo: Github,
             platform: 'GitHub'
         }
@@ -44,7 +58,7 @@
 </script>
 
 <Sidebar.Provider>
-    <AppSidebar bind:user bind:repositories />
+    <AppSidebar bind:user bind:repositories bind:activeRepository />
     <Sidebar.Inset>
         <header
             class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
@@ -55,11 +69,11 @@
                 <Breadcrumb.Root>
                     <Breadcrumb.List>
                         <Breadcrumb.Item class="hidden md:block">
-                            <Breadcrumb.Link href="#">Building Your Application</Breadcrumb.Link>
+                            <Breadcrumb.Link href="#">{activeRepository.name}</Breadcrumb.Link>
                         </Breadcrumb.Item>
                         <Breadcrumb.Separator class="hidden md:block" />
                         <Breadcrumb.Item>
-                            <Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
+                            <Breadcrumb.Page>{tabName}</Breadcrumb.Page>
                         </Breadcrumb.Item>
                     </Breadcrumb.List>
                 </Breadcrumb.Root>
