@@ -11,29 +11,31 @@
     import { goto } from '$app/navigation';
 
     async function register() {
-        if (password !== password2) {
-            toast.error('Passwords do not match');
-            return;
-        }
-
-        const response = await post<{ access_token: string }>('v1/auth/register', {
-            email: email,
-            password: password
-        });
-
-        if (response.error) {
-            toast.error(response.error);
-            return;
-        }
-
-        if (!response.result) {
-            toast.error('An error occurred');
-            return;
-        }
-
-        localStorage.setItem('accessToken', response.result.access_token);
-        toast.success('Logged in successfully');
         goto('/');
+        return;
+        // if (password !== password2) {
+        //     toast.error('Passwords do not match');
+        //     return;
+        // }
+        //
+        // const response = await post<{ access_token: string }>('v1/auth/register', {
+        //     email: email,
+        //     password: password
+        // });
+        //
+        // if (response.error) {
+        //     toast.error(response.error);
+        //     return;
+        // }
+        //
+        // if (!response.result) {
+        //     toast.error('An error occurred');
+        //     return;
+        // }
+        //
+        // localStorage.setItem('accessToken', response.result.access_token);
+        // toast.success('Logged in successfully');
+        // goto('/');
     }
 
     let email = $state();

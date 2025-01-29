@@ -14,7 +14,7 @@
     import { onMount } from 'svelte';
 
     async function logout() {
-        await post('v1/protected/logout', {});
+        // await post('v1/protected/logout', {});
         localStorage.removeItem('accessToken');
         toast.success('Logged out');
         goto('/login');
@@ -23,7 +23,11 @@
     let user: User | undefined = $state<User>();
 
     onMount(async () => {
-        user = (await get<User>('v1/protected/me')).result;
+        // user = (await get<User>('v1/protected/me')).result;
+        user = {
+            id: 'alsjudhfpsuiavgd',
+            email: 'm@example.com'
+        };
     });
 </script>
 
