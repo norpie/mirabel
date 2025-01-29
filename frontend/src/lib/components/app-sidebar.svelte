@@ -94,23 +94,6 @@
                     }
                 ]
             }
-        ],
-        projects: [
-            {
-                name: 'Design Engineering',
-                url: '#',
-                icon: Frame
-            },
-            {
-                name: 'Sales & Marketing',
-                url: '#',
-                icon: ChartPie
-            },
-            {
-                name: 'Travel',
-                url: '#',
-                icon: Map
-            }
         ]
     };
 </script>
@@ -127,6 +110,7 @@
         user = $bindable(),
         repositories = $bindable(),
         activeRepository = $bindable(),
+        chats = $bindable(),
 
         ref = $bindable(null),
         collapsible = 'icon',
@@ -140,7 +124,7 @@
     </Sidebar.Header>
     <Sidebar.Content>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects bind:chats={chats} />
     </Sidebar.Content>
     <Sidebar.Footer>
         <NavUser user={user} />

@@ -14,15 +14,6 @@
         avatar: 'https://avatars.githubusercontent.com/u/46564751?v=4'
     });
 
-    let tabName = $state('Data Fetching');
-
-    let activeRepository = $state({
-        name: 'Mirabel',
-        url: 'https://github.com/norpie/mirabel',
-        logo: Github,
-        platform: 'GitHub'
-    });
-
     let repositories = $state([
         {
             name: 'Mirabel',
@@ -55,10 +46,19 @@
             platform: 'GitHub'
         }
     ]);
+    let activeRepository = $state(repositories[0]);
+
+    let chats = $state([
+        {
+            id: 'sdafopihv',
+            title: 'Setting up the repository'
+        }
+    ]);
+    let activeChat = $state(chats[0]);
 </script>
 
 <Sidebar.Provider>
-    <AppSidebar bind:user bind:repositories bind:activeRepository />
+    <AppSidebar bind:user bind:repositories bind:activeRepository bind:chats />
     <Sidebar.Inset>
         <header
             class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
@@ -69,12 +69,14 @@
                 <Breadcrumb.Root>
                     <Breadcrumb.List>
                         <Breadcrumb.Item class="hidden md:block">
-                            <Breadcrumb.Link href="#">{activeRepository.name}</Breadcrumb.Link>
+                            <Breadcrumb.Link>{activeRepository.name}</Breadcrumb.Link>
                         </Breadcrumb.Item>
-                        <Breadcrumb.Separator class="hidden md:block" />
-                        <Breadcrumb.Item>
-                            <Breadcrumb.Page>{tabName}</Breadcrumb.Page>
-                        </Breadcrumb.Item>
+                        {#if activeChat}
+                            <Breadcrumb.Separator class="hidden md:block" />
+                            <Breadcrumb.Item>
+                                <Breadcrumb.Link>{activeChat.title}</Breadcrumb.Link>
+                            </Breadcrumb.Item>
+                        {/if}
                     </Breadcrumb.List>
                 </Breadcrumb.Root>
             </div>
