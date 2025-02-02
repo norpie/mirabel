@@ -31,7 +31,7 @@
             }[];
         }[];
 
-        ref: any;
+        ref?: any;
         collapsible?: 'offcanvas' | 'icon' | 'none';
     } = $props();
 </script>
