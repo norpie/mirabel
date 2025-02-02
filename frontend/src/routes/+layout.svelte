@@ -1,6 +1,8 @@
 <script lang="ts">
     import '../app.css';
 
+    import { onMount } from 'svelte';
+
     import { ModeWatcher } from 'mode-watcher';
     import { Toaster } from '$lib/components/ui/sonner/index.js';
 
@@ -15,29 +17,21 @@
 
     import Spinner from '$lib/components/spinner.svelte';
 
-    import type { User } from '$lib/models/user';
-    import type { Project } from '$lib/models/project';
-    import type { Chat } from '$lib/models/chat';
-    import { onMount } from 'svelte';
     import { fetchUser } from '$lib/api/user';
     import { fetchAllProjects } from '$lib/api/project';
     import { fetchAllChats } from '$lib/api/chat';
 
-    let user: User | null = $state(null);
-    let projects: Project[] | null = $state(null);
-    let selectedProject: Project | null = $state(null);
-    let chats: Chat[] | null = $state(null);
-    let selectedChat: Chat | null = $state(null);
+    import { user, projects, selectedProject, chats, selectedChat, ready } from '$lib/store';
 
     onMount(async () => {
-        user = await fetchUser();
-        projects = (await fetchAllProjects({ page: 1, pageSize: 10 })).data;
-        selectedProject = projects[0];
-        chats = (await fetchAllChats(selectedProject.id, { page: 1, pageSize: 10 })).data;
-        selectedChat = chats[0];
+        user.set(await fetchUser());
+        projects.set((await fetchAllProjects({ page: 1, pageSize: 10 })).data);
+        selectedProject.set($projects[0]);
+        chats.set((await fetchAllChats($selectedProject.id, { page: 1, pageSize: 10 })).data);
+        selectedChat.set($chats[0]);
     });
 
-    $inspect({ user, projects, selectedProject, chats, selectedChat });
+    $inspect({ $user, $projects, $selectedProject, $chats, $selectedChat, $ready });
 
     let items = $state([
         {
@@ -74,9 +68,9 @@
 <ModeWatcher />
 <Toaster />
 
-{#if user && projects && selectedProject && chats && selectedChat && items}
+{#if $ready}
     <Sidebar.Provider>
-        <AppSidebar bind:user bind:projects bind:selectedProject bind:chats bind:items />
+        <AppSidebar bind:items />
         <Sidebar.Inset>
             <header
                 class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"
