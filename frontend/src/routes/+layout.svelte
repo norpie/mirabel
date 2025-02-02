@@ -75,7 +75,12 @@
     ]);
 
     // Initialize to the first repository
-    let activeRepository = $state(repositories[0]);
+    let activeRepository: {
+        name: string;
+        url?: string;
+        platform: string;
+        logo: any;
+    } | null = $state(repositories[0]);
 
     let chats = $state([
         {
@@ -84,27 +89,35 @@
         }
     ]);
 
-    let activeChat = $state(null);
+    let activeChat: {
+        id: string;
+        title: string;
+    } | null = $state(null);
 
     let items = $state([
         {
+            url: '/knowledge',
             title: 'Knowledge',
             icon: BrainCircuit,
             isActive: false,
             items: [
                 {
+                    url: '/knowledge/technologies',
                     id: 'technologies',
                     title: 'Technologies'
                 },
                 {
+                    url: '/knowledge/documentation',
                     id: 'documentation',
                     title: 'Documentation'
                 },
                 {
+                    url: '/knowledge/structure',
                     id: 'structure',
                     title: 'Structure'
                 },
                 {
+                    url: '/knowledge/workflow',
                     id: 'workflow',
                     title: 'Git Workflow'
                 }
