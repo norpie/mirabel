@@ -5,15 +5,9 @@
     import ChevronsUpDown from 'lucide-svelte/icons/chevrons-up-down';
     import Plus from 'lucide-svelte/icons/plus';
 
-    // This should be `Component` after lucide-svelte updates types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let {
-        projects = $bindable(),
-        selectedProject = $bindable()
-    }: {
-        projects: { name: string; icon: any; platform: string }[];
-        selectedProject: { name: string; icon: any; platform: string };
-    } = $props();
+    import { selectedProject, projects } from '$lib/store';
+
+    let localSelectedProject = $derived($selectedProject);
 
     const sidebar = useSidebar();
 </script>
@@ -31,13 +25,13 @@
                         <div
                             class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
                         >
-                            <selectedProject.icon class="size-4" />
+                            <localSelectedProject.icon class="size-4" />
                         </div>
                         <div class="grid flex-1 text-left text-sm leading-tight">
                             <span class="truncate font-semibold">
-                                {selectedProject.name}
+                                {$selectedProject.name}
                             </span>
-                            <span class="truncate text-xs">{selectedProject.platform}</span>
+                            <span class="truncate text-xs">{$selectedProject.platform}</span>
                         </div>
                         <ChevronsUpDown class="ml-auto" />
                     </Sidebar.MenuButton>
@@ -50,8 +44,8 @@
                 sideOffset={4}
             >
                 <DropdownMenu.Label class="text-xs text-muted-foreground">Repositories</DropdownMenu.Label>
-                {#each projects as project (project.name)}
-                    <DropdownMenu.Item onSelect={() => (selectedProject = project)} class="gap-2 p-2">
+                {#each $projects as project (project.name)}
+                    <DropdownMenu.Item onSelect={() => selectedProject.set(project)} class="gap-2 p-2">
                         <div class="flex size-6 items-center justify-center rounded-sm border">
                             <project.icon class="size-4 shrink-0" />
                         </div>

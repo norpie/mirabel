@@ -6,7 +6,8 @@
     import ChevronsUpDown from 'lucide-svelte/icons/chevrons-up-down';
     import LogOut from 'lucide-svelte/icons/log-out';
 
-    let { user }: { user: { username: string; email: string; avatar: string } } = $props();
+    import { user } from '$lib/store';
+
     const sidebar = useSidebar();
 </script>
 

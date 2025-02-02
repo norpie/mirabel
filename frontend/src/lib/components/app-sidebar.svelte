@@ -6,20 +6,12 @@
     import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
     let {
-        user = $bindable(),
-        projects = $bindable(),
-        selectedProject = $bindable(),
-        chats = $bindable(),
         items = $bindable(),
 
         ref = $bindable(null),
         collapsible = 'icon',
         ...restProps
     }: {
-        user: { username: string; email: string; avatar: string };
-        projects: { name: string; icon: any; platform: string }[];
-        selectedProject: { name: string; icon: any; platform: string };
-        chats: { id: string; title: string }[];
         items: {
             title: string;
             url: string;
@@ -38,14 +30,14 @@
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
     <Sidebar.Header>
-        <TeamSwitcher bind:projects bind:selectedProject />
+        <TeamSwitcher />
     </Sidebar.Header>
     <Sidebar.Content>
         <NavMain {items} />
-        <NavProjects bind:chats />
+        <NavProjects />
     </Sidebar.Content>
     <Sidebar.Footer>
-        <NavUser {user} />
+        <NavUser />
     </Sidebar.Footer>
     <Sidebar.Rail />
 </Sidebar.Root>
