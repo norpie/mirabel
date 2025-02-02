@@ -78,16 +78,16 @@
                 <div class="flex items-center gap-2 px-4">
                     <Sidebar.Trigger class="-ml-1" />
                     <Separator orientation="vertical" class="mr-2 h-4" />
-                    {#if selectedProject}
+                    {#if $selectedProject}
                         <Breadcrumb.Root>
                             <Breadcrumb.List>
                                 <Breadcrumb.Item class="hidden md:block">
-                                    <Breadcrumb.Link>{selectedProject.name}</Breadcrumb.Link>
+                                    <Breadcrumb.Link>{$selectedProject.name}</Breadcrumb.Link>
                                 </Breadcrumb.Item>
                                 {#if selectedChat}
                                     <Breadcrumb.Separator class="hidden md:block" />
                                     <Breadcrumb.Item>
-                                        <Breadcrumb.Link>{selectedChat.title}</Breadcrumb.Link>
+                                        <Breadcrumb.Link>{$selectedChat.title}</Breadcrumb.Link>
                                     </Breadcrumb.Item>
                                 {/if}
                             </Breadcrumb.List>
