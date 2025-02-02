@@ -1,133 +1,51 @@
-<script lang="ts" module>
-    import BookOpen from 'lucide-svelte/icons/book-open';
-    import Bot from 'lucide-svelte/icons/bot';
-    import ChartPie from 'lucide-svelte/icons/chart-pie';
-    import Frame from 'lucide-svelte/icons/frame';
-    import Map from 'lucide-svelte/icons/map';
-    import Settings2 from 'lucide-svelte/icons/settings-2';
-    import SquareTerminal from 'lucide-svelte/icons/square-terminal';
-
-    const data = {
-        navMain: [
-            {
-                title: 'Playground',
-                url: '#',
-                icon: SquareTerminal,
-                isActive: true,
-                items: [
-                    {
-                        title: 'History',
-                        url: '#'
-                    },
-                    {
-                        title: 'Starred',
-                        url: '#'
-                    },
-                    {
-                        title: 'Settings',
-                        url: '#'
-                    }
-                ]
-            },
-            {
-                title: 'Models',
-                url: '#',
-                icon: Bot,
-                items: [
-                    {
-                        title: 'Genesis',
-                        url: '#'
-                    },
-                    {
-                        title: 'Explorer',
-                        url: '#'
-                    },
-                    {
-                        title: 'Quantum',
-                        url: '#'
-                    }
-                ]
-            },
-            {
-                title: 'Documentation',
-                url: '#',
-                icon: BookOpen,
-                items: [
-                    {
-                        title: 'Introduction',
-                        url: '#'
-                    },
-                    {
-                        title: 'Get Started',
-                        url: '#'
-                    },
-                    {
-                        title: 'Tutorials',
-                        url: '#'
-                    },
-                    {
-                        title: 'Changelog',
-                        url: '#'
-                    }
-                ]
-            },
-            {
-                title: 'Settings',
-                url: '#',
-                icon: Settings2,
-                items: [
-                    {
-                        title: 'General',
-                        url: '#'
-                    },
-                    {
-                        title: 'Team',
-                        url: '#'
-                    },
-                    {
-                        title: 'Billing',
-                        url: '#'
-                    },
-                    {
-                        title: 'Limits',
-                        url: '#'
-                    }
-                ]
-            }
-        ]
-    };
-</script>
-
 <script lang="ts">
     import NavMain from '$lib/components/nav-main.svelte';
     import NavProjects from '$lib/components/nav-projects.svelte';
     import NavUser from '$lib/components/nav-user.svelte';
     import TeamSwitcher from '$lib/components/team-switcher.svelte';
     import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-    import type { ComponentProps } from 'svelte';
 
     let {
         user = $bindable(),
         repositories = $bindable(),
         activeRepository = $bindable(),
         chats = $bindable(),
+        items = $bindable(),
 
         ref = $bindable(null),
         collapsible = 'icon',
         ...restProps
-    }: ComponentProps<typeof Sidebar.Root> = $props();
+    }: {
+        user: { username: string; email: string; avatar: string };
+        repositories: { name: string; logo: any; platform: string }[];
+        activeRepository: { name: string; logo: any; platform: string };
+        chats: { id: string; title: string }[];
+        items: {
+            title: string;
+            url: string;
+            icon: any;
+            isActive: boolean;
+            items: {
+                title: string;
+                url: string;
+            }[];
+        }[];
+
+        ref: any;
+        collapsible?: 'offcanvas' | 'icon' | 'none';
+    } = $props();
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
     <Sidebar.Header>
-        <TeamSwitcher bind:repositories={repositories} bind:activeRepository={activeRepository}/>
+        <TeamSwitcher bind:repositories bind:activeRepository />
     </Sidebar.Header>
     <Sidebar.Content>
-        <NavMain items={data.navMain} />
-        <NavProjects bind:chats={chats} />
+        <NavMain {items} />
+        <NavProjects bind:chats />
     </Sidebar.Content>
     <Sidebar.Footer>
-        <NavUser user={user} />
+        <NavUser {user} />
     </Sidebar.Footer>
     <Sidebar.Rail />
 </Sidebar.Root>
