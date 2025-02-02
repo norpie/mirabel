@@ -7,8 +7,8 @@
 
     let {
         user = $bindable(),
-        repositories = $bindable(),
-        activeRepository = $bindable(),
+        projects = $bindable(),
+        selectedProject = $bindable(),
         chats = $bindable(),
         items = $bindable(),
 
@@ -17,8 +17,8 @@
         ...restProps
     }: {
         user: { username: string; email: string; avatar: string };
-        repositories: { name: string; logo: any; platform: string }[];
-        activeRepository: { name: string; logo: any; platform: string };
+        projects: { name: string; icon: any; platform: string }[];
+        selectedProject: { name: string; icon: any; platform: string };
         chats: { id: string; title: string }[];
         items: {
             title: string;
@@ -38,7 +38,7 @@
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
     <Sidebar.Header>
-        <TeamSwitcher bind:repositories bind:activeRepository />
+        <TeamSwitcher bind:projects bind:selectedProject />
     </Sidebar.Header>
     <Sidebar.Content>
         <NavMain {items} />

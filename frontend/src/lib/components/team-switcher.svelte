@@ -8,11 +8,11 @@
     // This should be `Component` after lucide-svelte updates types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let {
-        repositories = $bindable(),
-        activeRepository = $bindable()
+        projects = $bindable(),
+        selectedProject = $bindable()
     }: {
-        repositories: { name: string; logo: any; platform: string }[];
-        activeRepository: { name: string; logo: any; platform: string };
+        projects: { name: string; icon: any; platform: string }[];
+        selectedProject: { name: string; icon: any; platform: string };
     } = $props();
 
     const sidebar = useSidebar();
@@ -31,13 +31,13 @@
                         <div
                             class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
                         >
-                            <activeRepository.logo class="size-4" />
+                            <selectedProject.icon class="size-4" />
                         </div>
                         <div class="grid flex-1 text-left text-sm leading-tight">
                             <span class="truncate font-semibold">
-                                {activeRepository.name}
+                                {selectedProject.name}
                             </span>
-                            <span class="truncate text-xs">{activeRepository.platform}</span>
+                            <span class="truncate text-xs">{selectedProject.platform}</span>
                         </div>
                         <ChevronsUpDown class="ml-auto" />
                     </Sidebar.MenuButton>
@@ -50,12 +50,12 @@
                 sideOffset={4}
             >
                 <DropdownMenu.Label class="text-xs text-muted-foreground">Repositories</DropdownMenu.Label>
-                {#each repositories as repository (repository.name)}
-                    <DropdownMenu.Item onSelect={() => (activeRepository = repository)} class="gap-2 p-2">
+                {#each projects as project (project.name)}
+                    <DropdownMenu.Item onSelect={() => (selectedProject = project)} class="gap-2 p-2">
                         <div class="flex size-6 items-center justify-center rounded-sm border">
-                            <repository.logo class="size-4 shrink-0" />
+                            <project.icon class="size-4 shrink-0" />
                         </div>
-                        {repository.name}
+                        {project.name}
                     </DropdownMenu.Item>
                 {/each}
                 <DropdownMenu.Separator />
