@@ -64,7 +64,7 @@ Is used by the orchestrator to generate a plan for the task that needs to be don
 
 This is an example conversation and spec for the initial user goal "We should have a history page with previous actions". Which has then been refined into a Spec:
 
-### **Conversation with Evolving Spec Updates**
+#### **Conversation with Evolving Spec Updates**
 
 ---
 
@@ -429,31 +429,77 @@ This feature adds a "History" page where users can view their past actions.
 
 ---
 
-The planner generates the entire hierarchy of tasks that need to be done to achieve the goal, e.g. "Setup a new rust hello world project". The planner should generate a plan that looks like this:
+#### Plan Generation
+
+The planner generates the entire hierarchy of tasks that need to be done to achieve the Spec, as an example, let's use the spec above. It should generate a plan that looks something like this:
 
 ```md
-1. Create a new rust project using the cargo command.
-    1. Run `cargo new hello_world`.
-    2. Verify `shell_output` (hist[[0]])
-2. Verify that the project was created successfully.
-    1. Use tree to verify that the project was created.
-        1. Run `tree`.
-        2. Verify `shell_output` (hist[[0]])
-3. Enter the project directory.
-    1. Run `cd hello_world`.
-    2. Run `pwd`
-    3. Verify `shell_output` (hist[[0]])
-4. Verify that the program runs successfully.
-    1. Run `cargo run`
-    2. Verify `shell_output` (hist[[0]])
-5. Initialize a git repository.
-    1. Run `git init`
-    2. Verify `shell_output` (hist[[0]])
-6. Commit all the initial files.
-    1. Run `git add .`
-    2. Run `git commit -m "Initial commit"`
-    3. Run `git --no-pager log`
-    3. Verify `shell_output` (hist[[0:2]])
+```md
+
+```md
+
+```md
+```md
+1. Database Schema Setup
+    1.1. Create Migration
+        1.1.1. Run `migrate create -n create_user_action_history`
+        1.1.2. Patch `migrations/*_create_user_action_history.sql`:
+            1.1.2.1. CREATE TYPE action_type AS ENUM ('CREATE', 'UPDATE', 'DELETE')
+            1.1.2.2. CREATE TABLE user_action_history (...)
+    1.2. Apply Migration
+        1.2.1. Run `db-migrate up`
+    1.3. Create Indexes
+        1.3.1. Run `psql -c "CREATE INDEX idx_user_actions ON user_action_history (user_id, timestamp)"`
+2. Backend API Implementation
+    2.1. History Route
+        2.1.1. Run `nest generate controller history`
+        2.1.2. Patch `src/history/history.controller.ts`:
+            2.1.2.1. Add @Get() decorator
+            2.1.2.2. Implement query params validation
+    2.2. Query Service
+        2.2.1. Patch `src/history/history.service.ts`:
+            2.2.1.1. Implement getUserHistory() with pagination
+            2.2.1.2. Add date filtering logic
+    2.3. CSV Export
+        2.3.1. Run `npm install csv-stringify`
+        2.3.2. Patch `src/history/history.controller.ts`:
+            2.3.2.1. Add @Get('export') endpoint
+            2.3.2.2. Implement CSV serialization
+3. Frontend Implementation
+    3.1. History Page Component
+        3.1.1. Run `ng generate component history-page`
+        3.1.2. Patch `src/app/history-page/history-page.component.html`:
+            3.1.2.1. Add filter controls
+            3.1.2.2. Implement data table markup
+    3.2. API Integration
+        3.2.1. Patch `src/app/history.service.ts`:
+            3.2.1.1. Add getHistory() method
+            3.2.1.2. Implement pagination params
+    3.3. Export Button
+        3.3.1. Patch `src/app/history-page/history-page.component.ts`:
+            3.3.1.1. Add exportToCSV() method
+            3.3.1.2. Trigger blob download
+4. Permissions & Security
+    4.1. Route Guard
+        4.1.1. Run `ng generate guard auth`
+        4.1.2. Patch `src/app/auth.guard.ts`:
+            4.1.2.1. Implement canActivate check
+    4.2. API Validation
+        4.2.1. Patch `src/history/history.controller.ts`:
+            4.2.1.1. Add @UseGuards(JwtAuthGuard)
+            4.2.1.2. Verify user ID matches session
+5. Testing & Validation
+    5.1. Database Tests
+        5.1.1. Run `psql -c "INSERT INTO user_action_history (...) VALUES (...)"`
+        5.1.2. Run `psql -c "SELECT * FROM user_action_history WHERE ..."`
+    5.2. API Tests
+        5.2.1. Run `curl -X GET "http://localhost:3000/api/history?page=2"`
+        5.2.2. Run `curl -X GET "http://localhost:3000/api/history/export"`
+    5.3. UI Tests
+        5.3.1. Run `cypress run --spec "history-page.spec.js"`
+    5.4. Security Tests
+        5.4.1. Run `npx snyk test`
+        5.4.2. Run `curl -X GET "http://localhost:3000/api/history" -H "Authorization: Bearer invalid"`
 ```
 
 ### Researcher
