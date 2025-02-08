@@ -70,9 +70,7 @@ This is an example conversation and spec for the initial user goal "We should ha
 stateDiagram-v2
     [*] --> Start
     Start --> SpecRequested: User requests a new spec
-    SpecRequested --> AskingClarification: Mirabel asks for more details
-    AskingClarification --> UserResponds: User responds to clarification
-    UserResponds --> SpecDrafted: Mirabel drafts initial spec based on User input
+    SpecRequested --> SpecDrafted: Mirabel drafts initial spec based on User input
     SpecDrafted --> SpecReviewed: User reviews the draft
     SpecReviewed --> AskingMoreQuestions: Mirabel asks follow-up questions or clarifications
     SpecReviewed --> SpecConfirmed: User confirms the draft as final
