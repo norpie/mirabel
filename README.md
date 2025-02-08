@@ -451,7 +451,7 @@ This feature adds a "History" page where users can view their past actions.
 
 #### Plan Generation
 
-The planner generates the entire hierarchy of tasks that need to be done to achieve the Spec, as an example, let's use the spec above. It should generate a plan that looks something like this:
+The planner generates the entire hierarchy of tasks that need to be done to achieve the Spec. As an example, let's use the spec above. It should generate a plan that looks something like this:
 
 ```md
 1. Database Schema Setup
