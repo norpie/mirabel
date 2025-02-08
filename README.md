@@ -434,12 +434,6 @@ This feature adds a "History" page where users can view their past actions.
 The planner generates the entire hierarchy of tasks that need to be done to achieve the Spec, as an example, let's use the spec above. It should generate a plan that looks something like this:
 
 ```md
-```md
-
-```md
-
-```md
-```md
 1. Database Schema Setup
     1.1. Create Migration
         1.1.1. Run `migrate create -n create_user_action_history`
