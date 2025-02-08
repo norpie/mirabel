@@ -28,6 +28,7 @@ Mirabel works in parallel with you, the developer, to help you write code, fix b
 - `Goal` - A verbal description of the task that needs to be done. Can be as simple as "create a directory", or as complex as "implement a product recommendation system". Each workflow has a goal.
 - `Step` - An atomic action taken to achieve a goal, e.g. run a shell command, verify the output of a command, insert a file edit, etc.
 - `Requirement` - A user specified necessity, e.g. "use python 3.12".
+- `Spec` - A structured markdown document describing the requirements of a task.
 
 ## Modules
 
@@ -54,9 +55,365 @@ The orchestrator is the main module that controls the flow of the system. It is 
 
 Is used by the orchestrator to generate a plan for the task that needs to be done. The plan is then sent to the user for approval. The user can then approve the plan or make changes to it (or auto-approved by user settings). Once the plan is approved, the orchestrator will start working on the task.
 
+- `Spec Creator`: Back and forth with the user to create a spec for the task.
 - `Goal subdivider`: Divide the goal into smaller tasks.
 - `Check atomic goal`: Can this goal be achieved by a few logically groupable Steps?
 - `Goal Type`: Which module should be used to achieve this goal?
+- `Tracker`: Keeps track of the progress of the plan, how long each step took, etc. From this information we also extrapolate an estimate to how long the entire plan will take.
+- `Plan Generator`: Generates the top level goals for the plan.
+
+This is an example conversation and spec for the initial user goal "We should have a history page with previous actions". Which has then been refined into a Spec:
+
+### **Conversation with Evolving Spec Updates**
+
+---
+
+**User:** Hey, we should have a history page where users can see their previous actions.
+**Mirabel:** Alright, do you mean all actions across the system or just user-specific actions?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+```
+
+**User:** Just user-specific actions for now. Each user should see their own history.
+**Mirabel:** Got it. What kind of actions should we track? API calls, UI interactions, or something else?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+```
+
+**User:** Mostly actions that change data, like creating, updating, or deleting things.
+**Mirabel:** That makes sense. Should we store these in a new database table or reuse an existing logging system?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+```
+
+**User:** Let's store them in a dedicated table. It should be optimized for quick lookups per user.
+**Mirabel:** Understood. How should we present this in the UI? A paginated list, infinite scrolling, or something else?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+```
+
+**User:** A paginated list makes sense. Maybe 20 items per page?
+**Mirabel:** Sounds good. What kind of details do we need for each action?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+
+## UI
+- **Pagination:** 20 items per page
+```
+
+**User:** Timestamp, action type, the affected entity, and a short description.
+**Mirabel:** And should we have filtering? For example, filtering by action type?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+```
+
+**User:** Yes, filtering by action type would be useful. Maybe also a date range filter?
+**Mirabel:** Got it. Should we allow users to delete their history, or is this read-only?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+- **Filters:** Action Type dropdown
+```
+
+**User:** Read-only for now. Maybe we can add deletion later.
+**Mirabel:** Makes sense. Where should this page live?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Route:** `/history`
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+- **Filters:** Action Type dropdown, Date Range picker
+
+## Permissions
+- Read-only for now. Users cannot delete history.
+```
+
+**User:** The history page should be accessible only to logged-in users.
+**Mirabel:** Got it. Should it be under a user-specific route like `/user/history`, or a general `/history` that shows only the logged-in user's actions?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Route:** `/history`
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+- **Filters:** Action Type dropdown, Date Range picker
+
+## Permissions
+- Read-only for now. Users cannot delete history.
+- Only logged-in users can access the history page.
+```
+
+**User:** A general `/history` route is fine, as long as it filters by the logged-in user's actions.
+**Mirabel:** That makes sense. How should we handle cases where there are no actions yet? A blank page, a placeholder message, or something else?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Route:** `/history` (Only displays the logged-in user's actions)
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+- **Filters:** Action Type dropdown, Date Range picker
+- **Empty State:** TBD
+
+## Permissions
+- Read-only for now. Users cannot delete history.
+- Only logged-in users can access the history page.
+```
+
+**User:** Let’s show a placeholder message, like “No recent activity yet.”
+**Mirabel:** Sounds good. Should we allow users to export their history as a CSV or JSON file?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Route:** `/history` (Only displays the logged-in user's actions)
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+- **Filters:** Action Type dropdown, Date Range picker
+- **Empty State:** "No recent activity yet."
+- **Export Option:** TBD
+
+## Permissions
+- Read-only for now. Users cannot delete history.
+- Only logged-in users can access the history page.
+```
+
+**User:** Yes, let’s allow exporting in CSV format for now. JSON might be useful later, but not a priority.
+**Mirabel:** Alright, I'll add a "Download CSV" button. Should it apply filters when exporting or always include all history?
+```markdown
+# User History Page Specification (Draft)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Route:** `/history` (Only displays the logged-in user's actions)
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+- **Filters:** Action Type dropdown, Date Range picker
+- **Empty State:** "No recent activity yet."
+- **Export Option:** "Download CSV" button
+
+## API
+- `GET /api/history`
+  - **Query parameters:**
+    - `page`: Page number (default: 1)
+    - `limit`: Number of items per page (default: 20)
+    - `action_type`: Optional filter (`CREATE`, `UPDATE`, `DELETE`)
+    - `start_date`, `end_date`: Optional date range filter
+- `GET /api/history/export`
+  - **Format:** CSV
+  - **Mirabelncludes applied filters:** Yes
+
+## Permissions
+- Read-only for now. Users cannot delete history.
+- Only logged-in users can access the history page.
+```
+
+**User:** The export should respect the applied filters. No need to dump everything if they’ve filtered the data.
+**Mirabel:** Makes sense. I think we have a solid spec now! Anything else?
+```markdown
+# User History Page Specification (Final)
+
+## Overview
+This feature adds a "History" page where users can view their past actions.
+
+## Scope
+- Users should be able to see their own history.
+- The system will track actions that modify data: `CREATE`, `UPDATE`, and `DELETE`.
+
+## Data Storage
+- **New database table:** `user_action_history`
+  - `id`: Primary key
+  - `user_id`: Foreign key to `users` table
+  - `timestamp`: Timestamp of the action
+  - `action_type`: Enum (`CREATE`, `UPDATE`, `DELETE`)
+  - `entity`: Affected entity (e.g., "Project", "Task")
+  - `description`: Short summary of the action
+
+## UI
+- **Route:** `/history` (Only displays the logged-in user's actions)
+- **Pagination:** 20 items per page
+- **Columns:** Timestamp, Action Type, Entity, Description
+- **Filters:** Action Type dropdown, Date Range picker
+- **Empty State:** "No recent activity yet."
+- **Export Option:** "Download CSV" button
+
+## API
+- `GET /api/history`
+  - **Query parameters:**
+    - `page`: Page number (default: 1)
+    - `limit`: Number of items per page (default: 20)
+    - `action_type`: Optional filter (`CREATE`, `UPDATE`, `DELETE`)
+    - `start_date`, `end_date`: Optional date range filter
+- `GET /api/history/export`
+  - **Format:** CSV
+  - **Mirabelncludes applied filters:** Yes
+
+## Permissions
+- Read-only for now. Users cannot delete history.
+- Only logged-in users can access the history page.
+```
+
+**User:** Nope, this looks great! Let’s move forward with implementation.
+**Mirabel**: Alright, I'll get started with the planning. I'll keep you updated on the progress.
+
+---
 
 The planner generates the entire hierarchy of tasks that need to be done to achieve the goal, e.g. "Setup a new rust hello world project". The planner should generate a plan that looks like this:
 
