@@ -69,16 +69,14 @@ This is an example conversation and spec for the initial user goal "We should ha
 ```mermaid
 stateDiagram-v2
     [*] --> Start
-    Start --> SpecRequested: PO requests a new spec
-    SpecRequested --> AskingClarification: I asks for more details
-    AskingClarification --> POResponds: PO responds to clarification
-    POResponds --> SpecDrafted: I drafts initial spec based on PO input
-    SpecDrafted --> SpecReviewed: PO reviews the draft
-    SpecReviewed --> AskingMoreQuestions: I asks follow-up questions or clarifications
-    SpecReviewed --> SpecConfirmed: PO confirms the draft as final
-    AskingMoreQuestions --> POResponds
-    AskingMoreQuestions --> SpecReviewed
-    POResponds --> SpecReviewed
+    Start --> SpecRequested: User requests a new spec
+    SpecRequested --> AskingClarification: Mirabel asks for more details
+    AskingClarification --> UserResponds: User responds to clarification
+    UserResponds --> SpecDrafted: Mirabel drafts initial spec based on User input
+    SpecDrafted --> SpecReviewed: User reviews the draft
+    SpecReviewed --> AskingMoreQuestions: Mirabel asks follow-up questions or clarifications
+    SpecReviewed --> SpecConfirmed: User confirms the draft as final
+    AskingMoreQuestions --> UserResponds
     SpecConfirmed --> FinalSpec: Spec is confirmed and finalized
     FinalSpec --> [*]
 ```
