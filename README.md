@@ -64,7 +64,26 @@ Is used by the orchestrator to generate a plan for the task that needs to be don
 
 This is an example conversation and spec for the initial user goal "We should have a history page with previous actions". Which has then been refined into a Spec:
 
-#### **Conversation with Evolving Spec Updates**
+#### **Graph of Spec creation**
+
+```mermaid
+stateDiagram-v2
+    [*] --> Start
+    Start --> SpecRequested: PO requests a new spec
+    SpecRequested --> AskingClarification: I asks for more details
+    AskingClarification --> POResponds: PO responds to clarification
+    POResponds --> SpecDrafted: I drafts initial spec based on PO input
+    SpecDrafted --> SpecReviewed: PO reviews the draft
+    SpecReviewed --> AskingMoreQuestions: I asks follow-up questions or clarifications
+    SpecReviewed --> SpecConfirmed: PO confirms the draft as final
+    AskingMoreQuestions --> POResponds
+    AskingMoreQuestions --> SpecReviewed
+    POResponds --> SpecReviewed
+    SpecConfirmed --> FinalSpec: Spec is confirmed and finalized
+    FinalSpec --> [*]
+```
+
+#### **Example Conversation with Evolving Spec Updates**
 
 ---
 
