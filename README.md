@@ -69,6 +69,7 @@ This is an example conversation and spec for the initial user goal "We should ha
 ---
 
 **User:** Hey, we should have a history page where users can see their previous actions.
+
 **Mirabel:** Alright, do you mean all actions across the system or just user-specific actions?
 ```markdown
 # User History Page Specification (Draft)
@@ -78,6 +79,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Just user-specific actions for now. Each user should see their own history.
+
 **Mirabel:** Got it. What kind of actions should we track? API calls, UI interactions, or something else?
 ```markdown
 # User History Page Specification (Draft)
@@ -90,6 +92,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Mostly actions that change data, like creating, updating, or deleting things.
+
 **Mirabel:** That makes sense. Should we store these in a new database table or reuse an existing logging system?
 ```markdown
 # User History Page Specification (Draft)
@@ -103,6 +106,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Let's store them in a dedicated table. It should be optimized for quick lookups per user.
+
 **Mirabel:** Understood. How should we present this in the UI? A paginated list, infinite scrolling, or something else?
 ```markdown
 # User History Page Specification (Draft)
@@ -119,6 +123,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** A paginated list makes sense. Maybe 20 items per page?
+
 **Mirabel:** Sounds good. What kind of details do we need for each action?
 ```markdown
 # User History Page Specification (Draft)
@@ -138,6 +143,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Timestamp, action type, the affected entity, and a short description.
+
 **Mirabel:** And should we have filtering? For example, filtering by action type?
 ```markdown
 # User History Page Specification (Draft)
@@ -164,6 +170,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Yes, filtering by action type would be useful. Maybe also a date range filter?
+
 **Mirabel:** Got it. Should we allow users to delete their history, or is this read-only?
 ```markdown
 # User History Page Specification (Draft)
@@ -191,6 +198,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Read-only for now. Maybe we can add deletion later.
+
 **Mirabel:** Makes sense. Where should this page live?
 ```markdown
 # User History Page Specification (Draft)
@@ -222,6 +230,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** The history page should be accessible only to logged-in users.
+
 **Mirabel:** Got it. Should it be under a user-specific route like `/user/history`, or a general `/history` that shows only the logged-in user's actions?
 ```markdown
 # User History Page Specification (Draft)
@@ -254,6 +263,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** A general `/history` route is fine, as long as it filters by the logged-in user's actions.
+
 **Mirabel:** That makes sense. How should we handle cases where there are no actions yet? A blank page, a placeholder message, or something else?
 ```markdown
 # User History Page Specification (Draft)
@@ -287,6 +297,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Let’s show a placeholder message, like “No recent activity yet.”
+
 **Mirabel:** Sounds good. Should we allow users to export their history as a CSV or JSON file?
 ```markdown
 # User History Page Specification (Draft)
@@ -321,6 +332,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Yes, let’s allow exporting in CSV format for now. JSON might be useful later, but not a priority.
+
 **Mirabel:** Alright, I'll add a "Download CSV" button. Should it apply filters when exporting or always include all history?
 ```markdown
 # User History Page Specification (Draft)
@@ -366,6 +378,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** The export should respect the applied filters. No need to dump everything if they’ve filtered the data.
+
 **Mirabel:** Makes sense. I think we have a solid spec now! Anything else?
 ```markdown
 # User History Page Specification (Final)
@@ -411,6 +424,7 @@ This feature adds a "History" page where users can view their past actions.
 ```
 
 **User:** Nope, this looks great! Let’s move forward with implementation.
+
 **Mirabel**: Alright, I'll get started with the planning. I'll keep you updated on the progress.
 
 ---
