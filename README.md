@@ -1,5 +1,9 @@
 # Mirabel
 
+> "If there's anything more important than my ego around, I want it caught and shot now."
+>
+— Douglas Adams, The Hitchhiker’s Guide to the Galaxy
+
 > An AI software developer, by use of multiple agents.
 
 ## Inspiration
