@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub(crate) mod models {}
+pub(crate) mod models;
 
 #[derive(Debug)]
 pub struct Ollama<'a> {
