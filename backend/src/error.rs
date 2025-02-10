@@ -12,6 +12,8 @@ pub enum Error {
     SerdeJson(#[from] serde_json::Error),
     #[error("A reqwest error occurred: {0}")]
     Reqwest(#[from] reqwest::Error),
+    #[error("A reqwest_streams error occurred: {0}")]
+    StreamBody(#[from] reqwest_streams::error::StreamBodyError),
 
     #[error("An IO error occurred: {0}")]
     IO(#[from] std::io::Error),
