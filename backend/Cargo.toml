@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 chrono = { version = "0.4.39", features = ["serde"] }
 derive_more = { version = "2.0.1", features = ["full"] }
+futures = "0.3.31"
 miette = { version = "7.5.0", features = ["fancy", "serde"] }
 reqwest = { version = "0.12.12", features = ["blocking", "json"] }
 schemars = { version = "0.8.21", features = ["impl_json_schema"] }
