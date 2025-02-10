@@ -17,6 +17,8 @@ impl Default for Ollama<'_> {
 
 impl Ollama<'_> {
     pub async fn generate() {}
+    pub async fn generate_stream() {}
+    pub async fn generate_structured() {}
     pub async fn chat() {}
     pub async fn create() {}
     pub async fn blob_exists() {}
