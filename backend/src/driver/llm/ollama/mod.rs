@@ -89,6 +89,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_generate_single() {
         println!(
             "{}",
@@ -105,6 +106,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_generate_stream() {
         Ollama::default()
             .generate_stream(
@@ -123,57 +125,71 @@ mod tests {
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_chat() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_create() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_blob_exists() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_blob_push() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_tags() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_show() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_copy() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_delete() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_pull() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_push() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_generate_embeddings() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_ps() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_generate_embedding() {}
 
     #[tokio::test]
     #[serial]
+    #[ignore = "Depends on external service"]
     async fn test_version() {}
 }
