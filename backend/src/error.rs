@@ -16,3 +16,15 @@ pub enum Error {
     #[error("An IO error occurred: {0}")]
     IO(#[from] std::io::Error),
 }
+
+impl From<&str> for Error {
+    fn from(s: &str) -> Self {
+        Error::Generic(s.to_string())
+    }
+}
+
+impl From<String> for Error {
+    fn from(s: String) -> Self {
+        Error::Generic(s)
+    }
+}
