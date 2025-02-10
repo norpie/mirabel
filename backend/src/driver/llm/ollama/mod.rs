@@ -1,3 +1,9 @@
+use futures::Stream;
+use models::{GenerateRequest, GenerateRequestInternal, GenerateResponse, StreamGenerateResponse};
+use reqwest::{Client, Method};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_json::Value;
+
 use crate::prelude::*;
 
 pub(crate) mod models;
@@ -5,19 +11,65 @@ pub(crate) mod models;
 #[derive(Debug)]
 pub struct Ollama<'a> {
     base_url: &'a str,
+    client: Client,
 }
 
 impl Default for Ollama<'_> {
     fn default() -> Self {
         Self {
             base_url: "http://localhost:11434",
+            client: Client::new(),
         }
     }
 }
 
 impl Ollama<'_> {
-    pub async fn generate() {}
-    pub async fn generate_stream() {}
+    // async fn request<T, U>(&self, method: Method, route: &str, body: T) -> Result<U>
+    // where
+    //     T: Serialize,
+    //     U: DeserializeOwned,
+    // {
+    //     self.client
+    //         .request(method, format!("{}/{}", self.base_url, route))
+    //         .send()
+    //         .await?
+    //         .json()
+    //         .await
+    //         .map_err(Into::into)
+    // }
+
+    // TODO: Remove this after testing
+    async fn request<T, U>(&self, method: Method, route: &str, body: T) -> Result<U>
+    where
+        T: Serialize + std::fmt::Debug,
+        U: DeserializeOwned,
+    {
+        dbg!(&body);
+        let response = self
+            .client
+            .request(method, format!("{}/{}", self.base_url, route))
+            .body(serde_json::to_string(&body)?)
+            .send()
+            .await?;
+        dbg!(&response);
+        let value = response.json().await?;
+        dbg!(&value);
+        Ok(serde_json::from_value(value)?)
+    }
+
+    pub async fn generate(&self, request: GenerateRequest) -> Result<GenerateResponse> {
+        self.request::<GenerateRequestInternal, GenerateResponse>(
+            Method::POST,
+            "api/generate",
+            request.into(),
+        )
+        .await
+    }
+
+    pub async fn generate_stream() -> Result<impl Stream<Item = Result<StreamGenerateResponse>>> {
+        Err("Not implemented".into())
+    }
+
     pub async fn generate_structured() {}
     pub async fn chat() {}
     pub async fn create() {}
@@ -43,11 +95,19 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn test_generate_stream() {}
+    async fn test_generate_single() {
+        Ollama::default()
+            .generate(
+                GenerateRequest::new(("llama3.2", "1b").into(), "Hello, my name is".into())
+                    .raw(true),
+            )
+            .await
+            .unwrap();
+    }
 
     #[tokio::test]
     #[serial]
-    async fn test_generate_single() {}
+    async fn test_generate_stream() {}
 
     #[tokio::test]
     #[serial]
