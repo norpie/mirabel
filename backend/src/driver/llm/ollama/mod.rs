@@ -1,6 +1,7 @@
-use futures::Stream;
+use futures::{Stream, TryStreamExt};
 use models::{GenerateRequest, GenerateRequestInternal, GenerateResponse, StreamGenerateResponse};
 use reqwest::{Client, Method};
+use reqwest_streams::JsonStreamResponse;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 
@@ -24,37 +25,19 @@ impl Default for Ollama<'_> {
 }
 
 impl Ollama<'_> {
-    // async fn request<T, U>(&self, method: Method, route: &str, body: T) -> Result<U>
-    // where
-    //     T: Serialize,
-    //     U: DeserializeOwned,
-    // {
-    //     self.client
-    //         .request(method, format!("{}/{}", self.base_url, route))
-    //         .send()
-    //         .await?
-    //         .json()
-    //         .await
-    //         .map_err(Into::into)
-    // }
-
-    // TODO: Remove this after testing
     async fn request<T, U>(&self, method: Method, route: &str, body: T) -> Result<U>
     where
-        T: Serialize + std::fmt::Debug,
+        T: Serialize,
         U: DeserializeOwned,
     {
-        dbg!(&body);
-        let response = self
-            .client
+        self.client
             .request(method, format!("{}/{}", self.base_url, route))
             .body(serde_json::to_string(&body)?)
             .send()
-            .await?;
-        dbg!(&response);
-        let value = response.json().await?;
-        dbg!(&value);
-        Ok(serde_json::from_value(value)?)
+            .await?
+            .json()
+            .await
+            .map_err(Into::into)
     }
 
     pub async fn generate(&self, request: GenerateRequest) -> Result<GenerateResponse> {
@@ -66,8 +49,19 @@ impl Ollama<'_> {
         .await
     }
 
-    pub async fn generate_stream() -> Result<impl Stream<Item = Result<StreamGenerateResponse>>> {
-        Err("Not implemented".into())
+    pub async fn generate_stream(
+        &self,
+        request: GenerateRequest,
+    ) -> Result<impl Stream<Item = Result<StreamGenerateResponse>>> {
+        let request_internal = GenerateRequestInternal::from(request).with_stream();
+        Ok(self
+            .client
+            .post(format!("{}/api/generate", self.base_url))
+            .body(serde_json::to_string(&request_internal)?)
+            .send()
+            .await?
+            .json_array_stream::<StreamGenerateResponse>(1024)
+            .map_err(Into::into))
     }
 
     pub async fn generate_structured() {}
@@ -96,18 +90,36 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_generate_single() {
-        Ollama::default()
-            .generate(
-                GenerateRequest::new(("llama3.2", "1b").into(), "Hello, my name is".into())
-                    .raw(true),
-            )
-            .await
-            .unwrap();
+        println!(
+            "{}",
+            Ollama::default()
+                .generate(
+                    GenerateRequest::new(("llama3.2", "1b").into(), "Hello, my name is".into())
+                        .raw(true),
+                )
+                .await
+                .unwrap()
+                .response
+        );
     }
 
     #[tokio::test]
     #[serial]
-    async fn test_generate_stream() {}
+    async fn test_generate_stream() {
+        Ollama::default()
+            .generate_stream(
+                GenerateRequest::new(("llama3.2", "1b").into(), "Hello, my name is".into())
+                    .raw(true),
+            )
+            .await
+            .unwrap()
+            .try_for_each(|response| async move {
+                print!("{}", &response.response);
+                Ok(())
+            })
+            .await
+            .unwrap();
+    }
 
     #[tokio::test]
     #[serial]
