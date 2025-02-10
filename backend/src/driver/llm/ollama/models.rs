@@ -177,7 +177,7 @@ impl From<GenerateRequest> for GenerateRequestInternal {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct GenerateRequestInternal {
     model: String,
     prompt: Option<String>,
@@ -192,33 +192,40 @@ pub struct GenerateRequestInternal {
     keep_alive: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+impl GenerateRequestInternal {
+    pub fn with_stream(mut self) -> Self {
+        self.stream = Some(true);
+        self
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct StreamGenerateResponse {
-    model: String,
-    created_at: DateTime<Utc>,
-    response: String,
-    done: bool,
+    pub model: String,
+    pub created_at: DateTime<Utc>,
+    pub response: String,
+    pub done: bool,
 }
 
 #[serde_as]
 #[derive(Debug, Clone, Deserialize)]
 pub struct GenerateResponse {
-    model: String,
-    created_at: String,
-    response: String,
-    done: bool,
-    done_reason: Option<DoneReason>,
-    context: Option<Vec<i64>>,
+    pub model: String,
+    pub created_at: String,
+    pub response: String,
+    pub done: bool,
+    pub done_reason: Option<DoneReason>,
+    pub context: Option<Vec<i64>>,
     #[serde_as(as = "Option<serde_with::DurationNanoSeconds<i64>>")]
-    total_duration: Option<Duration>,
+    pub total_duration: Option<Duration>,
     #[serde_as(as = "Option<serde_with::DurationNanoSeconds<i64>>")]
-    load_duration: Option<Duration>,
-    prompt_eval_count: Option<u32>,
+    pub load_duration: Option<Duration>,
+    pub prompt_eval_count: Option<u32>,
     #[serde_as(as = "Option<serde_with::DurationNanoSeconds<i64>>")]
-    prompt_eval_duration: Option<Duration>,
-    eval_count: Option<u32>,
+    pub prompt_eval_duration: Option<Duration>,
+    pub eval_count: Option<u32>,
     #[serde_as(as = "Option<serde_with::DurationNanoSeconds<i64>>")]
-    eval_duration: Option<Duration>,
+    pub eval_duration: Option<Duration>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
