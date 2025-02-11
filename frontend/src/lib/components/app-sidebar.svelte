@@ -1,6 +1,6 @@
 <script lang="ts">
 	import NavSettings from '$lib/components/nav-settings.svelte';
-	import NavChats from '$lib/components/nav-chats.svelte';
+	import NavSessions from '$lib/components/nav-sessions.svelte';
 	import NavUser from '$lib/components/nav-user.svelte';
 	import WorkspaceSwitcher from '$lib/components/workspace-switcher.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -34,7 +34,7 @@
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavSettings {items} />
-		<NavChats />
+		<NavSessions />
 	</Sidebar.Content>
 	<Sidebar.Footer>
 		<NavUser />

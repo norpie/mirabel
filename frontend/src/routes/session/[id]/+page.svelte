@@ -2,45 +2,45 @@
 	import * as Resizable from '$lib/components/ui/resizable/index.js';
 	import type { PaneAPI } from 'paneforge';
 
-	import { selectedChat, breadcrumbs } from '$lib/store';
+	import { selectedSession, breadcrumbs } from '$lib/store';
 
 	import ChevronsLeft from 'lucide-svelte/icons/chevrons-left';
 	import ChevronsRight from 'lucide-svelte/icons/chevrons-right';
 	import Spinner from '$lib/components/spinner.svelte';
 
-	let chatPane: PaneAPI | undefined = $state();
+	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
 
 	const minSize = 5;
 	const hideSize = 10;
-	const chatSize = 55;
-	const workSize = 100 - chatSize;
+	const sessionSize = 55;
+	const workSize = 100 - sessionSize;
 
 	function reset() {
-		chatPane?.resize(chatSize);
+		sessionPane?.resize(sessionSize);
 		workPane?.resize(workSize);
 	}
 
 	import { onMount } from 'svelte';
-	import type { Chat } from '$lib/models/chat';
-	let { data }: { data: { chat: Chat } } = $props();
+	import type { Session } from '$lib/models/session';
+	let { data }: { data: { session: Session } } = $props();
 
 	onMount(() => {
-		selectedChat.set(data.chat);
+		selectedSession.set(data.session);
 	});
 
 	$effect(() => {
-		if (!$selectedChat) return;
-		breadcrumbs.set(['Chats', $selectedChat.title]);
+		if (!$selectedSession) return;
+		breadcrumbs.set(['Sessions', $selectedSession.title]);
 	});
 </script>
 
-{#snippet chevron(chat: boolean)}
+{#snippet chevron(session: boolean)}
 	<button
-		class={`flex h-[100%] w-[100%] items-center justify-center rounded-${chat ? 'l' : 'r'}-xl transition-colors hover:bg-primary/10`}
+		class={`flex h-[100%] w-[100%] items-center justify-center rounded-${session ? 'l' : 'r'}-xl transition-colors hover:bg-primary/10`}
 		onclick={() => reset()}
 	>
-		{#if chat}
+		{#if session}
 			<ChevronsRight />
 		{:else}
 			<ChevronsLeft />
@@ -49,10 +49,10 @@
 {/snippet}
 
 <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-	{#if $selectedChat}
+	{#if $selectedSession}
 		<Resizable.PaneGroup direction="horizontal">
-			<Resizable.Pane bind:this={chatPane} defaultSize={chatSize} {minSize}>
-				{#if chatPane?.getSize() < hideSize}
+			<Resizable.Pane bind:this={sessionPane} defaultSize={sessionSize} {minSize}>
+				{#if sessionPane?.getSize() < hideSize}
 					{@render chevron(true)}
 				{:else}
 					arguments

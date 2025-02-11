@@ -1,7 +1,7 @@
-import type { Chat } from "$lib/models/chat";
+import type { Session } from "$lib/models/session";
 import type { PageResponse } from "$lib/models/page";
 
-const sampleResponse: PageResponse<Chat[]> ={
+const sampleResponse: PageResponse<Session[]> ={
     pageInfo: {
         page: 1,
         pageSize: 10,
@@ -13,12 +13,12 @@ const sampleResponse: PageResponse<Chat[]> ={
         }
     ]};
 
-export async function fetchChat(chatId: string): Promise<Chat> {
+export async function fetchSession(sessionId: string): Promise<Session> {
     setTimeout(() => {}, 1000);
     return sampleResponse.data[0];
 }
 
-export async function fetchAllChats(workspaceId: string, page: Page): Promise<PageResponse<Chat[]>> {
+export async function fetchAllSessions(workspaceId: string, page: Page): Promise<PageResponse<Session[]>> {
     setTimeout(() => {}, 1000);
     return sampleResponse;
 }

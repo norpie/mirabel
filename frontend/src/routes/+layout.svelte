@@ -19,14 +19,14 @@
 
 	import { fetchUser } from '$lib/api/user';
 	import { fetchAllWorkspaces, fetchRecentWorkspace } from '$lib/api/workspace';
-	import { fetchAllChats } from '$lib/api/chat';
+	import { fetchAllSessions } from '$lib/api/session';
 
 	import {
 		user,
 		workspaces,
 		selectedWorkspace,
-		chats,
-		selectedChat,
+		sessions,
+		selectedSession,
 		breadcrumbs
 	} from '$lib/store';
 	import { toast } from 'svelte-sonner';
@@ -47,14 +47,14 @@
 			toast.error('Failed to fetch selected workspace');
 			return;
 		}
-		chats.set((await fetchAllChats($selectedWorkspace.id, { page: 1, pageSize: 10 })).data);
-		if (!$chats) {
-			toast.error('Failed to fetch chats');
+		sessions.set((await fetchAllSessions($selectedWorkspace.id, { page: 1, pageSize: 10 })).data);
+		if (!$sessions) {
+			toast.error('Failed to fetch sessions');
 			return;
 		}
 	});
 
-	$inspect({ $user, $workspaces, $selectedWorkspace, $chats, $selectedChat });
+	$inspect({ $user, $workspaces, $selectedWorkspace, $sessions, $selectedSession });
 
 	let items = $state([
 		{

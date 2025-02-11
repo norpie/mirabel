@@ -7,7 +7,7 @@
 	import Star from 'lucide-svelte/icons/star';
 	import Archive from 'lucide-svelte/icons/archive';
 
-	import { chats } from '$lib/store';
+	import { sessions } from '$lib/store';
 	import Spinner from './spinner.svelte';
 	import { goto } from '$app/navigation';
 
@@ -15,10 +15,10 @@
 </script>
 
 <Sidebar.Group class="group-data-[collapsible=icon]:hidden">
-	<Sidebar.GroupLabel>Chats</Sidebar.GroupLabel>
+	<Sidebar.GroupLabel>Sessions</Sidebar.GroupLabel>
 	<Sidebar.Menu>
-		{#if $chats}
-			{#each $chats as chat (chat.title)}
+		{#if $sessions}
+			{#each $sessions as session (session.title)}
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton>
 						{#snippet child({ props })}
@@ -26,8 +26,8 @@
 								<a
 									href="##"
 									onclick={() => {
-										goto(`/chat/${chat.id}`);
-									}}>{chat.title}</a
+										goto(`/session/${session.id}`);
+									}}>{session.title}</a
 								>
 							</button>
 						{/snippet}
@@ -47,16 +47,16 @@
 						>
 							<DropdownMenu.Item>
 								<Eye class="text-muted-foreground" />
-								<span>View Chat</span>
+								<span>View Session</span>
 							</DropdownMenu.Item>
 							<DropdownMenu.Item>
 								<Star class="text-muted-foreground" />
-								<span>Favourite Chat</span>
+								<span>Favourite Session</span>
 							</DropdownMenu.Item>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item>
 								<Archive class="text-muted-foreground" />
-								<span>Archive Chat</span>
+								<span>Archive Session</span>
 							</DropdownMenu.Item>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
