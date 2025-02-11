@@ -4,7 +4,6 @@
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 
 	import { breadcrumbs } from '$lib/store';
-	import { Button } from './ui/button';
 	import { goto } from '$app/navigation';
 
 	let {
