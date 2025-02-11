@@ -7,6 +7,7 @@
 
 	import { selectedWorkspace, workspaces } from '$lib/store';
 	import Spinner from './spinner.svelte';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
 
 	let localSelectedWorkspace = $derived($selectedWorkspace);
 
@@ -24,16 +25,14 @@
 							size="lg"
 							class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
-							<div
-								class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
-							>
-								<localSelectedWorkspace.icon class="size-4" />
-							</div>
+							<Avatar.Root class="h-8 w-8 rounded-lg">
+								<Avatar.Image src={$selectedWorkspace.logo} alt={$selectedWorkspace.name} />
+								<Avatar.Fallback class="rounded-lg">W</Avatar.Fallback>
+							</Avatar.Root>
 							<div class="grid flex-1 text-left text-sm leading-tight">
 								<span class="truncate font-semibold">
 									{$selectedWorkspace.name}
 								</span>
-								<span class="truncate text-xs">{$selectedWorkspace.platform}</span>
 							</div>
 							<ChevronsUpDown class="ml-auto" />
 						</Sidebar.MenuButton>
@@ -45,13 +44,13 @@
 					side={sidebar.isMobile ? 'bottom' : 'right'}
 					sideOffset={4}
 				>
-					<DropdownMenu.Label class="text-xs text-muted-foreground">Workspaces</DropdownMenu.Label
-					>
+					<DropdownMenu.Label class="text-xs text-muted-foreground">Workspaces</DropdownMenu.Label>
 					{#each $workspaces as workspace (workspace.name)}
 						<DropdownMenu.Item onSelect={() => selectedWorkspace.set(workspace)} class="gap-2 p-2">
-							<div class="flex size-6 items-center justify-center rounded-sm border">
-								<workspace.icon class="size-4 shrink-0" />
-							</div>
+							<Avatar.Root class="h-8 w-8 rounded-lg">
+								<Avatar.Image src={workspace.logo} alt={workspace.name} />
+								<Avatar.Fallback class="rounded-lg">W</Avatar.Fallback>
+							</Avatar.Root>
 							{workspace.name}
 						</DropdownMenu.Item>
 					{/each}

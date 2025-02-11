@@ -6,9 +6,7 @@ import FileQuestion from 'lucide-svelte/icons/file-question';
 export interface Workspace {
     id: string;
     name: string;
-    url?: string;
-    platform: string;
-    icon: any;
+    logo?: any;
 }
 
 function platformLogo(name: string): any {
