@@ -13,6 +13,10 @@ const sampleResponse: PageResponse<Chat[]> ={
         }
     ]};
 
+export async function fetchChat(chatId: string): Promise<Chat> {
+    setTimeout(() => {}, 1000);
+    return sampleResponse.data[0];
+}
 
 export async function fetchAllChats(workspaceId: string, page: Page): Promise<PageResponse<Chat[]>> {
     setTimeout(() => {}, 1000);
