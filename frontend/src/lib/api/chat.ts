@@ -14,7 +14,7 @@ const sampleResponse: PageResponse<Chat[]> ={
     ]};
 
 
-export async function fetchAllChats(projectId: string, page: Page): Promise<PageResponse<Chat[]>> {
+export async function fetchAllChats(workspaceId: string, page: Page): Promise<PageResponse<Chat[]>> {
     setTimeout(() => {}, 1000);
     return sampleResponse;
 }

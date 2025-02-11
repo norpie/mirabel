@@ -3,7 +3,7 @@ import Gitlab from 'lucide-svelte/icons/gitlab';
 import HardDrive from 'lucide-svelte/icons/hard-drive';
 import FileQuestion from 'lucide-svelte/icons/file-question';
 
-export interface Project {
+export interface Workspace {
     id: string;
     name: string;
     url?: string;

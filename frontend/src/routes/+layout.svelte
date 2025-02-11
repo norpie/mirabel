@@ -18,10 +18,10 @@
 	import Spinner from '$lib/components/spinner.svelte';
 
 	import { fetchUser } from '$lib/api/user';
-	import { fetchAllProjects, fetchRecentProject } from '$lib/api/project';
+	import { fetchAllWorkspaces, fetchRecentWorkspace } from '$lib/api/workspace';
 	import { fetchAllChats } from '$lib/api/chat';
 
-	import { user, projects, selectedProject, chats, selectedChat, breadcrumbs } from '$lib/store';
+	import { user, workspaces, selectedWorkspace, chats, selectedChat, breadcrumbs } from '$lib/store';
 	import { toast } from 'svelte-sonner';
 
 	onMount(async () => {
@@ -30,17 +30,17 @@
 			toast.error('Failed to fetch user data');
 			return;
 		}
-		projects.set((await fetchAllProjects({ page: 1, pageSize: 10 })).data);
-		if (!$projects) {
-			toast.error('Failed to fetch projects');
+		workspaces.set((await fetchAllWorkspaces({ page: 1, pageSize: 10 })).data);
+		if (!$workspaces) {
+			toast.error('Failed to fetch workspaces');
 			return;
 		}
-		selectedProject.set(await fetchRecentProject());
-		if (!$selectedProject) {
-			toast.error('Failed to fetch selected project');
+		selectedWorkspace.set(await fetchRecentWorkspace());
+		if (!$selectedWorkspace) {
+			toast.error('Failed to fetch selected workspace');
 			return;
 		}
-		chats.set((await fetchAllChats($selectedProject.id, { page: 1, pageSize: 10 })).data);
+		chats.set((await fetchAllChats($selectedWorkspace.id, { page: 1, pageSize: 10 })).data);
 		if (!$chats) {
 			toast.error('Failed to fetch chats');
 			return;
@@ -52,7 +52,7 @@
 		}
 	});
 
-	$inspect({ $user, $projects, $selectedProject, $chats, $selectedChat });
+	$inspect({ $user, $workspaces, $selectedWorkspace, $chats, $selectedChat });
 
 	let items = $state([
 		{
@@ -89,7 +89,7 @@
 <ModeWatcher />
 <Toaster />
 
-{#if $user && $projects}
+{#if $user && $workspaces}
 	<Sidebar.Provider>
 		<AppSidebar bind:items />
 		<Sidebar.Inset>
@@ -99,11 +99,11 @@
 				<div class="flex items-center gap-2 px-4">
 					<Sidebar.Trigger class="-ml-1" />
 					<Separator orientation="vertical" class="mr-2 h-4" />
-					{#if $selectedProject}
+					{#if $selectedWorkspace}
 						<Breadcrumb.Root>
 							<Breadcrumb.List>
 								<Breadcrumb.Item class="hidden md:block">
-									<Breadcrumb.Link>{$selectedProject.name}</Breadcrumb.Link>
+									<Breadcrumb.Link>{$selectedWorkspace.name}</Breadcrumb.Link>
 								</Breadcrumb.Item>
 								{#if $breadcrumbs}
 									{#each $breadcrumbs as breadcrumb}

@@ -1,5 +1,5 @@
 import type { Page, PageResponse } from '$lib/models/page';
-import type { Project } from '$lib/models/project';
+import type { Workspace } from '$lib/models/workspace';
 
 import { generateId } from '$lib/utils';
 
@@ -8,7 +8,7 @@ import Gitlab from 'lucide-svelte/icons/gitlab';
 import HardDrive from 'lucide-svelte/icons/hard-drive';
 import FileQuestion from 'lucide-svelte/icons/file-question';
 
-const sampleResponse: PageResponse<Project[]> = {
+const sampleResponse: PageResponse<Workspace[]> = {
     pageInfo: {
         page: 1,
         pageSize: 10,
@@ -51,19 +51,19 @@ const sampleResponse: PageResponse<Project[]> = {
         },
         {
             id: generateId(),
-            name: 'Random Local Project',
+            name: 'Random Local Workspace',
             platform: 'Local',
             icon: HardDrive
         }
     ]
 };
 
-export async function fetchAllProjects(page: Page): Promise<PageResponse<Project[]>> {
+export async function fetchAllWorkspaces(page: Page): Promise<PageResponse<Workspace[]>> {
     setTimeout(() => { }, 1000);
     return sampleResponse;
 }
 
-export async function fetchRecentProject(): Promise<Project> {
+export async function fetchRecentWorkspace(): Promise<Workspace> {
     setTimeout(() => { }, 1000);
     return sampleResponse.data[0];
 }

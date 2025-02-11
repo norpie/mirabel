@@ -5,17 +5,17 @@
 	import ChevronsUpDown from 'lucide-svelte/icons/chevrons-up-down';
 	import Plus from 'lucide-svelte/icons/plus';
 
-	import { selectedProject, projects } from '$lib/store';
+	import { selectedWorkspace, workspaces } from '$lib/store';
 	import Spinner from './spinner.svelte';
 
-	let localSelectedProject = $derived($selectedProject);
+	let localSelectedWorkspace = $derived($selectedWorkspace);
 
 	const sidebar = useSidebar();
 </script>
 
 <Sidebar.Menu>
 	<Sidebar.MenuItem>
-		{#if $projects && $selectedProject && localSelectedProject}
+		{#if $workspaces && $selectedWorkspace && localSelectedWorkspace}
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					{#snippet child({ props })}
@@ -27,13 +27,13 @@
 							<div
 								class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 							>
-								<localSelectedProject.icon class="size-4" />
+								<localSelectedWorkspace.icon class="size-4" />
 							</div>
 							<div class="grid flex-1 text-left text-sm leading-tight">
 								<span class="truncate font-semibold">
-									{$selectedProject.name}
+									{$selectedWorkspace.name}
 								</span>
-								<span class="truncate text-xs">{$selectedProject.platform}</span>
+								<span class="truncate text-xs">{$selectedWorkspace.platform}</span>
 							</div>
 							<ChevronsUpDown class="ml-auto" />
 						</Sidebar.MenuButton>
@@ -47,12 +47,12 @@
 				>
 					<DropdownMenu.Label class="text-xs text-muted-foreground">Repositories</DropdownMenu.Label
 					>
-					{#each $projects as project (project.name)}
-						<DropdownMenu.Item onSelect={() => selectedProject.set(project)} class="gap-2 p-2">
+					{#each $workspaces as workspace (workspace.name)}
+						<DropdownMenu.Item onSelect={() => selectedWorkspace.set(workspace)} class="gap-2 p-2">
 							<div class="flex size-6 items-center justify-center rounded-sm border">
-								<project.icon class="size-4 shrink-0" />
+								<workspace.icon class="size-4 shrink-0" />
 							</div>
-							{project.name}
+							{workspace.name}
 						</DropdownMenu.Item>
 					{/each}
 					<DropdownMenu.Separator />
