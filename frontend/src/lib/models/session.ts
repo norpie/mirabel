@@ -8,6 +8,20 @@ export interface Session {
     title: string;
     participants: Participant[];
     chat: Chat;
+    plan: Plan;
+}
+
+export interface Plan {
+    goal: string;
+    spec: string;
+    children: PlanItem[];
+}
+
+export interface PlanItem {
+    name: string;
+    description: string;
+    status: 'done' | 'in-progress' | 'todo';
+    children: PlanItem[];
 }
 
 export interface Participant {
