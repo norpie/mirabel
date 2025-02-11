@@ -6,7 +6,15 @@ export interface ShallowSession {
 export interface Session {
     id: string;
     title: string;
+    participants: Participant[];
     chat: Chat;
+}
+
+export interface Participant {
+    id: string;
+    name: string;
+    user: boolean;
+    avatar?: string;
 }
 
 export interface Chat {
@@ -15,6 +23,6 @@ export interface Chat {
 
 export interface Message {
     timestamp: string;
-    author: string;
+    participant: string;
     message: string;
 }
