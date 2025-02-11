@@ -3,13 +3,14 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 
+	import { CodeBlock } from '@skeletonlabs/skeleton';
+
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 
-	import Spec from './spec.svelte';
 	import Plan from '$lib/components/plan/plan.svelte';
 	import Shell from './shell.svelte';
 	import File from './file.svelte';
@@ -26,7 +27,7 @@
 	import Spinner from '$lib/components/spinner.svelte';
 	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
 	import Paperclip from 'lucide-svelte/icons/paperclip';
-    import SquareChartGantt from 'lucide-svelte/icons/square-chart-gantt';
+	import SquareChartGantt from 'lucide-svelte/icons/square-chart-gantt';
 	import ListTree from 'lucide-svelte/icons/list-tree';
 	import SquareTerminal from 'lucide-svelte/icons/square-terminal';
 	import FileStack from 'lucide-svelte/icons/file-stack';
@@ -94,7 +95,7 @@
 
 {#snippet chevron(session: boolean)}
 	<button
-		class={`flex h-[100%] w-[100%] items-center justify-center rounded-${session ? 'l' : 'r'}-xl transition-colors hover:bg-primary/10`}
+		class={`flex h-full w-[100%] items-center justify-center rounded-${session ? 'l' : 'r'}-xl transition-colors hover:bg-primary/10`}
 		onclick={() => reset()}
 	>
 		{#if session}
@@ -131,12 +132,12 @@
 	</div>
 {/snippet}
 
-<div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+<div class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min">
 	{#if $selectedSession}
-		<Resizable.PaneGroup direction="horizontal">
+		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane
 				id="chat"
-				class="flex flex-col"
+				class="flex h-full flex-col"
 				bind:this={sessionPane}
 				defaultSize={sessionSize}
 				{minSize}
@@ -153,7 +154,7 @@
 						{/each}
 					</ScrollArea>
 
-					<div id="chat-input" class="m-4 mt-2 flex flex-row rounded-lg bg-primary/10 p-2">
+					<div id="chat-input" class="m-4 mt-2 flex flex-row rounded-lg bg-muted/50 p-2">
 						<Textarea
 							class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 							placeholder="Type your message here..."
@@ -170,11 +171,16 @@
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />
-			<Resizable.Pane bind:this={workPane} defaultSize={workSize} {minSize} class="flex flex-col">
+			<Resizable.Pane
+				bind:this={workPane}
+				defaultSize={workSize}
+				{minSize}
+				class="flex h-full flex-col"
+			>
 				{#if workPane?.getSize() < hideSize}
 					{@render chevron(false)}
 				{:else}
-					<Tabs.Root value="spec" class="m-4 flex h-[100%] flex-col p-2">
+					<Tabs.Root value="spec" class="m-4 flex h-full flex-col">
 						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
 								<Toggle>Auto</Toggle>
@@ -203,28 +209,39 @@
 								</Tabs.List>
 							</div>
 						</div>
-						<Tabs.Content value="spec" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-							<Spec bind:spec={$selectedSession.plan.spec} />
+						<Tabs.Content
+							value="spec"
+							class="h-full flex-1 flex-col rounded-lg bg-muted/50 md:min-h-min"
+						>
+							<div class="flex h-full flex-col">
+								<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
+									<CodeBlock
+										language="md"
+										buttonCopied="Copied"
+										bind:code={$selectedSession.plan.spec}
+										class="rounded-lg bg-transparent"
+									/>
+								</ScrollArea>
+							</div>
 						</Tabs.Content>
-						<Tabs.Content value="plan" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+						<Tabs.Content value="plan" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min">
 							<Plan />
 						</Tabs.Content>
-						<Tabs.Content value="shell" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min"
+						<Tabs.Content value="shell" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
 							><Shell />
 						</Tabs.Content>
-						<Tabs.Content value="file" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min"
+						<Tabs.Content value="file" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
 							><File /></Tabs.Content
 						>
-						<Tabs.Content
-							value="browser"
-							class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min"><Browser /></Tabs.Content
+						<Tabs.Content value="browser" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
+							><Browser /></Tabs.Content
 						>
 					</Tabs.Root>
 				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
 	{:else}
-		<div class="flex h-[100%] w-full items-center justify-center">
+		<div class="flex h-full w-full items-center justify-center">
 			<Spinner />
 		</div>
 	{/if}
