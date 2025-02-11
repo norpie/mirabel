@@ -7,8 +7,9 @@
 	import Star from 'lucide-svelte/icons/star';
 	import Archive from 'lucide-svelte/icons/archive';
 
-	import { chats } from '$lib/store';
+	import { chats, breadcrumbs } from '$lib/store';
 	import Spinner from './spinner.svelte';
+	import { goto } from '$app/navigation';
 
 	const sidebar = useSidebar();
 </script>
@@ -22,7 +23,10 @@
 					<Sidebar.MenuButton>
 						{#snippet child({ props })}
 							<button {...props}>
-								<span>{chat.title}</span>
+								<a href="##" onclick={() => {
+                                    breadcrumbs.set(['Chats', chat.title ])
+                                    goto(`/chat/${chat.id}`)
+                                    }}>{chat.title}</a>
 							</button>
 						{/snippet}
 					</Sidebar.MenuButton>
