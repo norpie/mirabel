@@ -21,7 +21,14 @@
 	import { fetchAllWorkspaces, fetchRecentWorkspace } from '$lib/api/workspace';
 	import { fetchAllChats } from '$lib/api/chat';
 
-	import { user, workspaces, selectedWorkspace, chats, selectedChat, breadcrumbs } from '$lib/store';
+	import {
+		user,
+		workspaces,
+		selectedWorkspace,
+		chats,
+		selectedChat,
+		breadcrumbs
+	} from '$lib/store';
 	import { toast } from 'svelte-sonner';
 
 	onMount(async () => {
