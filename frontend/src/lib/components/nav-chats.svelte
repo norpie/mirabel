@@ -23,10 +23,12 @@
 					<Sidebar.MenuButton>
 						{#snippet child({ props })}
 							<button {...props}>
-								<a href="##" onclick={() => {
-                                    breadcrumbs.set(['Chats', chat.title ])
-                                    goto(`/chat/${chat.id}`)
-                                    }}>{chat.title}</a>
+								<a
+									href="##"
+									onclick={() => {
+										goto(`/chat/${chat.id}`);
+									}}>{chat.title}</a
+								>
 							</button>
 						{/snippet}
 					</Sidebar.MenuButton>
