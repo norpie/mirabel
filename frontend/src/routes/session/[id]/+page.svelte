@@ -204,7 +204,7 @@
 							</div>
 						</div>
 						<Tabs.Content value="spec" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-							<Spec />
+							<Spec bind:spec={$selectedSession.plan.spec} />
 						</Tabs.Content>
 						<Tabs.Content value="plan" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min">
 							<Plan />
