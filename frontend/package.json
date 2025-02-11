@@ -15,6 +15,8 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
 		"@eslint/js": "^9.18.0",
+		"@skeletonlabs/skeleton": "^2.11.0",
+		"@skeletonlabs/tw-plugin": "^0.4.1",
 		"@sveltejs/adapter-auto": "^4.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
@@ -45,6 +47,7 @@
 	},
 	"dependencies": {
 		"@xyflow/svelte": "^0.1.29",
-		"effect": "^3.12.5"
+		"effect": "^3.12.5",
+		"highlight.js": "^11.11.1"
 	}
 }
