@@ -174,7 +174,7 @@
 				{#if workPane?.getSize() < hideSize}
 					{@render chevron(false)}
 				{:else}
-					<Tabs.Root value="plan" class="m-4 flex h-[100%] flex-col p-2">
+					<Tabs.Root value="spec" class="m-4 flex h-[100%] flex-col p-2">
 						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
 								<Toggle>Auto</Toggle>
