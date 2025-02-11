@@ -9,7 +9,7 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 
-    import Plan from './plan.svelte';
+    import Plan from '$lib/components/plan.svelte';
     import Shell from './shell.svelte';
     import File from './file.svelte';
     import Browser from './browser.svelte';
