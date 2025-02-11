@@ -1,5 +1,10 @@
 <script lang="ts">
 	import * as Resizable from '$lib/components/ui/resizable/index.js';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import Mirabel from '$lib/assets/mirabel.png';
+
 	import type { PaneAPI } from 'paneforge';
 
 	import { selectedSession, breadcrumbs } from '$lib/store';
@@ -7,6 +12,8 @@
 	import ChevronsLeft from 'lucide-svelte/icons/chevrons-left';
 	import ChevronsRight from 'lucide-svelte/icons/chevrons-right';
 	import Spinner from '$lib/components/spinner.svelte';
+	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
+	import Paperclip from 'lucide-svelte/icons/paperclip';
 
 	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
@@ -16,18 +23,29 @@
 	const sessionSize = 55;
 	const workSize = 100 - sessionSize;
 
+	function formatTime(iso8601: string): string {
+		const date = new Date(iso8601);
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+		return `${hours}:${minutes}`;
+	}
+
 	function reset() {
 		sessionPane?.resize(sessionSize);
 		workPane?.resize(workSize);
 	}
 
 	import { onMount } from 'svelte';
-	import type { Session } from '$lib/models/session';
+	import type { Message, Participant, Session } from '$lib/models/session';
 	let { data }: { data: { session: Session } } = $props();
 
 	onMount(() => {
 		selectedSession.set(data.session);
 	});
+
+	function messageAuthor(participantId: string): Participant {
+		return $selectedSession?.participants.find((p) => p.id === participantId) ?? 'Unknown';
+	}
 
 	$effect(() => {
 		if (!$selectedSession) return;
@@ -48,14 +66,63 @@
 	</button>
 {/snippet}
 
+{#snippet message(msg: Message)}
+	{@const participant = messageAuthor(msg.participant)}
+	<div class="flex space-x-4">
+		<Avatar.Root class="h-8 w-8 rounded-lg">
+			{#if participant.user}
+				<Avatar.Image src={participant.avatar} alt={`${participant.name}'s avatar`} />
+				<Avatar.Fallback class="rounded-lg"></Avatar.Fallback>
+			{:else}
+				<Avatar.Image src={Mirabel} alt={`${participant.name}'s avatar`} />
+				<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
+			{/if}
+		</Avatar.Root>
+		<div class="flex flex-col space-y-1">
+			<div class="flex items-center gap-2">
+				<span class="font-bold">{participant.name}</span>
+				<span class="text-sm text-muted-foreground">{formatTime(msg.timestamp)}</span>
+			</div>
+			<div class="prose">
+				<p>{msg.message}</p>
+			</div>
+		</div>
+	</div>
+{/snippet}
+
 <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
 	{#if $selectedSession}
 		<Resizable.PaneGroup direction="horizontal">
-			<Resizable.Pane bind:this={sessionPane} defaultSize={sessionSize} {minSize}>
+			<Resizable.Pane
+				id="chat"
+				class="flex flex-col"
+				bind:this={sessionPane}
+				defaultSize={sessionSize}
+				{minSize}
+			>
 				{#if sessionPane?.getSize() < hideSize}
 					{@render chevron(true)}
 				{:else}
-					arguments
+					<div id="chat-messages" class="m-4 flex flex-grow flex-col p-2">
+						{#each $selectedSession.chat.messages as msg}
+							{@render message(msg)}
+						{/each}
+					</div>
+
+					<div id="chat-input" class="m-4 flex flex-row space-x-2 rounded-lg bg-primary/10 p-2">
+						<Textarea
+							class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-offset-0"
+							placeholder="Type your message here..."
+						/>
+						<div id="buttons" class="flex flex-col gap-1">
+							<Button>
+								<SendHorizontal />
+							</Button>
+							<Button>
+								<Paperclip />
+							</Button>
+						</div>
+					</div>
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />
