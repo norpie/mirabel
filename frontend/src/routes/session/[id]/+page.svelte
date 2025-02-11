@@ -1,10 +1,18 @@
 <script lang="ts">
 	import * as Resizable from '$lib/components/ui/resizable/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { Separator } from '$lib/components/ui/separator';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import { Toggle } from '$lib/components/ui/toggle/index.js';
+
+    import Plan from './plan.svelte';
+    import Shell from './shell.svelte';
+    import File from './file.svelte';
+    import Browser from './browser.svelte';
 
 	import Mirabel from '$lib/assets/mirabel.png';
 
@@ -17,6 +25,10 @@
 	import Spinner from '$lib/components/spinner.svelte';
 	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
 	import Paperclip from 'lucide-svelte/icons/paperclip';
+	import ListTree from 'lucide-svelte/icons/list-tree';
+	import SquareTerminal from 'lucide-svelte/icons/square-terminal';
+	import FileStack from 'lucide-svelte/icons/file-stack';
+	import Globe from 'lucide-svelte/icons/globe';
 
 	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
@@ -103,7 +115,7 @@
 				<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
 			{/if}
 		</Avatar.Root>
-		<div class="flex flex-col space-y-0">
+		<div class="flex flex-col">
 			<div class="flex items-center gap-2">
 				<p class="font-normal leading-none">{participant.name}</p>
 				<p class="text-xs font-light leading-none text-muted-foreground">
@@ -156,11 +168,56 @@
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />
-			<Resizable.Pane bind:this={workPane} defaultSize={workSize} {minSize}>
+			<Resizable.Pane bind:this={workPane} defaultSize={workSize} {minSize} class="flex flex-col">
 				{#if workPane?.getSize() < hideSize}
 					{@render chevron(false)}
 				{:else}
-					arguments
+					<Tabs.Root value="plan" class="m-4 flex h-[100%] flex-col p-2">
+						<div class="flex flex-row justify-between">
+							<div class="flex items-center gap-4">
+								<Avatar.Root class="h-8 w-8 rounded-lg">
+									<Avatar.Image src={Mirabel} alt="Mirabel's avatar" />
+									<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
+								</Avatar.Root>
+								<span class="text-xl font-medium">Mirabel's Actions</span>
+							</div>
+							<div class="flex flex-row gap-3">
+								<Toggle>Auto</Toggle>
+								<Separator orientation="vertical" />
+								<Tabs.List class="justify-evenly bg-transparent">
+									<Tabs.Trigger value="plan" class="gap-2">
+										<ListTree class="h-4 w-4" />
+										<p>Plan</p></Tabs.Trigger
+									>
+									<Tabs.Trigger value="shell" class="gap-2">
+										<SquareTerminal class="h-4 w-4" />
+										<p>Shell</p>
+									</Tabs.Trigger>
+									<Tabs.Trigger value="file" class="gap-2">
+										<FileStack class="h-4 w-4" />
+										<p>File</p>
+									</Tabs.Trigger>
+									<Tabs.Trigger value="browser" class="gap-2">
+										<Globe class="h-4 w-4" />
+										<p>Browser</p>
+									</Tabs.Trigger>
+								</Tabs.List>
+							</div>
+						</div>
+						<Tabs.Content value="plan" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+							<Plan />
+						</Tabs.Content>
+						<Tabs.Content value="shell" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min"
+							><Shell />
+						</Tabs.Content>
+						<Tabs.Content value="file" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min"
+							><File /></Tabs.Content
+						>
+						<Tabs.Content
+							value="browser"
+							class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min"><Browser /></Tabs.Content
+						>
+					</Tabs.Root>
 				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
