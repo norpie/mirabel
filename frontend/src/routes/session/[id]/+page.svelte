@@ -105,11 +105,13 @@
 		</Avatar.Root>
 		<div class="flex flex-col space-y-0">
 			<div class="flex items-center gap-2">
-				<p class="font-bold leading-none">{participant.name}</p>
-				<p class="text-sm leading-none text-muted-foreground">{formatTime(msg.timestamp)}</p>
+				<p class="font-normal leading-none">{participant.name}</p>
+				<p class="text-xs font-light leading-none text-muted-foreground">
+					{formatTime(msg.timestamp)}
+				</p>
 			</div>
 			<div class="pb-2 pt-2">
-				<p>{msg.message}</p>
+				<p class="font-light">{msg.message}</p>
 			</div>
 		</div>
 	</div>
