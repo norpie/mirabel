@@ -116,7 +116,7 @@ const sampleResponse: PageResponse<Session[]> = {
                         message: "Great, thanks."
                     },
                     {
-                        timestamp: '2021-09-01T12:18:00Z',
+                        timestamp: '2025-02-01T12:18:00Z',
                         participant: 'vasudfniunyave',
                         message: "Also, the UI is not rendering the chat messages as expected."
                     },
