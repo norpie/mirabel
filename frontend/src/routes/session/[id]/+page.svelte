@@ -139,10 +139,10 @@
 
 					<div id="chat-input" class="m-4 mt-2 flex flex-row rounded-lg bg-primary/10 p-2">
 						<Textarea
-							class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-offset-0"
+							class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 							placeholder="Type your message here..."
 						/>
-						<div id="buttons" class="flex flex-col gap-1">
+						<div id="buttons" class="flex flex-col gap-1 pl-2">
 							<Button>
 								<SendHorizontal />
 							</Button>
