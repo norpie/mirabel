@@ -45,7 +45,7 @@
 					side={sidebar.isMobile ? 'bottom' : 'right'}
 					sideOffset={4}
 				>
-					<DropdownMenu.Label class="text-xs text-muted-foreground">Repositories</DropdownMenu.Label
+					<DropdownMenu.Label class="text-xs text-muted-foreground">Workspaces</DropdownMenu.Label
 					>
 					{#each $workspaces as workspace (workspace.name)}
 						<DropdownMenu.Item onSelect={() => selectedWorkspace.set(workspace)} class="gap-2 p-2">
@@ -60,7 +60,7 @@
 						<div class="flex size-6 items-center justify-center rounded-md border bg-background">
 							<Plus class="size-4" />
 						</div>
-						<div class="font-medium text-muted-foreground">Add repository</div>
+						<div class="font-medium text-muted-foreground">Add workspace</div>
 					</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>

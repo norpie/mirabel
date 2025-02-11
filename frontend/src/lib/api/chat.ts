@@ -9,7 +9,7 @@ const sampleResponse: PageResponse<Chat[]> ={
     data: [
         {
             id: 'sdafopihv',
-            title: 'Setting up the repository'
+            title: 'Setting up the workspace'
         }
     ]};
 
