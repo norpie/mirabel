@@ -44,6 +44,7 @@
 		"vite": "^5.4.14"
 	},
 	"dependencies": {
+		"@xyflow/svelte": "^0.1.29",
 		"effect": "^3.12.5"
 	}
 }
