@@ -52,11 +52,6 @@
 			toast.error('Failed to fetch chats');
 			return;
 		}
-		selectedChat.set($chats[0]);
-		if (!$selectedChat) {
-			toast.error('Failed to fetch selected selected chat');
-			return;
-		}
 	});
 
 	$inspect({ $user, $workspaces, $selectedWorkspace, $chats, $selectedChat });

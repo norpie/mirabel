@@ -7,7 +7,7 @@
 	import Star from 'lucide-svelte/icons/star';
 	import Archive from 'lucide-svelte/icons/archive';
 
-	import { chats, breadcrumbs } from '$lib/store';
+	import { chats } from '$lib/store';
 	import Spinner from './spinner.svelte';
 	import { goto } from '$app/navigation';
 
