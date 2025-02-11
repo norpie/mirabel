@@ -9,10 +9,11 @@
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 
-    import Plan from '$lib/components/plan/plan.svelte';
-    import Shell from './shell.svelte';
-    import File from './file.svelte';
-    import Browser from './browser.svelte';
+	import Spec from './spec.svelte';
+	import Plan from '$lib/components/plan/plan.svelte';
+	import Shell from './shell.svelte';
+	import File from './file.svelte';
+	import Browser from './browser.svelte';
 
 	import Mirabel from '$lib/assets/mirabel.png';
 
@@ -25,6 +26,7 @@
 	import Spinner from '$lib/components/spinner.svelte';
 	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
 	import Paperclip from 'lucide-svelte/icons/paperclip';
+    import SquareChartGantt from 'lucide-svelte/icons/square-chart-gantt';
 	import ListTree from 'lucide-svelte/icons/list-tree';
 	import SquareTerminal from 'lucide-svelte/icons/square-terminal';
 	import FileStack from 'lucide-svelte/icons/file-stack';
@@ -173,18 +175,15 @@
 					{@render chevron(false)}
 				{:else}
 					<Tabs.Root value="plan" class="m-4 flex h-[100%] flex-col p-2">
-						<div class="flex flex-row justify-between">
-							<div class="flex items-center gap-4">
-								<Avatar.Root class="h-8 w-8 rounded-lg">
-									<Avatar.Image src={Mirabel} alt="Mirabel's avatar" />
-									<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
-								</Avatar.Root>
-								<span class="text-xl font-medium">Mirabel's Actions</span>
-							</div>
+						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
 								<Toggle>Auto</Toggle>
 								<Separator orientation="vertical" />
 								<Tabs.List class="justify-evenly bg-transparent">
+									<Tabs.Trigger value="spec" class="gap-2">
+										<SquareChartGantt class="h-4 w-4" />
+										<p>Spec</p></Tabs.Trigger
+									>
 									<Tabs.Trigger value="plan" class="gap-2">
 										<ListTree class="h-4 w-4" />
 										<p>Plan</p></Tabs.Trigger
@@ -204,6 +203,9 @@
 								</Tabs.List>
 							</div>
 						</div>
+						<Tabs.Content value="spec" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+							<Spec />
+						</Tabs.Content>
 						<Tabs.Content value="plan" class="h-[100%] flex-1 rounded-xl bg-muted/50 md:min-h-min">
 							<Plan />
 						</Tabs.Content>
