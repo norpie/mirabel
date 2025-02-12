@@ -4,6 +4,7 @@ pub(crate) mod error;
 pub(crate) mod prelude;
 
 pub(crate) mod driver;
+pub(crate) mod dto;
 pub(crate) mod handler;
 pub(crate) mod model;
 pub(crate) mod repository;
