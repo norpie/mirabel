@@ -6,7 +6,9 @@ pub enum Error {
     #[error("An error occurred, which uses the generic error type {0}")]
     Generic(String),
 
-    #[error("An error occurred: {0}")]
+    #[error("An actix error occurred: {0}")]
+    ActixWeb(#[from] actix_web::Error),
+    #[error("A chrono error occurred: {0}")]
     Chrono(#[from] chrono::ParseError),
     #[error("A serde_json error occurred: {0}")]
     SerdeJson(#[from] serde_json::Error),
@@ -17,6 +19,10 @@ pub enum Error {
 
     #[error("An IO error occurred: {0}")]
     IO(#[from] std::io::Error),
+    #[error("An error occurred while parsing an integer: {0}")]
+    Parse(#[from] std::num::ParseIntError),
+    #[error("An error occurred while parsing a float: {0}")]
+    Var(#[from] std::env::VarError),
 }
 
 impl From<&str> for Error {
