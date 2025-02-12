@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getEdges, getNodes } from './planToFlow';
-	import Elk from 'elkjs/lib/elk.bundled.js';
-	import { Background, SvelteFlow } from '@xyflow/svelte';
 	import type { Plan } from '$lib/models/session';
 	import { writable, type Writable } from 'svelte/store';
 
 	import { mode } from 'mode-watcher';
-	import Input from '../ui/input/input.svelte';
+
+	import { Background, BackgroundVariant, SvelteFlow } from '@xyflow/svelte';
+	import '@xyflow/svelte/dist/style.css';
+	import Elk from 'elkjs/lib/elk.bundled.js';
+	import { getEdges, getNodes } from './planToFlow';
 
 	let { plan = $bindable() }: { plan: Plan } = $props();
 
@@ -90,6 +91,6 @@
 	onMount(layout);
 </script>
 
-<SvelteFlow {nodes} {edges} colorMode={$mode} class="rounded-xl font-mono" fitView {proOptions}>
-	<Background />
+<SvelteFlow class="rounded-xl font-mono" {nodes} {edges} colorMode={$mode} fitView {proOptions}>
+	<Background variant={BackgroundVariant.Dots} />
 </SvelteFlow>
