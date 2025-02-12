@@ -12,15 +12,17 @@ export interface Session {
 }
 
 export interface Plan {
+    id: string;
     goal: string;
     spec: string;
     children: PlanItem[];
 }
 
 export interface PlanItem {
+    id: string;
     name: string;
     description: string;
-    status: 'done' | 'in-progress' | 'todo';
+    status: 'done' | 'paused' | 'in-progress' | 'todo';
     children: PlanItem[];
 }
 

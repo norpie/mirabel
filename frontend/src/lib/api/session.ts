@@ -1,5 +1,6 @@
-import type { Session, ShallowSession } from "$lib/models/session";
+import type { PlanItem, Session, ShallowSession } from "$lib/models/session";
 import type { PageResponse } from "$lib/models/page";
+import { generateId } from "$lib/utils";
 
 /*
 # User History Page Specification (Final)
@@ -149,226 +150,167 @@ This feature adds a "History" page where users can view their past actions.
 */
 const children: PlanItem[] = [
     {
-        goal: 'Database Schema Setup',
-        description: 'Database setup for user action history',
-        status: 'completed',
+        id: generateId(),
+        name: "Database Schema Setup",
+        description: "Define and migrate the database schema for user action history.",
+        status: "done",
         children: [
             {
-                goal: 'Create Migration',
-                description: 'Create migration file for user action history table',
-                status: 'completed',
+                id: generateId(),
+                name: "Create Migration",
+                description: "Generate and modify migration scripts.",
+                status: "done",
                 children: [
                     {
-                        goal: 'Run migration create',
-                        description: 'Run `migrate create -n create_user_action_history`',
-                        status: 'completed'
+                        id: generateId(),
+                        name: "Run migration",
+                        description: "Run `migrate create -n create_user_action_history`",
+                        status: "done",
+                        children: []
                     },
                     {
-                        goal: 'Patch `migrations/*_create_user_action_history.sql`',
-                        description: 'Define the schema for user_action_history table',
-                        status: 'completed'
+                        id: generateId(),
+                        name: "Patch migration file",
+                        description: "Modify the migration file to include necessary tables and enums.",
+                        status: "done",
+                        children: [
+                            {
+                                id: generateId(),
+                                name: "Define enum",
+                                description: "CREATE TYPE action_type AS ENUM ('CREATE', 'UPDATE', 'DELETE')",
+                                status: "done",
+                                children: []
+                            },
+                            {
+                                id: generateId(),
+                                name: "Create table",
+                                description: "CREATE TABLE user_action_history (...)",
+                                status: "done",
+                                children: []
+                            }
+                        ]
                     }
                 ]
             },
             {
-                goal: 'Apply Migration',
-                description: 'Run migration to create table in database',
-                status: 'completed',
+                id: generateId(),
+                name: "Apply Migration",
+                description: "Execute the migration to update the database schema.",
+                status: "done",
                 children: [
                     {
-                        goal: 'Run `db-migrate up`',
-                        status: 'completed'
+                        id: generateId(),
+                        name: "Run `db-migrate up`",
+                        description: "Apply pending database migrations.",
+                        status: "done",
+                        children: []
                     }
                 ]
             },
             {
-                goal: 'Create Indexes',
-                description: 'Create indexes on user_action_history for better performance',
-                status: 'completed',
+                id: generateId(),
+                name: "Create Indexes",
+                description: "Optimize database queries with indexing.",
+                status: "done",
                 children: [
                     {
-                        goal: 'Run `psql -c "CREATE INDEX idx_user_actions ON user_action_history (user_id, timestamp)"`',
-                        status: 'completed'
+                        id: generateId(),
+                        description: "Run `psql -c \"CREATE INDEX idx_user_actions ON user_action_history (user_id, timestamp)\"`",
+                        name: "Create index",
+                        status: "done",
+                        children: []
                     }
                 ]
             }
         ]
     },
     {
-        goal: 'Backend API Implementation',
-        description: 'Implement the backend API for fetching and exporting history',
-        status: 'in_progress',
+        id: generateId(),
+        name: "Backend API Implementation",
+        description: "Develop API endpoints for retrieving and exporting user action history.",
+        status: "in-progress",
         children: [
             {
-                goal: 'History Route',
-                description: 'Create and implement the route for fetching history',
-                status: 'completed',
+                id: generateId(),
+                name: "History Route",
+                description: "Create the API route for fetching user history.",
+                status: "in-progress",
                 children: [
                     {
-                        goal: 'Run `nest generate controller history`',
-                        status: 'completed'
+                        id: generateId(),
+                        name: "Generate controller",
+                        description: "Generate a NestJS controller for handling history requests by running `nest generate controller history`",
+                        status: "done",
+                        children: []
                     },
                     {
-                        goal: 'Patch `src/history/history.controller.ts`',
-                        description: 'Add @Get() decorator and query params validation',
-                        status: 'completed'
-                    }
-                ]
-            },
-            {
-                goal: 'Query Service',
-                description: 'Implement service methods for handling history queries',
-                status: 'in_progress',
-                children: [
-                    {
-                        goal: 'Patch `src/history/history.service.ts`',
-                        description: 'Implement getUserHistory() with pagination and date filtering logic',
-                        status: 'in_progress'
-                    }
-                ]
-            },
-            {
-                goal: 'CSV Export',
-                description: 'Add functionality to export history as CSV',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Run `npm install csv-stringify`',
-                        status: 'not_started'
-                    },
-                    {
-                        goal: 'Patch `src/history/history.controller.ts`',
-                        description: 'Add @Get(\'export\') endpoint and implement CSV serialization',
-                        status: 'not_started'
-                    }
-                ]
-            },
-            {
-                goal: 'Permissions & Security',
-                description: 'Ensure that only authorized users can access the history endpoints',
-                status: 'in_progress',
-                children: [
-                    {
-                        goal: 'Route Guard',
-                        description: 'Create and implement route guard for authentication',
-                        status: 'completed'
-                    },
-                    {
-                        goal: 'API Validation',
-                        description: 'Validate user ID in API requests to match session',
-                        status: 'in_progress'
+                        id: generateId(),
+                        name: "Modify history controller",
+                        description: "Modify `src/history/history.controller.ts` to add necessary endpoints and validation.",
+                        status: "in-progress",
+                        children: [
+                            {
+                                id: generateId(),
+                                name: "Add @Get() decorator",
+                                description: "Define a GET endpoint for retrieving history.",
+                                status: "done",
+                                children: []
+                            },
+                            {
+                                id: generateId(),
+                                name: "Implement query params validation",
+                                description: "Ensure request parameters are validated before processing.",
+                                status: "todo",
+                                children: []
+                            }
+                        ]
                     }
                 ]
             }
         ]
     },
     {
-        goal: 'Frontend Implementation',
-        description: 'Implement the frontend for displaying and interacting with history',
-        status: 'not_started',
+        id: generateId(),
+        name: "Frontend Implementation",
+        description: "Build the UI for displaying and exporting user action history.",
+        status: "todo",
         children: [
             {
-                goal: 'History Page Component',
-                description: 'Create and implement the component for the history page',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Run `ng generate component history-page`',
-                        status: 'not_started'
-                    },
-                    {
-                        goal: 'Patch `src/app/history-page/history-page.component.html`',
-                        description: 'Add filter controls and data table markup',
-                        status: 'not_started'
-                    }
-                ]
-            },
-            {
-                goal: 'API Integration',
-                description: 'Connect the frontend with backend history API',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Patch `src/app/history.service.ts`',
-                        description: 'Add getHistory() method and pagination params handling',
-                        status: 'not_started'
-                    }
-                ]
-            },
-            {
-                goal: 'Export Button',
-                description: 'Implement the export to CSV button in frontend',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Patch `src/app/history-page/history-page.component.ts`',
-                        description: 'Add exportToCSV() method and trigger blob download',
-                        status: 'not_started'
-                    }
-                ]
+                id: generateId(),
+                name: "History Page Component",
+                description: "Create and style the history page UI component.",
+                status: "todo",
+                children: []
             }
         ]
     },
     {
-        goal: 'Testing & Validation',
-        description: 'Test all aspects of the history feature',
-        status: 'not_started',
+        id: generateId(),
+        name: "Permissions & Security",
+        description: "Ensure only authorized users can access the history API.",
+        status: "todo",
         children: [
             {
-                goal: 'Database Tests',
-                description: 'Write and run tests for database interactions related to user action history',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Run `psql -c "INSERT INTO user_action_history (...) VALUES (...)"`',
-                        status: 'not_started'
-                    },
-                    {
-                        goal: 'Run `psql -c "SELECT * FROM user_action_history WHERE ..."`',
-                        status: 'not_started'
-                    }
-                ]
-            },
+                id: generateId(),
+                name: "Activate middleware",
+                description: "Add authentication middleware to protect the history route.",
+                status: "todo",
+                children: []
+            }
+        ]
+    },
+    {
+        id: generateId(),
+        name: "Testing & Validation",
+        description: "Perform tests on the database, API, UI, and security.",
+        status: "todo",
+        children: [
             {
-                goal: 'API Tests',
-                description: 'Write and run tests for backend API endpoints related to history',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Run `curl -X GET "http://localhost:3000/api/history?page=2"`',
-                        status: 'not_started'
-                    },
-                    {
-                        goal: 'Run `curl -X GET "http://localhost:3000/api/history/export"`',
-                        status: 'not_started'
-                    }
-                ]
-            },
-            {
-                goal: 'UI Tests',
-                description: 'Write and run tests for frontend components related to history page',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Run `cypress run --spec "history-page.spec.js"`',
-                        status: 'not_started'
-                    }
-                ]
-            },
-            {
-                goal: 'Security Tests',
-                description: 'Write and run tests to ensure security of the history feature',
-                status: 'not_started',
-                children: [
-                    {
-                        goal: 'Run `npx snyk test`',
-                        status: 'not_started'
-                    },
-                    {
-                        goal: 'Run `curl -X GET "http://localhost:3000/api/history" -H "Authorization: Bearer invalid"`',
-                        status: 'not_started'
-                    }
-                ]
+                id: generateId(),
+                name: "Write Unit Tests",
+                description: "Develop unit tests for API endpoints and services.",
+                status: "todo",
+                children: []
             }
         ]
     }
@@ -397,6 +339,7 @@ const sampleResponse: PageResponse<Session[]> = {
                 }
             ],
             plan: {
+                id: generateId(),
                 goal: 'Implement the user history page',
                 spec,
                 children
