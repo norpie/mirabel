@@ -3,13 +3,12 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 
-	import { CodeBlock } from '@skeletonlabs/skeleton';
-
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
+	import Markdown from '$lib/components/markdown.svelte';
 
 	import Plan from '$lib/components/plan/plan.svelte';
 	import Shell from './shell.svelte';
@@ -180,7 +179,7 @@
 				{#if workPane?.getSize() < hideSize}
 					{@render chevron(false)}
 				{:else}
-					<Tabs.Root value="plan" class="m-4 flex h-full flex-col">
+					<Tabs.Root value="spec" class="m-4 flex h-full flex-col">
 						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
 								<Toggle>Auto</Toggle>
@@ -215,12 +214,7 @@
 						>
 							<div class="flex h-full flex-col">
 								<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
-									<CodeBlock
-										language="md"
-										buttonCopied="Copied"
-										bind:code={$selectedSession.plan.spec}
-										class="rounded-lg bg-transparent"
-									/>
+										<Markdown bind:markdown={$selectedSession.plan.spec} />
 								</ScrollArea>
 							</div>
 						</Tabs.Content>
