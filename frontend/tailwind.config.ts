@@ -72,7 +72,8 @@ const config: Config = {
 				sm: "calc(var(--radius) - 4px)"
 			},
 			fontFamily: {
-				sans: ['Inter', ...fontFamily.sans]
+				sans: ['Inter', ...fontFamily.sans],
+                mono: ['SpaceMono Nerd Font', ...fontFamily.mono]
 			},
 			keyframes: {
 				"accordion-down": {

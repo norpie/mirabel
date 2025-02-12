@@ -5,6 +5,14 @@
 @tailwind utilities;
 
 @layer base {
+    @font-face {
+        font-family: 'SpaceMono Nerd Font';
+        src: local('SpaceMonoNerdFont'), local('Space-Mono-Nerd-Font'), local('space mono nerd font'), local('space-mono-nerd-font'),
+            url('/fonts/SpaceMonoNerdFont-Regular.ttf');
+        font-weight: normal;
+        font-display: swap;
+    }
+
     :root {
         --background: 0 0% 100%;
         --foreground: 240 10% 3.9%;
