@@ -8,6 +8,7 @@ pub struct User {
     email: String,
     #[serde(skip_serializing)]
     password: String,
+    #[serde(rename = "createdAt")]
     created_at: DateTime<Utc>,
 }
 

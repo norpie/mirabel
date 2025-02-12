@@ -11,6 +11,7 @@ pub struct Chat {
 pub struct ChatMessage {
     id: String,
     timestamp: DateTime<Utc>,
+    #[serde(rename = "authorId")]
     author_id: String,
     content: String,
 }
