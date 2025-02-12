@@ -1,59 +1,95 @@
 <script lang="ts">
-	import '@xyflow/svelte/dist/style.css';
+	import { onMount } from 'svelte';
+	import { getEdges, getNodes } from './planToFlow';
+	import Elk from 'elkjs/lib/elk.bundled.js';
+	import { Background, SvelteFlow } from '@xyflow/svelte';
+	import type { Plan } from '$lib/models/session';
+	import { writable, type Writable } from 'svelte/store';
 
-	import { writable } from 'svelte/store';
 	import { mode } from 'mode-watcher';
+	import Input from '../ui/input/input.svelte';
 
-	import { SvelteFlow, Controls, Background, BackgroundVariant, MiniMap } from '@xyflow/svelte';
+	let { plan = $bindable() }: { plan: Plan } = $props();
 
-	// 👇 this is important! You need to import the styles for Svelte Flow to work
-	import '@xyflow/svelte/dist/style.css';
+	let nodes: Writable<any[]> = writable([]);
+	let edges: Writable<any[]> = writable([]);
+	let elk = new Elk();
 
-	// We are using writables for the nodes and edges to sync them easily. When a user drags a node for example, Svelte Flow updates its position.
-	const nodes = writable([
-		{
-			id: '1',
-			type: 'input',
-			data: { label: 'Input Node' },
-			position: { x: 0, y: 0 }
-		},
-		{
-			id: '2',
-			type: 'default',
-			data: { label: 'Node' },
-			position: { x: 0, y: 150 }
+	async function layout() {
+		const graph = {
+			id: 'root',
+			layoutOptions: {
+				'elk.algorithm': 'layered',
+				'elk.direction': 'RIGHT',
+				'elk.spacing.nodeNode': 20,
+				'elk.spacing.edgeNode': 50,
+				'elk.layered.spacing.nodeNodeBetweenLayers': 50
+			},
+			children: getNodes(plan),
+			edges: getEdges(plan)
+		};
+
+		const laidOutGraph = await elk.layout(graph);
+
+		if (!laidOutGraph || !laidOutGraph.children || !laidOutGraph.edges) return;
+
+		// Find max y-value to flip the vertical orientation
+		const maxY = Math.max(...laidOutGraph.children.map((node) => node.y));
+
+		// Update node positions
+		nodes.set(
+			laidOutGraph.children.map((node) => ({
+				id: node.id,
+				type: node.type,
+				targetPosition: 'left',
+				sourcePosition: 'right',
+				position: { x: node.x, y: maxY - node.y },
+				data: { label: node.label }
+			}))
+		);
+
+		edges.set(
+			laidOutGraph.edges.map((edge) => ({
+				id: edge.id,
+				source: edge.source,
+				target: edge.target,
+				animated: edge.status === 'in-progress',
+				label: label(edge.status)
+			}))
+		);
+	}
+
+	function type(
+		source: string | undefined,
+		target: string | undefined
+	): 'default' | 'input' | 'output' {
+		if (source === undefined) return 'input';
+		if (target === undefined) return 'output';
+		return 'default';
+	}
+
+	function label(status: string): string {
+		switch (status) {
+			case 'in-progress':
+				return '';
+			case 'done':
+				return '';
+			case 'failed':
+				return '';
+			case 'paused':
+				return '';
+			case 'todo':
+				return '';
+			default:
+				return '?';
 		}
-	]);
+	}
 
-	// same for edges
-	const edges = writable([
-		{
-			id: '1-2',
-			type: 'default',
-			source: '1',
-			target: '2',
-			label: 'Edge Text'
-		}
-	]);
-
-	const snapGrid = [25, 25];
 	const proOptions = { hideAttribution: true };
+
+	onMount(layout);
 </script>
 
-<!--
-👇 By default, the Svelte Flow container has a height of 100%.
-This means that the parent container needs a height to render the flow.
--->
-<SvelteFlow
-	class="rounded-xl"
-	{nodes}
-	{edges}
-	colorMode={$mode}
-	{snapGrid}
-	fitView
-	{proOptions}
-	attributionPosition={''}
-	on:nodeclick={(event) => console.log('on node click', event.detail.node)}
->
-	<Background variant={BackgroundVariant.Dots} />
+<SvelteFlow {nodes} {edges} colorMode={$mode} class="rounded-xl font-mono" fitView {proOptions}>
+	<Background />
 </SvelteFlow>

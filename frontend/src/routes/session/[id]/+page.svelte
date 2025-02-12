@@ -180,7 +180,7 @@
 				{#if workPane?.getSize() < hideSize}
 					{@render chevron(false)}
 				{:else}
-					<Tabs.Root value="spec" class="m-4 flex h-full flex-col">
+					<Tabs.Root value="plan" class="m-4 flex h-full flex-col">
 						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
 								<Toggle>Auto</Toggle>
@@ -225,7 +225,7 @@
 							</div>
 						</Tabs.Content>
 						<Tabs.Content value="plan" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min">
-							<Plan />
+							<Plan bind:plan={$selectedSession.plan} />
 						</Tabs.Content>
 						<Tabs.Content value="shell" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
 							><Shell />
