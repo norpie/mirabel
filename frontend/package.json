@@ -46,9 +46,11 @@
 		"vite": "^5.4.14"
 	},
 	"dependencies": {
+		"@types/showdown": "^2.0.6",
 		"@xyflow/svelte": "^0.1.29",
 		"effect": "^3.12.5",
 		"elkjs": "^0.9.3",
-		"highlight.js": "^11.11.1"
+		"highlight.js": "^11.11.1",
+		"showdown": "^2.1.0"
 	}
 }
