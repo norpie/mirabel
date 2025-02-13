@@ -32,6 +32,10 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error("A reqwest_streams error occurred: {0}")]
     StreamBody(#[from] reqwest_streams::error::StreamBodyError),
+    #[error("A surrealdb error occurred: {0}")]
+    SurrealDB(#[from] surrealdb::Error),
+    #[error("An eyre report occurred: {0}")]
+    EyreReport(#[from] eyre::Report),
 
     // `std`-error types
     #[error("An IO error occurred: {0}")]
