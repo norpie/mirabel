@@ -37,6 +37,11 @@ impl TokenFactory {
         )?;
         Ok(token.claims.sub)
     }
+
+    pub fn from_env() -> Result<Self> {
+        let secret = std::env::var("JWT_SECRET")?;
+        Ok(secret.into())
+    }
 }
 
 impl From<String> for TokenFactory {
