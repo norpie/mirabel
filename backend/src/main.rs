@@ -15,6 +15,6 @@ pub(crate) mod service;
 #[dotenvy::load]
 #[tokio::main]
 async fn main() -> Result<()> {
-    handler::run().await;
+    handler::run().await?;
     Ok(())
 }
