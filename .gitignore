@@ -1,3 +1,4 @@
 backend/target
 .direnv
 .env
+surrealdb/.surrealdb

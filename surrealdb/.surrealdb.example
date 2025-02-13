@@ -1,0 +1,10 @@
+[core]
+    path = "./tests-files"
+    schema = "less"
+
+[db]
+    address = "ws://localhost:8000"
+    username = "root"
+    password = "root"
+    ns = "test"
+    db = "test"
