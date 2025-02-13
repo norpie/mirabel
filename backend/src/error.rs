@@ -3,7 +3,7 @@ use thiserror::Error;
 
 #[derive(Debug, Error, Diagnostic)]
 pub enum Error {
-    #[error("An error occurred, which uses the generic error type {0}")]
+    #[error("Generic error, with message: {0}")]
     Generic(String),
 
     #[error("An actix error occurred: {0}")]
