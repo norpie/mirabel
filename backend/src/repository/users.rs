@@ -23,5 +23,5 @@ pub trait UserRepository: Repository {
     async fn update_user(&self, id: String, user: UpdatedUser) -> Result<User>;
 
     /// Delete a user by ID.
-    async fn delete_user(&self, id: String) -> Result<()>;
+    async fn delete_user(&self, id: String) -> Result<User>;
 }
