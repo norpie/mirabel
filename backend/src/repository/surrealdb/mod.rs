@@ -14,6 +14,8 @@ use surrealdb_migrations::MigrationRunner;
 
 use super::Repository;
 
+pub mod users;
+
 const MIGRATOR_DIR: Dir<'_> = include_dir!("../surrealdb");
 
 pub struct SurrealDB(Surreal<Client>);
