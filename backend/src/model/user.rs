@@ -6,6 +6,18 @@ pub struct NewUser {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub created_at: DateTime<Utc>,
+}
+
+impl NewUser {
+    pub fn new(username: String, email: String, password: String) -> Self {
+        NewUser {
+            username,
+            email,
+            password,
+            created_at: Utc::now(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
