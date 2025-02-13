@@ -8,6 +8,12 @@ pub struct PageResponse<T> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PageRequest {
+    page: i32,
+    size: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageInfo {
     page: i32,
     size: i32,
