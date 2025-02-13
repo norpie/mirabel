@@ -55,13 +55,19 @@ pub struct FrontendUser {
 }
 
 impl User {
-    pub fn new(id: String, username: String, email: String, password: String) -> Self {
+    pub fn new(
+        id: String,
+        username: String,
+        email: String,
+        password: String,
+        created_at: DateTime<Utc>,
+    ) -> Self {
         User {
             id,
             username,
             email,
             password,
-            created_at: Utc::now(),
+            created_at
         }
     }
 }
