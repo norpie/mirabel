@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{dto::page::PageRequest, prelude::*};
 
 use std::env;
 
@@ -17,6 +17,19 @@ use super::Repository;
 const MIGRATOR_DIR: Dir<'_> = include_dir!("../surrealdb");
 
 pub struct SurrealDB(Surreal<Client>);
+
+pub struct SurrealDbPagination {
+    limit: i32,
+    start: i32,
+}
+
+impl From<PageRequest> for SurrealDbPagination {
+    fn from(page: PageRequest) -> Self {
+        let limit = page.size();
+        let start = page.page() * page.size();
+        Self { limit, start }
+    }
+}
 
 #[async_trait]
 impl Repository for SurrealDB {
