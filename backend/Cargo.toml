@@ -13,6 +13,7 @@ dotenvy = { git = "https://github.com/allan2/dotenvy", features=['macros'] }
 eyre = "0.6.12"
 futures = "0.3.31"
 include_dir = "0.7.4"
+jsonwebtoken = "9.3.1"
 miette = { version = "7.5.0", features = ["fancy", "serde"] }
 rand = "0.9.0"
 reqwest = { version = "0.12.12", features = ["blocking", "json"] }
