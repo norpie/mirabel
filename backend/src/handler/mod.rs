@@ -5,6 +5,8 @@ use std::env;
 use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer};
 
+mod api;
+
 pub async fn run() -> Result<()> {
     let host = env::var("BACKEND_HOST")?;
     let port: u16 = env::var("BACKEND_PORT")?.parse()?;
@@ -19,6 +21,7 @@ pub async fn run() -> Result<()> {
 
         App::new()
             .wrap(cors)
+            .service(api::scope())
             .default_service(web::route().to(HttpResponse::NotFound))
     })
     .bind((host, port))?
