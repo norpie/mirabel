@@ -1,4 +1,4 @@
-use actix_web::{body::BoxBody, ResponseError};
+use actix_web::{body::BoxBody, http::StatusCode, ResponseError};
 
 use crate::Error;
 
@@ -7,8 +7,14 @@ use super::api_response::ApiResponse;
 static DEFAULT_ERROR_JSON: &str = r#"{"error": "Internal Server Error"}"#;
 
 impl ResponseError for Error {
-    fn status_code(&self) -> actix_web::http::StatusCode {
-        actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Error::BadRequest(_) => StatusCode::BAD_REQUEST,
+            Error::Unauthorized(_) => StatusCode::UNAUTHORIZED,
+            Error::Forbidden(_) => StatusCode::FORBIDDEN,
+            Error::NotFound(_) => StatusCode::NOT_FOUND,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 
     fn error_response(&self) -> actix_web::HttpResponse<actix_web::body::BoxBody> {
