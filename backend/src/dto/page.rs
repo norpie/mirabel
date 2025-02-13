@@ -13,6 +13,16 @@ pub struct PageRequest {
     size: i32,
 }
 
+impl PageRequest {
+    pub fn page(&self) -> i32 {
+        self.page
+    }
+
+    pub fn size(&self) -> i32 {
+        self.size
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageInfo {
     page: i32,
