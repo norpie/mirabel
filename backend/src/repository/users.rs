@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use super::Repository;
 
 #[async_trait]
-pub trait UserRepository: Repository {
+pub trait UserRepository {
     /// Create a new user.
     async fn create_user(&self, user: NewUser) -> Result<User>;
 
