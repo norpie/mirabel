@@ -662,6 +662,7 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "anyhow",
+ "async-trait",
  "chrono",
  "derive_more 2.0.1",
  "dotenvy",
