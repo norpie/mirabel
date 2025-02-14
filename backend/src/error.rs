@@ -24,6 +24,8 @@ pub enum Error {
     // Library error types
     #[error("An actix error occurred: {0}")]
     ActixWeb(#[from] actix_web::Error),
+    #[error("An argon2 error occurred: {0}")]
+    Argon2(#[from] argon2::password_hash::Error),
     #[error("A chrono error occurred: {0}")]
     Chrono(#[from] chrono::ParseError),
     #[error("A serde_json error occurred: {0}")]
