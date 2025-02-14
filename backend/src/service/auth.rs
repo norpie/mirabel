@@ -37,11 +37,13 @@ pub async fn login(db: Data<Box<dyn Repository>>, user: AuthUser) -> Result<Toke
     let found_user = db
         .get_user_by_email(email)
         .await?
-        .ok_or(Error::BadRequest("Missing email".into()))?;
+        .ok_or(Error::BadRequest("Wrong email or password".into()))?;
 
     let argon2 = Argon2::default();
     let password_hash = PasswordHash::new(found_user.password())?;
-    Argon2::default().verify_password(password.as_bytes(), &password_hash)?;
+    Argon2::default()
+        .verify_password(password.as_bytes(), &password_hash)
+        .map_err(|_| Error::BadRequest("Wrong email or password".into()))?;
 
     TokenFactory::from_env()?.generate_token(found_user.id().to_string())
 }
