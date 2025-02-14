@@ -1,7 +1,7 @@
 use crate::{model::user::UpdatedUser, prelude::*, repository::Repository, service::users};
 
 use actix_web::{
-    get, patch,
+    delete, get, patch,
     web::{self, Data, Json},
     Responder, Scope,
 };
@@ -17,7 +17,8 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
         Scope::new("/me")
             .wrap(Auth)
             .service(get_me)
-            .service(update_me),
+            .service(update_me)
+            .service(delete_me),
     );
 }
 
@@ -34,4 +35,10 @@ pub async fn update_me(
 ) -> Result<impl Responder> {
     let user = users::update(db, user, updated_user.0).await?;
     Ok(ApiResponse::ok(FrontendUser::from(user)))
+}
+
+#[delete("")]
+pub async fn delete_me(db: Data<Box<dyn Repository>>, user: User) -> Result<impl Responder> {
+    users::delete(db, user).await?;
+    Ok(ApiResponse::ok(()))
 }

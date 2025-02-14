@@ -26,3 +26,7 @@ pub async fn update(
     };
     db.update_user(user.id().to_string(), updated_user).await
 }
+
+pub async fn delete(db: Data<Box<dyn Repository>>, user: User) -> Result<User> {
+    db.delete_user(user.id().to_string()).await
+}
