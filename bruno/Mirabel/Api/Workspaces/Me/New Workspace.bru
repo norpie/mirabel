@@ -1,0 +1,21 @@
+meta {
+  name: New Workspace
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/v1/me/workspaces
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0dCI6IkFjY2VzcyIsImV4cCI6MTczOTYzODI4OCwiaWF0IjoxNzM5NTUxODg4LCJpc3MiOiJNaXJhYmVsIEJhY2tlbmQiLCJzdWIiOiJ4bTQ5Zm13OGgwbXhibmlpZms2MiJ9.n3dP4011VqKl9-2Ah9eRHorgWJZi8Rl00bKCmnhUyjc
+}
+
+body:json {
+  {
+    "name": "Test"
+  }
+}
