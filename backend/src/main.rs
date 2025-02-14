@@ -18,6 +18,8 @@ pub(crate) mod service;
 #[dotenvy::load]
 #[tokio::main]
 async fn main() -> Result<()> {
+    std::env::set_var("RUST_LOG", "debug");
+    env_logger::init();
     let db = SurrealDB::setup().await?;
     handler::run().await?;
     Ok(())
