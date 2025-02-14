@@ -16,6 +16,9 @@ pub trait UserRepository {
     /// Retrieve a user by ID.
     async fn get_user_by_id(&self, id: String) -> Result<Option<User>>;
 
+    /// Retrieve a user by email.
+    async fn get_user_by_email(&self, email: String) -> Result<Option<User>>;
+
     /// Retrieve all users.
     async fn get_all_users(&self, page: PageRequest) -> Result<Vec<User>>;
 

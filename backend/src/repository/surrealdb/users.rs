@@ -51,6 +51,17 @@ impl UserRepository for SurrealDB {
             .map(|su| su.into()))
     }
 
+    /// Retrieve a user by email.
+    async fn get_user_by_email(&self, email: String) -> Result<Option<User>> {
+        Ok(self
+            .0
+            .query("SELECT * FROM user WHERE email = $email")
+            .bind(("email", email))
+            .await?
+            .take::<Option<SurrealDBUser>>(0)?
+            .map(|su| su.into()))
+    }
+
     /// Retrieve all users.
     async fn get_all_users(&self, page: PageRequest) -> Result<Vec<User>> {
         let pagination: SurrealDbPagination = page.into();
