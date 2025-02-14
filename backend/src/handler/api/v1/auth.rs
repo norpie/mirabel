@@ -2,19 +2,21 @@ use std::sync::Arc;
 
 use crate::{
     dto::{api_response::ApiResponse, token::AccessToken},
-    model::user::AuthUser,
+    handler::middleware::auth_middleware::Auth,
+    model::user::{AuthUser, User},
     prelude::*,
     repository::{surrealdb::SurrealDB, Repository},
-    service::auth,
+    security::jwt_util::TokenFactory,
+    service::{auth, security},
 };
 
 use actix_web::{
+    delete,
     http::header,
     post,
     web::{self, Data, Json},
-    HttpRequest, Responder, Scope,
+    HttpMessage, HttpRequest, Responder, Scope,
 };
-use surrealdb::iam::Auth;
 
 use crate::model::user::NewUser;
 
@@ -30,7 +32,10 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
 }
 
 #[post("/register")]
-pub async fn register(db: Data<Box<dyn Repository>>, user: Json<AuthUser>) -> Result<impl Responder> {
+pub async fn register(
+    db: Data<Box<dyn Repository>>,
+    user: Json<AuthUser>,
+) -> Result<impl Responder> {
     let token_pair = auth::register(db, user.0).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
@@ -53,7 +58,7 @@ pub async fn login(db: Data<Box<dyn Repository>>, user: Json<AuthUser>) -> Resul
         )))
 }
 
-#[post("/logout")]
+#[delete("/logout")]
 pub async fn logout(req: HttpRequest) -> Result<impl Responder> {
     Ok(ApiResponse::ok("Logged out successfully")
         .as_response()?
@@ -61,7 +66,17 @@ pub async fn logout(req: HttpRequest) -> Result<impl Responder> {
         .insert_header((header::SET_COOKIE, "session=; Max-Age=0; Path=/")))
 }
 
-#[post("/refresh")]
-pub async fn refresh() -> Result<impl Responder> {
-    Ok(ApiResponse::ok("Hello, World!"))
+pub async fn refresh(req: HttpRequest) -> Result<impl Responder> {
+    let extensions = req.extensions();
+    let id = extensions
+        .get::<String>()
+        .ok_or(Error::Unauthorized("No id in request".into()))?;
+    let token_pair = security::refresh(id.to_string())?;
+    Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
+        .as_response()?
+        .customize()
+        .insert_header((
+            header::SET_COOKIE,
+            format!("session={}; Path=/", token_pair.refresh()),
+        )))
 }
