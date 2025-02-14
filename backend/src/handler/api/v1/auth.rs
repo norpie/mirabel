@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use crate::{
     dto::{api_response::ApiResponse, token::AccessToken},
-    handler::middleware::auth_middleware::Auth,
     model::user::{AuthUser, User},
     prelude::*,
     repository::{surrealdb::SurrealDB, Repository},
@@ -25,7 +24,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 }
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
-    cfg.route("/refresh", web::post().to(refresh).wrap(Auth));
+    cfg.service(refresh);
     cfg.service(register);
     cfg.service(login);
     cfg.service(logout);
@@ -42,7 +41,7 @@ pub async fn register(
         .customize()
         .insert_header((
             header::SET_COOKIE,
-            format!("session={}; Path=/", token_pair.refresh()),
+            format!("refresh={}; Path=/", token_pair.refresh()),
         )))
 }
 
@@ -54,7 +53,7 @@ pub async fn login(db: Data<Box<dyn Repository>>, user: Json<AuthUser>) -> Resul
         .customize()
         .insert_header((
             header::SET_COOKIE,
-            format!("session={}; Path=/", token_pair.refresh()),
+            format!("refresh={}; Path=/", token_pair.refresh()),
         )))
 }
 
@@ -63,20 +62,20 @@ pub async fn logout(req: HttpRequest) -> Result<impl Responder> {
     Ok(ApiResponse::ok("Logged out successfully")
         .as_response()?
         .customize()
-        .insert_header((header::SET_COOKIE, "session=; Max-Age=0; Path=/")))
+        .insert_header((header::SET_COOKIE, "refresh=; Max-Age=0; Path=/")))
 }
 
+#[post("/refresh")]
 pub async fn refresh(req: HttpRequest) -> Result<impl Responder> {
-    let extensions = req.extensions();
-    let id = extensions
-        .get::<String>()
-        .ok_or(Error::Unauthorized("No id in request".into()))?;
-    let token_pair = security::refresh(id.to_string())?;
+    let cookie = req
+        .cookie("refresh")
+        .ok_or(Error::Unauthorized("No refresh cookie".into()))?;
+    let token_pair = security::refresh(cookie.value().to_string())?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()?
         .customize()
         .insert_header((
             header::SET_COOKIE,
-            format!("session={}; Path=/", token_pair.refresh()),
+            format!("refresh={}; Path=/", token_pair.refresh()),
         )))
 }
