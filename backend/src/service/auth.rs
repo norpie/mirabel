@@ -19,7 +19,7 @@ pub async fn register(db: Data<Box<dyn Repository>>, user: AuthUser) -> Result<T
 
     let found = db.get_user_by_email(email.clone()).await?;
     if found.is_some() {
-        return Err(Error::Unauthorized("Email already exists".into()));
+        return Err(Error::BadRequest("Email already exists".into()));
     }
 
     let argon2 = Argon2::default();
@@ -37,7 +37,7 @@ pub async fn login(db: Data<Box<dyn Repository>>, user: AuthUser) -> Result<Toke
     let found_user = db
         .get_user_by_email(email)
         .await?
-        .ok_or(Error::Unauthorized("Missing email".into()))?;
+        .ok_or(Error::BadRequest("Missing email".into()))?;
 
     let argon2 = Argon2::default();
     let password_hash = PasswordHash::new(found_user.password())?;
