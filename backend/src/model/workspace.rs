@@ -15,3 +15,8 @@ pub struct Workspace {
     id: String,
     name: String,
 }
+impl Workspace {
+    pub(crate) fn new(id: String, name: String) -> Self {
+        Self { id, name }
+    }
+}
