@@ -20,14 +20,13 @@ use actix_web::{
 use crate::model::user::NewUser;
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
-    cfg.service(Scope::new("/auth").configure(routes));
-}
-
-pub fn routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(refresh);
-    cfg.service(register);
-    cfg.service(login);
-    cfg.service(logout);
+    cfg.service(
+        Scope::new("/auth")
+            .service(refresh)
+            .service(register)
+            .service(login)
+            .service(logout),
+    );
 }
 
 #[post("/register")]
