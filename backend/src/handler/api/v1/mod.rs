@@ -7,7 +7,10 @@ pub mod me;
 pub mod users;
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
-    cfg.service(Scope::new("/v1").configure(auth::scope));
-    cfg.service(Scope::new("/v1").configure(me::scope));
-    cfg.service(Scope::new("/v1").configure(users::scope));
+    cfg.service(
+        Scope::new("/v1")
+            .configure(auth::scope)
+            .configure(me::scope)
+            .configure(users::scope),
+    );
 }
