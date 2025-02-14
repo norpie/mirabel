@@ -11,6 +11,7 @@ async-trait = "0.1.86"
 chrono = { version = "0.4.39", features = ["serde"] }
 derive_more = { version = "2.0.1", features = ["full"] }
 dotenvy = { git = "https://github.com/allan2/dotenvy", features=['macros'] }
+env_logger = "0.11.6"
 eyre = "0.6.12"
 futures = "0.3.31"
 include_dir = "0.7.4"
