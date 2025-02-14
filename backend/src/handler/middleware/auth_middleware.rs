@@ -6,6 +6,7 @@ use actix_web::{
     Error, HttpMessage, HttpResponse,
 };
 use futures_util::future::LocalBoxFuture;
+use log::{error, info};
 
 use crate::security::jwt_util::TokenFactory;
 
@@ -55,12 +56,14 @@ where
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let Some(token) = get_token(&req) else {
+            info!("No token found in request");
             return Box::pin(async {
                 Ok(req.into_response(HttpResponse::Unauthorized().finish().map_into_right_body()))
             });
         };
 
         let Ok(token_factory) = TokenFactory::from_env() else {
+            error!("No token factory found in environment");
             return Box::pin(async {
                 Ok(req.into_response(
                     HttpResponse::InternalServerError()
@@ -71,6 +74,7 @@ where
         };
 
         let Ok(sub) = token_factory.subject(token) else {
+            info!("Invalid token");
             return Box::pin(async {
                 Ok(req.into_response(HttpResponse::Unauthorized().finish().map_into_right_body()))
             });
