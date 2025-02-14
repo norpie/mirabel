@@ -55,7 +55,7 @@ impl UserRepository for SurrealDB {
     async fn get_user_by_email(&self, email: String) -> Result<Option<User>> {
         Ok(self
             .0
-            .query("SELECT * FROM user WHERE email = $email")
+            .query("SELECT * FROM ONLY user WHERE email = $email LIMIT 1")
             .bind(("email", email))
             .await?
             .take::<Option<SurrealDBUser>>(0)?
