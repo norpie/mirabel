@@ -17,6 +17,11 @@ use crate::{
 pub async fn register(db: Data<Box<dyn Repository>>, user: AuthUser) -> Result<TokenPair> {
     let AuthUser { email, password } = user;
 
+    let found = db.get_user_by_email(email.clone()).await?;
+    if found.is_some() {
+        return Err(Error::Unauthorized("Email already exists".into()));
+    }
+
     let argon2 = Argon2::default();
     let salt = SaltString::generate(&mut OsRng);
     let password_hash = argon2
