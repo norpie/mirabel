@@ -7,7 +7,9 @@ use std::{env, sync::Arc};
 
 use actix_cors::Cors;
 use actix_web::{
-    middleware::Logger, web::{self, Data}, App, HttpResponse, HttpServer, Scope
+    middleware::Logger,
+    web::{self, Data},
+    App, HttpResponse, HttpServer, Scope,
 };
 
 mod api;
