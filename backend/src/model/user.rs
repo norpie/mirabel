@@ -63,4 +63,20 @@ impl User {
             created_at,
         }
     }
+
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn email(&self) -> &str {
+        &self.email
+    }
+
+    pub fn password(&self) -> &str {
+        &self.password
+    }
+
+    pub fn created_at(&self) -> &DateTime<Utc> {
+        &self.created_at
+    }
 }
