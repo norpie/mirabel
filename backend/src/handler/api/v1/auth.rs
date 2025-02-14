@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
 use crate::{
     dto::{api_response::ApiResponse, token::AccessToken},
     model::user::AuthUser,
     prelude::*,
-    repository::surrealdb::SurrealDB,
+    repository::{surrealdb::SurrealDB, Repository},
     service::auth,
 };
 
@@ -25,8 +27,8 @@ pub fn scope() -> Scope {
 }
 
 #[post("/register")]
-pub async fn register(db: Data<SurrealDB>, user: Json<AuthUser>) -> Result<impl Responder> {
-    let token_pair = auth::register(db.into_inner(), user.0).await?;
+pub async fn register(db: Data<Box<dyn Repository>>, user: Json<AuthUser>) -> Result<impl Responder> {
+    let token_pair = auth::register(db, user.0).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
         .customize()
@@ -37,8 +39,8 @@ pub async fn register(db: Data<SurrealDB>, user: Json<AuthUser>) -> Result<impl 
 }
 
 #[post("/login")]
-pub async fn login(db: Data<SurrealDB>, user: Json<AuthUser>) -> Result<impl Responder> {
-    let token_pair = auth::login(db.into_inner(), user.0).await?;
+pub async fn login(db: Data<Box<dyn Repository>>, user: Json<AuthUser>) -> Result<impl Responder> {
+    let token_pair = auth::login(db, user.0).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
         .customize()

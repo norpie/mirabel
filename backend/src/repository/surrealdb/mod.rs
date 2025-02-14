@@ -1,7 +1,8 @@
 use crate::{dto::page::PageRequest, prelude::*};
 
-use std::env;
+use std::{env, sync::Arc};
 
+use actix_web::web::Data;
 use async_trait::async_trait;
 use futures::TryFutureExt;
 use include_dir::{include_dir, Dir};
@@ -18,7 +19,10 @@ pub mod users;
 
 const MIGRATOR_DIR: Dir<'_> = include_dir!("../surrealdb");
 
+#[derive(Clone)]
 pub struct SurrealDB(Surreal<Client>);
+
+impl Repository for SurrealDB {}
 
 pub struct SurrealDbPagination {
     limit: i32,
@@ -33,9 +37,8 @@ impl From<PageRequest> for SurrealDbPagination {
     }
 }
 
-#[async_trait]
-impl Repository for SurrealDB {
-    async fn setup() -> Result<Box<dyn Repository>> {
+impl SurrealDB {
+    pub async fn setup() -> Result<Data<Box<dyn Repository>>> {
         let host = env::var("DATABASE_HOST")?;
         let port = env::var("DATABASE_PORT")?;
         let ns = env::var("DATABASE_NS")?;
@@ -63,6 +66,6 @@ impl Repository for SurrealDB {
         runner.validate_version_order().await?;
         runner.up().await?;
 
-        Ok(Box::new(Self(conn)))
+        Ok(Data::new(Box::new(Self(conn))))
     }
 }
