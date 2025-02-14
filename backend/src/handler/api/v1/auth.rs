@@ -18,12 +18,15 @@ use surrealdb::iam::Auth;
 
 use crate::model::user::NewUser;
 
-pub fn scope() -> Scope {
-    web::scope("/auth")
-        .service(register)
-        .service(login)
-        .service(logout)
-        .service(refresh)
+pub fn scope(cfg: &mut web::ServiceConfig) {
+    cfg.service(Scope::new("/auth").configure(routes));
+}
+
+pub fn routes(cfg: &mut web::ServiceConfig) {
+    cfg.route("/refresh", web::post().to(refresh).wrap(Auth));
+    cfg.service(register);
+    cfg.service(login);
+    cfg.service(logout);
 }
 
 #[post("/register")]

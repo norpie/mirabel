@@ -6,12 +6,11 @@ pub mod auth;
 pub mod me;
 pub mod users;
 
-pub fn scope() -> Scope {
-    web::scope("/v1")
-        .service(hello)
-        .service(auth::scope())
-        .service(me::scope())
-        .service(users::scope())
+pub fn scope(cfg: &mut web::ServiceConfig) {
+    cfg.service(hello);
+    cfg.service(Scope::new("/v1").configure(auth::scope));
+    cfg.service(Scope::new("/v1").configure(me::scope));
+    cfg.service(Scope::new("/v1").configure(users::scope));
 }
 
 #[get("/hello")]

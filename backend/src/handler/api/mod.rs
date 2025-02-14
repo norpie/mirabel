@@ -2,6 +2,6 @@ use actix_web::{web, Scope};
 
 mod v1;
 
-pub fn scope() -> Scope {
-    web::scope("/api").service(v1::scope())
+pub fn scope(cfg: &mut web::ServiceConfig) {
+    cfg.service(Scope::new("/api").configure(v1::scope));
 }

@@ -28,7 +28,7 @@ pub async fn run(db: Data<Box<dyn Repository>>) -> Result<()> {
         App::new()
             .app_data(db.clone())
             .wrap(cors)
-            .service(api::scope())
+            .configure(api::scope)
             .default_service(web::route().to(HttpResponse::NotFound))
     })
     .bind((host, port))?
