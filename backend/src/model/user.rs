@@ -30,7 +30,7 @@ pub struct UpdatedUser {
     pub password: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
 pub struct User {
     id: String,
     email: String,
