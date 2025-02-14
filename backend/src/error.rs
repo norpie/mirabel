@@ -8,11 +8,11 @@ pub enum Error {
     Generic(String),
 
     // 400.. HTTP error types
-    #[error("Bad request: {0}")]
+    #[error("{0}")]
     BadRequest(String),
-    #[error("Unauthorized: {0}")]
+    #[error("{0}")]
     Unauthorized(String),
-    #[error("Forbidden: {0}")]
+    #[error("{0}")]
     Forbidden(String),
     #[error("Resource not found: {0}")]
     NotFound(String),
