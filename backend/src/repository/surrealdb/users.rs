@@ -22,7 +22,7 @@ pub struct SurrealDBUser {
 impl From<SurrealDBUser> for User {
     fn from(user: SurrealDBUser) -> Self {
         User::new(
-            user.id.to_string(),
+            user.id.id.to_string(),
             user.email,
             user.password,
             user.created_at,
