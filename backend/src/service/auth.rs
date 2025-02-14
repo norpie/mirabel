@@ -35,7 +35,7 @@ pub async fn login(db: Data<Box<dyn Repository>>, user: AuthUser) -> Result<Toke
         .ok_or(Error::Unauthorized("Missing email".into()))?;
 
     let argon2 = Argon2::default();
-    let password_hash = PasswordHash::new(&password)?;
+    let password_hash = PasswordHash::new(found_user.password())?;
     Argon2::default().verify_password(password.as_bytes(), &password_hash)?;
 
     TokenFactory::from_env()?.generate_token(found_user.id().to_string())
