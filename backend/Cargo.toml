@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.7.0"
 actix-web = { version = "4.9.0", features = ["openssl", "secure-cookies"] }
+argon2 = "0.5.3"
 async-trait = "0.1.86"
 chrono = { version = "0.4.39", features = ["serde"] }
 derive_more = { version = "2.0.1", features = ["full"] }
