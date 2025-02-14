@@ -1,3 +1,4 @@
+pub(crate) mod avatar;
 pub(crate) mod chat;
 pub(crate) mod plan;
 pub(crate) mod session;
