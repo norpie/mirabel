@@ -673,6 +673,7 @@ dependencies = [
  "futures-util",
  "include_dir",
  "jsonwebtoken",
+ "log",
  "miette 7.5.0",
  "rand 0.9.0",
  "reqwest",
