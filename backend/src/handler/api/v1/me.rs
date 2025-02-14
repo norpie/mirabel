@@ -12,13 +12,16 @@ use crate::{
     model::user::{FrontendUser, User},
 };
 
+pub mod user_workspaces;
+
 pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(
         Scope::new("/me")
             .wrap(Auth)
             .service(get_me)
             .service(update_me)
-            .service(delete_me),
+            .service(delete_me)
+            .configure(user_workspaces::scope),
     );
 }
 
