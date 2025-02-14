@@ -670,6 +670,7 @@ dependencies = [
  "env_logger",
  "eyre",
  "futures",
+ "futures-util",
  "include_dir",
  "jsonwebtoken",
  "miette 7.5.0",
