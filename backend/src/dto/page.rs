@@ -13,6 +13,12 @@ pub struct PageRequest {
     size: i32,
 }
 
+impl Default for PageRequest {
+    fn default() -> Self {
+        Self { page: 0, size: 20 }
+    }
+}
+
 impl PageRequest {
     pub fn page(&self) -> i32 {
         self.page
