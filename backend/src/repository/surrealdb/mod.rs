@@ -15,6 +15,7 @@ use surrealdb_migrations::MigrationRunner;
 
 use super::Repository;
 
+pub mod avatars;
 pub mod users;
 pub mod workspaces;
 

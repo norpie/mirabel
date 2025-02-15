@@ -8,6 +8,7 @@ use workspaces::WorkspaceRepository;
 
 pub(crate) mod surrealdb;
 
+pub(crate) mod avatars;
 pub(crate) mod users;
 pub(crate) mod workspaces;
 
