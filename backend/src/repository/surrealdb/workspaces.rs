@@ -56,21 +56,6 @@ impl WorkspaceRepository for SurrealDB {
             .map(|su| su.into()))
     }
 
-    /// Retrieve user's workspaces.
-    async fn get_users_workspaces(
-        &self,
-        user_id: String,
-        page: PageRequest,
-    ) -> Result<Vec<Workspace>> {
-        Ok(self.0.query("SELECT * FROM (SELECT ->owns->workspace as workspaces FROM $user FETCH workspaces)[0].workspaces")
-            .bind(("user", Thing::from(("user", user_id.as_str()))))
-            .await?
-            .take::<Vec<SurrealDBWorkspace>>(0)?
-            .into_iter()
-            .map(|su| su.into())
-            .collect())
-    }
-
     /// Update an existing workspace.
     async fn update_workspace(&self, id: String, workspace: UpdatedWorkspace) -> Result<Workspace> {
         self.0
@@ -88,5 +73,20 @@ impl WorkspaceRepository for SurrealDB {
             .await?
             .ok_or(Error::NotFound(format!("Deleted workspace: {}", &id)))
             .map(|su: SurrealDBWorkspace| su.into())
+    }
+
+    /// Retrieve user's workspaces.
+    async fn get_users_workspaces(
+        &self,
+        user_id: String,
+        page: PageRequest,
+    ) -> Result<Vec<Workspace>> {
+        Ok(self.0.query("SELECT * FROM (SELECT ->owns->workspace as workspaces FROM $user FETCH workspaces)[0].workspaces")
+            .bind(("user", Thing::from(("user", user_id.as_str()))))
+            .await?
+            .take::<Vec<SurrealDBWorkspace>>(0)?
+            .into_iter()
+            .map(|su| su.into())
+            .collect())
     }
 }
