@@ -1,0 +1,28 @@
+# Sentiment Analysis
+
+This tool extracts the sentiment of a given text. The sentiment is either a negative, neutral, or positive sentiment.
+
+## Expected Output Schema
+```json
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "sentiment": {
+            "type": "string",
+            "enum": ["negative", "neutral", "positive"]
+        }
+    },
+    "required": [
+        "sentiment"
+    ]
+}
+```
+
+## Input
+```
+{{ input }}
+```
+
+## Output
+```json
