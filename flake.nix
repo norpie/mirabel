@@ -17,9 +17,15 @@
     flake-utils.lib.eachDefaultSystem (
       system: let
         overlays = [(import rust-overlay)];
+
         pkgs = import nixpkgs {
           inherit system overlays;
         };
+
+        libs = with pkgs;
+          lib.makeLibraryPath [
+            stdenv.cc.cc.lib
+          ];
       in {
         devShells.default = with pkgs;
           mkShell {
@@ -29,9 +35,17 @@
               })
               openssl
               pkg-config
+
+              (pkgs.python312.withPackages (python-pkgs:
+                with python-pkgs; [
+                  pip
+                  ollama
+                  jinja2
+                ]))
             ];
 
             shellHook = ''
+              export LD_LIBRARY_PATH=${libs}
             '';
           };
       }
