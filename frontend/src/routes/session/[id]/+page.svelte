@@ -31,14 +31,15 @@
 	import SquareTerminal from 'lucide-svelte/icons/square-terminal';
 	import FileStack from 'lucide-svelte/icons/file-stack';
 	import Globe from 'lucide-svelte/icons/globe';
+	import History from 'lucide-svelte/icons/history';
 
 	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
 
 	const minSize = 5;
 	const hideSize = 10;
-	const sessionSize = 55;
-	const workSize = 100 - sessionSize;
+	const chatSize = 40;
+	const workSize = 100 - chatSize;
 
 	function formatTime(iso8601: string): string {
 		const date = new Date(iso8601);
@@ -64,7 +65,7 @@
 	}
 
 	function reset() {
-		sessionPane?.resize(sessionSize);
+		sessionPane?.resize(chatSize);
 		workPane?.resize(workSize);
 	}
 
@@ -138,7 +139,7 @@
 				id="chat"
 				class="flex h-full flex-col"
 				bind:this={sessionPane}
-				defaultSize={sessionSize}
+				defaultSize={chatSize}
 				{minSize}
 			>
 				{#if sessionPane?.getSize() < hideSize}
@@ -205,6 +206,10 @@
 										<Globe class="h-4 w-4" />
 										<p>Browser</p>
 									</Tabs.Trigger>
+									<Tabs.Trigger value="actions" class="gap-2">
+										<History class="h-4 w-4" />
+										<p>Actions</p>
+									</Tabs.Trigger>
 								</Tabs.List>
 							</div>
 						</div>
@@ -214,7 +219,7 @@
 						>
 							<div class="flex h-full flex-col">
 								<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
-										<Markdown bind:markdown={$selectedSession.plan.spec} />
+									<Markdown bind:markdown={$selectedSession.plan.spec} />
 								</ScrollArea>
 							</div>
 						</Tabs.Content>
@@ -230,6 +235,10 @@
 						<Tabs.Content value="browser" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
 							><Browser /></Tabs.Content
 						>
+						<Tabs.Content
+							value="actions"
+							class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
+						></Tabs.Content>
 					</Tabs.Root>
 				{/if}
 			</Resizable.Pane>
