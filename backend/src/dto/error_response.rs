@@ -1,4 +1,5 @@
 use actix_web::{body::BoxBody, http::StatusCode, ResponseError};
+use log::error;
 
 use crate::Error;
 
@@ -22,10 +23,11 @@ impl ResponseError for Error {
         let serde_res = serde_json::to_string(&api_response);
         match serde_res {
             Ok(json) => {
+                error!("Error response: {}", json);
                 actix_web::HttpResponse::new(self.status_code()).set_body(BoxBody::new(json))
             }
             Err(e) => {
-                dbg!(e);
+                error!("Failed to serialize error response: {}", e);
                 actix_web::HttpResponse::new(self.status_code())
                     .set_body(BoxBody::new(DEFAULT_ERROR_JSON))
             }
