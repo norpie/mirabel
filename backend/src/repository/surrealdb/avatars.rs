@@ -11,7 +11,7 @@ use super::SurrealDB;
 #[derive(Debug, Deserialize)]
 pub struct SurrealDBAvatar {
     pub id: Thing,
-    pub avatar: String,
+    pub path: String,
 }
 
 #[async_trait]
@@ -24,7 +24,7 @@ impl AvatarRepository for SurrealDB {
             .bind(("item", Thing::from((table.as_str(), id.as_str()))))
             .await?
             .take::<Option<SurrealDBAvatar>>(0)?
-            .ok_or(Error::NotFound(format!("Avatar on {table}:{id}")))?.avatar)
+            .ok_or(Error::NotFound(format!("Avatar on {table}:{id}")))?.path)
     }
 
     /// Set workspace avatar url.
@@ -41,7 +41,7 @@ impl AvatarRepository for SurrealDB {
             .bind(("item", Thing::from((table, id))))
             .bind(("avatar", avatar.id))
             .await?;
-        Ok(avatar.avatar)
+        Ok(avatar.path)
     }
 
     /// Get workspace avatar url.
@@ -50,6 +50,6 @@ impl AvatarRepository for SurrealDB {
             .bind(("item", Thing::from((table, id))))
             .await?
             .take::<Option<SurrealDBAvatar>>(0)?
-            .map(|su| su.avatar))
+            .map(|su| su.path))
     }
 }
