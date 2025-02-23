@@ -1,4 +1,4 @@
-use crate::{model::avatar::Avatar, prelude::*};
+use crate::{dto::avatar::Avatar, prelude::*};
 
 use async_trait::async_trait;
 use serde::Deserialize;
@@ -32,7 +32,7 @@ impl AvatarRepository for SurrealDB {
         let avatar: SurrealDBAvatar = self
             .0
             .create("avatar")
-            .content(Avatar { avatar: avatar_url })
+            .content(Avatar { path: avatar_url })
             .await?
             .ok_or(Error::NotFound("new avatar".into()))?;
 
