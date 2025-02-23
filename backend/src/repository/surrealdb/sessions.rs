@@ -35,12 +35,7 @@ impl From<SurrealDBSession> for Session {
 #[async_trait]
 impl SessionRepository for SurrealDB {
     /// Create a new session.
-    async fn create_session(
-        &self,
-        workspace_id: String,
-        user_id: String,
-        session: NewSession,
-    ) -> Result<Option<Session>> {
+    async fn create_session(&self, session: NewSession) -> Result<Option<Session>> {
         Ok(self
             .0
             .create("session")

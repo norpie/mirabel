@@ -14,12 +14,7 @@ use super::Repository;
 #[async_trait]
 pub trait SessionRepository {
     /// Create a new session.
-    async fn create_session(
-        &self,
-        workspace_id: String,
-        user_id: String,
-        new: NewSession,
-    ) -> Result<Option<Session>>;
+    async fn create_session(&self, new: NewSession) -> Result<Option<Session>>;
 
     /// Retrieve a session by ID.
     async fn get_session_by_id(&self, id: String) -> Result<Option<Session>>;
