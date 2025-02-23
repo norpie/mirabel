@@ -65,8 +65,6 @@ Is used by the orchestrator to generate a plan for the task that needs to be don
 - `Tracker`: Keeps track of the progress of the plan, how long each step took, etc. From this information we also extrapolate an estimate to how long the entire plan will take.
 - `Plan Generator`: Generates the top level goals for the plan.
 
-This is an example conversation and spec for the initial user goal "We should have a history page with previous actions". Which has then been refined into a Spec:
-
 #### **Graph of Spec creation**
 
 ```mermaid
@@ -88,6 +86,7 @@ stateDiagram-v2
 ```
 
 #### **Example Conversation with Evolving Spec Updates**
+> This is an example conversation and spec for the initial user goal "We should have a history page with previous actions". Which has then been refined into a Spec:
 
 ---
 
