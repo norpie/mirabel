@@ -578,7 +578,7 @@ Inside the machine Mirabel has a chromium browser that she uses to access the we
 
 > This state describes the current state of the application.
 
-- `requirements
+- `requirements`
 - `goal`
 - `plan`
 
