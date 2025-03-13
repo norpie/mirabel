@@ -24,7 +24,7 @@ Mirabel works in parallel with you, the developer, to help you write code, fix b
     - `StructuredTask` - A task which's output can be mapped to a struct, usually involves generating json.
     - `UnstructuedTask` - A task which's output cannot be mapped to a struct, usually involves generating human language, code, etc.
 - `Interrupt` -
-    - `UserInterruprt` - An interrupt caused by the user, e.g. asking for a change in the plan while it is being executed.
+    - `UserInterrupt` - An interrupt caused by the user, e.g. asking for a change in the plan while it is being executed.
     - `AgentInterrupt` - An interrupt caused by one of the agents, e.g. the planned implementation is not possible, usually followed by a detour.
 - `Detour` - A task inserted into the plan to handle an interrupt.
 - `Plan` - A series of workflows that need to be done to achieve a goal. A workflow can have a workflow as a child. It is a hierarchical task list.
