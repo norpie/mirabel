@@ -35,6 +35,7 @@
               })
               openssl
               pkg-config
+              ra-multiplex
 
               (pkgs.python312.withPackages (python-pkgs:
                 with python-pkgs; [
@@ -45,6 +46,8 @@
             ];
 
             shellHook = ''
+              # Start `ra-multiplex server` as a background process which dies when the shell exits
+              systemd-run --user --same-dir --service-type=exec --setenv=PATH --setenv=CARGO_HOME=/home/norpie/.local/share/cargo "$SHELL" ra-multiplex server
               export LD_LIBRARY_PATH=${libs}
             '';
           };
