@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{dto::avatar::Avatar, prelude::*};
 
 use actix_web::web::Data;
 use argon2::{
@@ -29,4 +29,8 @@ pub async fn update(
 
 pub async fn delete(db: Data<Box<dyn Repository>>, user: User) -> Result<User> {
     db.delete_user(user.id().to_string()).await
+}
+
+pub async fn avatar(db: Data<Box<dyn Repository>>, user: User) -> Result<Option<String>> {
+    db.get_avatar("user".into(), user.id().into()).await
 }

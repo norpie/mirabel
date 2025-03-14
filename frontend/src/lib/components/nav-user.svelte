@@ -13,7 +13,7 @@
 	import Sun from 'lucide-svelte/icons/sun';
 	import Moon from 'lucide-svelte/icons/moon';
 
-	import { user } from '$lib/store';
+	import { avatar, user } from '$lib/store';
 	import { del } from '$lib/request';
 	import { goto } from '$app/navigation';
 
@@ -38,8 +38,8 @@
 							{...props}
 						>
 							<Avatar.Root class="h-8 w-8 rounded-lg">
-								<Avatar.Image src={$user.avatar} alt={$user.username} />
-								<Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
+								<Avatar.Image src={$avatar} alt={$user.username} />
+								<Avatar.Fallback class="rounded-lg">{$user.username[0]}</Avatar.Fallback>
 							</Avatar.Root>
 							<div class="grid flex-1 text-left text-sm leading-tight">
 								<span class="truncate font-semibold">{$user.username}</span>

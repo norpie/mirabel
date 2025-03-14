@@ -5,6 +5,7 @@ import type { Session, ShallowSession } from './models/session';
 import type { Workspace } from './models/workspace';
 
 export const user: Writable<User | null | undefined> = writable(undefined);
+export const avatar: Writable<string | null | undefined> = writable(null);
 export const workspaces: Writable<Workspace[] | null> = writable(null);
 export const selectedWorkspace: Writable<Workspace | null> = writable(null);
 export const sessions: Writable<ShallowSession[] | null> = writable(null);

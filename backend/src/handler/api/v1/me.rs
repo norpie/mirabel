@@ -19,6 +19,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
         Scope::new("/me")
             .wrap(Auth)
             .service(get_me)
+            .service(get_me_avatar)
             .service(update_me)
             .service(delete_me)
             .configure(user_workspaces::scope),
@@ -28,6 +29,11 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 #[get("")]
 pub async fn get_me(user: User) -> Result<impl Responder> {
     Ok(ApiResponse::ok(FrontendUser::from(user)))
+}
+
+#[get("/avatar")]
+pub async fn get_me_avatar(db: Data<Box<dyn Repository>>, user: User) -> Result<impl Responder> {
+    Ok(ApiResponse::ok(users::avatar(db, user).await?))
 }
 
 #[patch("")]

@@ -29,6 +29,7 @@
 	});
 
 	import {
+        avatar,
 		user,
 		workspaces,
 		selectedWorkspace,
@@ -38,6 +39,8 @@
 	} from '$lib/store';
 	import { toast } from 'svelte-sonner';
 	import type { Page } from '$lib/models/page';
+	import { get } from '$lib/request';
+	import type Result from '$lib/models/result';
 
 	onMount(async () => {
 		if (!$user) {
@@ -48,6 +51,14 @@
 			}
 			user.set(result.data);
 		}
+        if (!$avatar) {
+            let result = await get<Result<string | null>>("v1/me/avatar");
+            if (result.error) {
+                toast.error(result.error);
+                return;
+            }
+            avatar.set(result.data);
+        }
 		workspaces.set((await fetchAllWorkspaces({ page: 1, pageSize: 10 })).data);
 		if (!$workspaces) {
 			toast.error('Failed to fetch workspaces');
