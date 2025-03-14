@@ -1,5 +1,5 @@
 import type { PlanItem, Session, ShallowSession } from "$lib/models/session";
-import type { PageResponse } from "$lib/models/page";
+import type { Page, PageResponse } from "$lib/models/page";
 import { generateId } from "$lib/utils";
 
 /*
