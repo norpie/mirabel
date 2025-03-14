@@ -23,7 +23,10 @@
 
 	import { page } from '$app/state';
 
-	const hideSidebar = ['login', 'register'].includes(page.url.pathname);
+	let hideSidebar = $state(true);
+	$effect(() => {
+		hideSidebar = ['/login', '/register'].includes(page.url.pathname);
+	});
 
 	import {
 		user,
@@ -34,12 +37,16 @@
 		breadcrumbs
 	} from '$lib/store';
 	import { toast } from 'svelte-sonner';
+	import type { Page } from '$lib/models/page';
 
 	onMount(async () => {
-		user.set(await fetchUser());
 		if (!$user) {
-			toast.error('Failed to fetch user data');
-			return;
+			let result = await fetchUser();
+			if (result.error) {
+				toast.error(result.error);
+				return;
+			}
+			user.set(result.data);
 		}
 		workspaces.set((await fetchAllWorkspaces({ page: 1, pageSize: 10 })).data);
 		if (!$workspaces) {
@@ -51,7 +58,11 @@
 			toast.error('Failed to fetch selected workspace');
 			return;
 		}
-		sessions.set((await fetchAllSessions($selectedWorkspace.id, { page: 1, pageSize: 10 })).data);
+		let page: Page = {
+			page: 1,
+			pageSize: 10
+		};
+		sessions.set((await fetchAllSessions($selectedWorkspace.id, page)).data);
 		if (!$sessions) {
 			toast.error('Failed to fetch sessions');
 			return;
@@ -95,11 +106,13 @@
 <ModeWatcher />
 <Toaster />
 
-{#if $user && $workspaces}
+{#if $user === undefined || $workspaces === undefined}
 	<div class="flex h-screen w-full items-center justify-center">
-		{@render children()}
+		<Spinner />
 	</div>
-{:else if $user && $workspaces}
+{:else if hideSidebar}
+	{@render children()}
+{:else}
 	<Sidebar.Provider>
 		<AppSidebar bind:items />
 		<Sidebar.Inset>
@@ -133,8 +146,4 @@
 			</div>
 		</Sidebar.Inset>
 	</Sidebar.Provider>
-{:else}
-	<div class="flex h-screen w-full items-center justify-center">
-		<Spinner />
-	</div>
 {/if}
