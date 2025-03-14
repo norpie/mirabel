@@ -14,8 +14,16 @@
 	import Moon from 'lucide-svelte/icons/moon';
 
 	import { user } from '$lib/store';
+	import { del } from '$lib/request';
+	import { goto } from '$app/navigation';
 
 	const sidebar = useSidebar();
+
+    async function logout() {
+        await del("v1/auth/logout");
+        localStorage.removeItem('accessToken');
+        goto('/login');
+    }
 </script>
 
 <Sidebar.Menu>
@@ -72,7 +80,7 @@
 						</DropdownMenu.Item>
 					{/if}
 					<DropdownMenu.Separator />
-					<DropdownMenu.Item>
+					<DropdownMenu.Item onclick={() => logout()}>
 						<LogOut />
 						Log out
 					</DropdownMenu.Item>
