@@ -21,6 +21,10 @@
 	import { fetchAllWorkspaces, fetchRecentWorkspace } from '$lib/api/workspace';
 	import { fetchAllSessions } from '$lib/api/session';
 
+	import { page } from '$app/state';
+
+	const hideSidebar = ['login', 'register'].includes(page.url.pathname);
+
 	import {
 		user,
 		workspaces,
@@ -92,6 +96,10 @@
 <Toaster />
 
 {#if $user && $workspaces}
+	<div class="flex h-screen w-full items-center justify-center">
+		{@render children()}
+	</div>
+{:else if $user && $workspaces}
 	<Sidebar.Provider>
 		<AppSidebar bind:items />
 		<Sidebar.Inset>
