@@ -14,6 +14,7 @@ use super::{SurrealDB, SurrealDbPagination};
 #[derive(Debug, Clone, Deserialize)]
 pub struct SurrealDBUser {
     id: Thing,
+    username: String,
     email: String,
     password: String,
     created_at: DateTime<Utc>,
@@ -23,6 +24,7 @@ impl From<SurrealDBUser> for User {
     fn from(user: SurrealDBUser) -> Self {
         User::new(
             user.id.id.to_string(),
+            user.username,
             user.email,
             user.password,
             user.created_at,

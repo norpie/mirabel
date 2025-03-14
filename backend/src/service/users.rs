@@ -7,7 +7,7 @@ use argon2::{
 };
 
 use crate::{
-    model::user::{AuthUser, UpdatedUser, User},
+    model::user::{UpdatedUser, User},
     repository::Repository,
 };
 

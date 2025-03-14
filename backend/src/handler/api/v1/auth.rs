@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     dto::{api_response::ApiResponse, token::AccessToken},
-    model::user::{AuthUser, User},
+    model::user::{LoginUser, RegisterUser, User},
     prelude::*,
     repository::{surrealdb::SurrealDB, Repository},
     security::jwt_util::TokenFactory,
@@ -32,7 +32,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 #[post("/register")]
 pub async fn register(
     db: Data<Box<dyn Repository>>,
-    user: Json<AuthUser>,
+    user: Json<RegisterUser>,
 ) -> Result<impl Responder> {
     let token_pair = auth::register(db, user.0).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
@@ -45,7 +45,7 @@ pub async fn register(
 }
 
 #[post("/login")]
-pub async fn login(db: Data<Box<dyn Repository>>, user: Json<AuthUser>) -> Result<impl Responder> {
+pub async fn login(db: Data<Box<dyn Repository>>, user: Json<LoginUser>) -> Result<impl Responder> {
     let token_pair = auth::login(db, user.0).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
