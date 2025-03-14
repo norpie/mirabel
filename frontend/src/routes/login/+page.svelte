@@ -9,28 +9,27 @@
     import { post } from '$lib/request';
 
     import { goto } from '$app/navigation';
+	import type Result from '$lib/models/result';
 
     async function login() {
+        const response = await post<Result<{ access_token: string }>>('v1/auth/login', {
+            email: email,
+            password: password
+        });
+
+        if (response.error) {
+            toast.error(response.error);
+            return;
+        }
+
+        if (!response.data) {
+            toast.error('An error occurred');
+            return;
+        }
+
+        localStorage.setItem('accessToken', response.data.access_token);
+        toast.success('Logged in successfully');
         goto('/');
-        return;
-        // const response = await post<{ access_token: string }>('v1/auth/login', {
-        //     email: email,
-        //     password: password
-        // });
-        //
-        // if (response.error) {
-        //     toast.error(response.error);
-        //     return;
-        // }
-        //
-        // if (!response.result) {
-        //     toast.error('An error occurred');
-        //     return;
-        // }
-        //
-        // localStorage.setItem('accessToken', response.result.access_token);
-        // toast.success('Logged in successfully');
-        // goto('/');
     }
 
     let email = $state();

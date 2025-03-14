@@ -1,5 +1,5 @@
 interface Result<T> {
-    result?: T;
+    data?: T;
     error?: string;
 }
 

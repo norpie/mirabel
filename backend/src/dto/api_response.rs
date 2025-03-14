@@ -17,7 +17,7 @@ where
     #[serde(skip_serializing_if = "Option::is_none")]
     data: Option<T>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    message: Option<String>,
+    error: Option<String>,
 }
 
 impl<T> ApiResponse<T>
@@ -28,7 +28,7 @@ where
         Self {
             status: StatusCode::OK,
             data: Some(data),
-            message: None,
+            error: None,
         }
     }
 
@@ -48,7 +48,7 @@ where
         Self {
             status,
             data: None,
-            message: Some(message),
+            error: Some(message),
         }
     }
 }
