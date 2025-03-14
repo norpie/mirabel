@@ -27,7 +27,7 @@
 						>
 							<Avatar.Root class="h-8 w-8 rounded-lg">
 								<Avatar.Image src={$selectedWorkspace.logo} alt={$selectedWorkspace.name} />
-								<Avatar.Fallback class="rounded-lg">W</Avatar.Fallback>
+								<Avatar.Fallback class="rounded-lg">{$selectedWorkspace.name[0]}</Avatar.Fallback>
 							</Avatar.Root>
 							<div class="grid flex-1 text-left text-sm leading-tight">
 								<span class="truncate font-semibold">
@@ -49,7 +49,7 @@
 						<DropdownMenu.Item onSelect={() => selectedWorkspace.set(workspace)} class="gap-2 p-2">
 							<Avatar.Root class="h-8 w-8 rounded-lg">
 								<Avatar.Image src={workspace.logo} alt={workspace.name} />
-								<Avatar.Fallback class="rounded-lg">W</Avatar.Fallback>
+								<Avatar.Fallback class="rounded-lg">{workspace.name[0]}</Avatar.Fallback>
 							</Avatar.Root>
 							{workspace.name}
 						</DropdownMenu.Item>
