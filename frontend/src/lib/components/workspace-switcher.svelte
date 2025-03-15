@@ -15,6 +15,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { toast } from 'svelte-sonner';
+	import { post } from '$lib/request';
 
 	let localSelectedWorkspace = $derived($selectedWorkspace);
 
@@ -30,7 +31,19 @@
 			toast.error('Workspace name is required');
 			return;
 		}
-		toast.error(`Invalid workspace name: ${workspaceName}`);
+		let result = await post<{
+			name: string;
+		}>('v1/me/workspaces', {
+			name: workspaceName
+		});
+		if (result.error) {
+			toast.error(result.error);
+			return;
+		}
+		if ($workspaces) {
+			$workspaces.push(result.data);
+		}
+		workspaceDialogOpen = false;
 	}
 
 	async function joinWorkspace() {
