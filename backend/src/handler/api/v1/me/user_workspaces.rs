@@ -7,7 +7,7 @@ use crate::{
 
 use actix_web::{
     get, post,
-    web::{self, Data, Json},
+    web::{self, Data, Json, Query},
     Responder, Scope,
 };
 
@@ -25,7 +25,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 pub async fn get_user_workspaces(
     db: Data<Box<dyn Repository>>,
     user: User,
-    page: Json<PageRequest>,
+    page: Query<PageRequest>,
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
         workspaces::get_user_workspaces(db, user.id().to_string(), page.0).await?,
