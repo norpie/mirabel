@@ -9,10 +9,65 @@
 	import Spinner from './spinner.svelte';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { toast } from 'svelte-sonner';
+
 	let localSelectedWorkspace = $derived($selectedWorkspace);
 
 	const sidebar = useSidebar();
+
+	let workspaceDialogOpen = $state(false);
+
+	let workspaceName = $state('');
+	let workspaceCode = $state('');
+
+	async function createWorkspace() {
+		if (!workspaceName) {
+			toast.error('Workspace name is required');
+			return;
+		}
+		toast.error(`Invalid workspace name: ${workspaceName}`);
+	}
+
+	async function joinWorkspace() {
+		if (!workspaceCode) {
+			toast.error('Workspace code is required');
+			return;
+		}
+		toast.error(`Invalid workspace code: ${workspaceName}`);
+	}
 </script>
+
+<Dialog.Root bind:open={workspaceDialogOpen}>
+	<Dialog.Content class="m-4 max-w-[320px] p-4">
+		<Tabs.Root value="create" class="max-w-[300px]">
+			<Tabs.List class="bg-card-primary grid grid-cols-2">
+				<Tabs.Trigger value="create">Create</Tabs.Trigger>
+				<Tabs.Trigger value="join">join</Tabs.Trigger>
+			</Tabs.List>
+			<Tabs.Content value="create">
+				<Label class="mb-4" for="name">Name</Label>
+				<Input class="mb-4" id="name" bind:value={workspaceName} />
+				<div class="flex items-center justify-between">
+					<Button onclick={() => createWorkspace()}>Create Workspace</Button>
+					<Button onclick={() => (workspaceDialogOpen = false)}>Cancel</Button>
+				</div>
+			</Tabs.Content>
+			<Tabs.Content value="join">
+				<Label class="mb-4" for="code">Code</Label>
+				<Input class="mb-4" id="code" bind:value={workspaceCode} />
+				<div class="flex items-center justify-between">
+					<Button onclick={() => joinWorkspace()}>Join Workspace</Button>
+					<Button onclick={() => (workspaceDialogOpen = false)}>Cancel</Button>
+				</div>
+			</Tabs.Content>
+		</Tabs.Root>
+	</Dialog.Content>
+</Dialog.Root>
 
 <Sidebar.Menu>
 	<Sidebar.MenuItem>
@@ -55,11 +110,11 @@
 						</DropdownMenu.Item>
 					{/each}
 					<DropdownMenu.Separator />
-					<DropdownMenu.Item class="gap-2 p-2">
+					<DropdownMenu.Item class="gap-2 p-2" onclick={() => (workspaceDialogOpen = true)}>
 						<div class="flex size-6 items-center justify-center rounded-md border bg-background">
 							<Plus class="size-4" />
 						</div>
-						<div class="font-medium text-muted-foreground">Add workspace</div>
+						<div class="font-medium text-muted-foreground">Add Workspace</div>
 					</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
