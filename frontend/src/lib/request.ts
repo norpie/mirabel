@@ -35,8 +35,14 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
     return await response.json();
 }
 
-async function get<T>(path: string): Promise<Result<T>> {
-    return request("GET", formatEndpoint(path));
+async function get<T>(path: string, body?: any): Promise<Result<T>> {
+    let query = "";
+    if (body) {
+        for (const key in body) {
+            query += `${key}=${body[key]}&`;
+        }
+    }
+    return request("GET", formatEndpoint(`${path}?${query}`));
 }
 
 async function post<T>(path: string, body: any): Promise<Result<T>> {
