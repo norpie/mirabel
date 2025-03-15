@@ -6,7 +6,7 @@ import { generateId } from '$lib/utils';
 const sampleResponse: PageResponse<Workspace[]> = {
     pageInfo: {
         page: 1,
-        pageSize: 10,
+        size: 10,
     },
     data: [
         {
