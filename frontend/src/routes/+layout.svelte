@@ -42,8 +42,10 @@
 	import { get } from '$lib/request';
 	import type Result from '$lib/models/result';
 	import type { Workspace } from '$lib/models/workspace';
+	import { goto } from '$app/navigation';
 
 	onMount(async () => {
+        // User
 		if (!$user) {
 			let result = await fetchUser();
 			if (result.error) {
@@ -52,6 +54,7 @@
 			}
 			user.set(result.data);
 		}
+        // Avatar
 		if (!$avatar) {
 			let result = await get<Result<string | null>>('v1/me/avatar');
 			if (result.error) {
@@ -60,27 +63,29 @@
 			}
 			avatar.set(result.data);
 		}
-		if (!$workspaces) {
-			let result = await get<Result<Workspace[]>>(`v1/me/workspaces`, {
-				page: 1,
-				size: 10
-			});
-			if (result.error) {
-				toast.error(result.error);
-				return;
-			}
-			workspaces.set(result.data);
-		}
-		// workspaces.set((await fetchAllWorkspaces({ page: 1, pageSize: 10 })).data);
-		// if (!$workspaces) {
-		// 	toast.error('Failed to fetch workspaces');
-		// 	return;
-		// }
-		selectedWorkspace.set(await fetchRecentWorkspace());
-		if (!$selectedWorkspace) {
-			toast.error('Failed to fetch selected workspace');
-			return;
-		}
+        // Workspaces
+		let result = await get<Result<Workspace[]>>(`v1/me/workspaces`, {
+			page: 1,
+			size: 10
+		});
+		if (result.error) {
+			toast.error(result.error);
+            workspaces.set([]);
+		} else {
+		    workspaces.set(result.data);
+        }
+        // Selected workspace
+		// TODO: Implement proper recent workspace logic
+        if (!$workspaces || $workspaces.length == 0) {
+            goto('/workspaces');
+            return;
+        }
+        selectedWorkspace.set($workspaces[0]);
+        if (!$selectedWorkspace) {
+            toast.error('Failed to fetch selected workspace');
+            return;
+        }
+        // Sessions
 		let page: Page = {
 			page: 1,
 			size: 10
