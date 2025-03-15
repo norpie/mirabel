@@ -1,6 +1,6 @@
 export interface Page {
     page: number;
-    pageSize: number;
+    size: number;
 }
 
 export interface PageResponse<T> {

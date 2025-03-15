@@ -29,7 +29,7 @@
 	});
 
 	import {
-        avatar,
+		avatar,
 		user,
 		workspaces,
 		selectedWorkspace,
@@ -41,6 +41,7 @@
 	import type { Page } from '$lib/models/page';
 	import { get } from '$lib/request';
 	import type Result from '$lib/models/result';
+	import type { Workspace } from '$lib/models/workspace';
 
 	onMount(async () => {
 		if (!$user) {
@@ -51,19 +52,30 @@
 			}
 			user.set(result.data);
 		}
-        if (!$avatar) {
-            let result = await get<Result<string | null>>("v1/me/avatar");
-            if (result.error) {
-                toast.error(result.error);
-                return;
-            }
-            avatar.set(result.data);
-        }
-		workspaces.set((await fetchAllWorkspaces({ page: 1, pageSize: 10 })).data);
-		if (!$workspaces) {
-			toast.error('Failed to fetch workspaces');
-			return;
+		if (!$avatar) {
+			let result = await get<Result<string | null>>('v1/me/avatar');
+			if (result.error) {
+				toast.error(result.error);
+				return;
+			}
+			avatar.set(result.data);
 		}
+		if (!$workspaces) {
+			let result = await get<Result<Workspace[]>>(`v1/me/workspaces`, {
+				page: 1,
+				size: 10
+			});
+			if (result.error) {
+				toast.error(result.error);
+				return;
+			}
+			workspaces.set(result.data);
+		}
+		// workspaces.set((await fetchAllWorkspaces({ page: 1, pageSize: 10 })).data);
+		// if (!$workspaces) {
+		// 	toast.error('Failed to fetch workspaces');
+		// 	return;
+		// }
 		selectedWorkspace.set(await fetchRecentWorkspace());
 		if (!$selectedWorkspace) {
 			toast.error('Failed to fetch selected workspace');
@@ -71,7 +83,7 @@
 		}
 		let page: Page = {
 			page: 1,
-			pageSize: 10
+			size: 10
 		};
 		sessions.set((await fetchAllSessions($selectedWorkspace.id, page)).data);
 		if (!$sessions) {
