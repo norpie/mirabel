@@ -48,11 +48,11 @@
         // User
 		if (!$user) {
 			let result = await fetchUser();
+			user.set(result.data);
 			if (result.error) {
 				toast.error(result.error);
-				return;
+                return;
 			}
-			user.set(result.data);
 		}
         // Avatar
 		if (!$avatar) {
@@ -134,7 +134,7 @@
 <ModeWatcher />
 <Toaster />
 
-{#if $user === undefined || $workspaces === undefined}
+{#if $user === undefined}
 	<div class="flex h-screen w-full items-center justify-center">
 		<Spinner />
 	</div>
