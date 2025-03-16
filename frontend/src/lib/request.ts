@@ -21,9 +21,10 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
     if (response.status === 401) {
         const tokenResult = await refresh();
 
-        if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.result) {
+        if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
             goto("/login");
             return {
+                data: null,
                 error: "Token expired",
             };
         }
