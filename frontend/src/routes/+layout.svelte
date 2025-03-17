@@ -42,19 +42,19 @@
 	import { get } from '$lib/request';
 	import type Result from '$lib/models/result';
 	import type { Workspace } from '$lib/models/workspace';
-	import { goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 
-	onMount(async () => {
-        // User
+	async function hydrate() {
+		// User
 		if (!$user) {
 			let result = await fetchUser();
 			user.set(result.data);
 			if (result.error) {
 				toast.error(result.error);
-                return;
+				return;
 			}
 		}
-        // Avatar
+		// Avatar
 		if (!$avatar) {
 			let result = await get<Result<string | null>>('v1/me/avatar');
 			if (result.error) {
@@ -63,29 +63,29 @@
 			}
 			avatar.set(result.data);
 		}
-        // Workspaces
+		// Workspaces
 		let result = await get<Result<Workspace[]>>(`v1/me/workspaces`, {
 			page: 1,
 			size: 10
 		});
 		if (result.error) {
 			toast.error(result.error);
-            workspaces.set([]);
+			workspaces.set([]);
 		} else {
-		    workspaces.set(result.data);
-        }
-        // Selected workspace
+			workspaces.set(result.data);
+		}
+		// Selected workspace
 		// TODO: Implement proper recent workspace logic
-        if (!$workspaces || $workspaces.length == 0) {
-            goto('/workspaces');
-            return;
-        }
-        selectedWorkspace.set($workspaces[0]);
-        if (!$selectedWorkspace) {
-            toast.error('Failed to fetch selected workspace');
-            return;
-        }
-        // Sessions
+		if (!$workspaces || $workspaces.length == 0) {
+			goto('/workspaces');
+			return;
+		}
+		selectedWorkspace.set($workspaces[0]);
+		if (!$selectedWorkspace) {
+			toast.error('Failed to fetch selected workspace');
+			return;
+		}
+		// Sessions
 		let page: Page = {
 			page: 1,
 			size: 10
@@ -95,7 +95,10 @@
 			toast.error('Failed to fetch sessions');
 			return;
 		}
-	});
+	}
+
+	onMount(hydrate);
+    beforeNavigate(hydrate);
 
 	$inspect({ $user, $workspaces, $selectedWorkspace, $sessions, $selectedSession });
 
