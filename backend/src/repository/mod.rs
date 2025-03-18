@@ -39,11 +39,12 @@ mod tests {
     use super::Repository;
 
     async fn test_repository(repo: Data<Box<dyn Repository>>) {
+        let username = "test".to_string();
         let email = "test@gmail.com".to_string();
         let password = "password".to_string();
 
         let mut user = repo
-            .create_user(NewUser::new(email.clone(), password.clone()))
+            .create_user(NewUser::new(username.clone(), email.clone(), password.clone()))
             .await
             .unwrap();
 
