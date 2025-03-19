@@ -15,11 +15,11 @@ mod searxng;
 
 const SEARXNG_HOST_ENV: &str = "SEARXNG_HOST";
 
-pub struct Engines {
+pub struct SearchEngines {
     engines: Vec<Box<dyn SearchEngine>>,
 }
 
-impl Engines {
+impl SearchEngines {
     pub fn from_env() -> Self {
         let mut engines: Vec<Box<dyn SearchEngine>> = Vec::new();
         if let Ok(host) = std::env::var(SEARXNG_HOST_ENV) {
@@ -30,7 +30,7 @@ impl Engines {
 }
 
 #[async_trait]
-impl SearchEngine for Engines {
+impl SearchEngine for SearchEngines {
     async fn search(&self, query: String, page: i32) -> Result<SearchPage> {
         // Priority is given to the first available engine
         for engine in &self.engines {
