@@ -5,7 +5,7 @@ use reqwest::Client;
 use serde::Deserialize;
 use serde_json::Value;
 
-use super::{SearchEngine, SearchPage, SearchResult};
+use super::{models::SearchResult, SearchEngine, SearchPage};
 
 #[derive(Default)]
 pub struct SearxNG {

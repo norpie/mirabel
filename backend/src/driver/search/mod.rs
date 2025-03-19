@@ -3,8 +3,13 @@ use std::collections::HashMap;
 use crate::prelude::*;
 
 use async_trait::async_trait;
+use models::SearchPage;
 use searxng::SearxNG;
 use serde::{Deserialize, Serialize};
+use traits::SearchEngine;
+
+pub mod models;
+pub mod traits;
 
 mod searxng;
 
@@ -32,25 +37,4 @@ impl SearchEngine for Engines {
         }
         false
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchPage {
-    pub page: i32,
-    pub query: String,
-    pub results: Vec<SearchResult>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchResult {
-    pub url: String,
-    pub title: String,
-    pub summary: String,
-    pub source: String,
-}
-
-#[async_trait]
-pub trait SearchEngine: Send + Sync {
-    async fn available(&self) -> bool;
-    async fn search(&self, query: String, page: i32) -> Result<SearchPage>;
 }
