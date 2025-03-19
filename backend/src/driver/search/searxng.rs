@@ -14,9 +14,9 @@ pub struct SearxNG {
 }
 
 impl SearxNG {
-    pub fn new(base_url: &str) -> Self {
+    pub fn new(base_url: String) -> Self {
         SearxNG {
-            base_url: base_url.to_string(),
+            base_url,
             client: Client::new(),
         }
     }
@@ -75,8 +75,8 @@ mod tests {
     #[tokio::test]
     #[ignore = "Depends on external service"]
     async fn test_search() {
-        let searxng = SearxNG::new("http://localhost:8081");
-        let search_page = searxng.search("rust".to_string(), 1).await.unwrap();
+        let searxng = SearxNG::new("http://localhost:8081".into());
+        let search_page = searxng.search("rust".into(), 1).await.unwrap();
         assert_eq!(search_page.page, 1);
         assert_eq!(search_page.query, "rust");
         assert!(!search_page.results.is_empty());
