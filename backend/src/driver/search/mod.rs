@@ -13,8 +13,20 @@ pub mod traits;
 
 mod searxng;
 
+const SEARXNG_HOST_ENV: &str = "SEARXNG_HOST";
+
 pub struct Engines {
     engines: Vec<Box<dyn SearchEngine>>,
+}
+
+impl Engines {
+    pub fn from_env() -> Self {
+        let mut engines: Vec<Box<dyn SearchEngine>> = Vec::new();
+        if let Ok(host) = std::env::var(SEARXNG_HOST_ENV) {
+            engines.push(Box::new(SearxNG::new(host)));
+        }
+        Self { engines }
+    }
 }
 
 #[async_trait]
