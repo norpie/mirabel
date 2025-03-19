@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use searxng::SearxNG;
 use serde::{Deserialize, Serialize};
 
-pub mod searxng;
+mod searxng;
 
 pub struct Engines {
     engines: Vec<Box<dyn SearchEngine>>,
