@@ -62,6 +62,10 @@ impl SearchEngine for SearxNG {
             results: search_page.results.into_iter().map(|r| r.into()).collect(),
         })
     }
+
+    async fn available(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]
