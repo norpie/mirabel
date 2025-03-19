@@ -7,6 +7,11 @@ pub enum Error {
     #[error("Generic error, with message: {0}")]
     Generic(String),
 
+    // # Custom
+    // Search engine error types
+    #[error("No available search engine")]
+    NoAvailableEngine,
+
     // 400.. HTTP error types
     #[error("{0}")]
     BadRequest(String),
