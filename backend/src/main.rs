@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
     let result = run().await;
     match result {
         Ok(_) => {
-            info!("Finished running the application");
+            info!("Mirabel has finished running successfully");
         }
         Err(e) => {
             log::error!("An error occurred: {}", e);
@@ -33,7 +33,10 @@ async fn main() -> Result<()> {
 }
 
 async fn run() -> Result<()> {
+    info!("Running setup tasks");
     let db = SurrealDB::setup().await?;
+    info!("Running lifecycle tasks");
     handler::run(db).await?;
+    info!("Running cleanup tasks");
     Ok(())
 }
