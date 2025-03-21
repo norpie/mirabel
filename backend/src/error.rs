@@ -55,7 +55,7 @@ pub enum Error {
     IO(#[from] std::io::Error),
     #[error("An error occurred while parsing an integer: {0}")]
     Parse(#[from] std::num::ParseIntError),
-    #[error("An error occurred while parsing a float: {0}")]
+    #[error("Environment variable error: {0}")]
     Var(#[from] std::env::VarError),
 }
 
