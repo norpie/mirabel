@@ -45,6 +45,10 @@ pub enum Error {
     EyreReport(#[from] eyre::Report),
     #[error("A jsonwebtoken error occurred: {0}")]
     JsonWebToken(#[from] jsonwebtoken::errors::Error),
+    #[error("A fantoccini error occurred: {0}")]
+    FantocciniSession(#[from] Box<fantoccini::error::NewSessionError>),
+    #[error("A fantoccini error occurred: {0}")]
+    FantocciniCmd(#[from] Box<fantoccini::error::CmdError>),
 
     // `std`-error types
     #[error("An IO error occurred: {0}")]
