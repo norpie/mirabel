@@ -1,4 +1,5 @@
 #![allow(dead_code, unused)]
+use driver::browser::Browser;
 use log::info;
 use repository::{surrealdb::SurrealDB, Repository};
 
@@ -35,8 +36,10 @@ async fn main() -> Result<()> {
 async fn run() -> Result<()> {
     info!("Running setup tasks");
     let db = SurrealDB::setup().await?;
+    let browser = Browser::new().await?;
     info!("Running lifecycle tasks");
     handler::run(db).await?;
     info!("Running cleanup tasks");
+    browser.close().await?;
     Ok(())
 }
