@@ -6,6 +6,7 @@ use actix_web::web::Data;
 use async_trait::async_trait;
 use futures::TryFutureExt;
 use include_dir::{include_dir, Dir};
+use log::{debug, info};
 use surrealdb::{
     engine::remote::ws::{self, Client, Ws},
     opt::auth::Root,
@@ -49,21 +50,21 @@ impl SurrealDB {
         let user = env::var("DATABASE_USER")?;
         let pass = env::var("DATABASE_PASS")?;
 
-        println!("Connecting to database at `{}:{}`", &host, &port);
+        info!("Connecting to database at `{}:{}`", &host, &port);
         let conn = Surreal::new::<Ws>(format!("{}:{}", &host, &port)).await?;
 
         // Signin as a namespace, database, or root user
-        println!("Signing in as `root` user");
+        debug!("Signing in as `root` user");
         conn.signin(Root {
             username: &user,
             password: &pass,
         })
         .await?;
 
-        println!("Using namespace `{}` and database `{}`", &ns, &db);
+        debug!("Using namespace `{}` and database `{}`", &ns, &db);
         conn.use_ns(ns).use_db(db).await?;
 
-        println!("Running migrations");
+        debug!("Running migrations");
         let runner = MigrationRunner::new(&conn);
         let runner = runner.load_files(&MIGRATOR_DIR);
         runner.validate_version_order().await?;

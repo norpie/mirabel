@@ -11,6 +11,7 @@ use actix_web::{
     web::{self, Data},
     App, HttpResponse, HttpServer, Scope,
 };
+use log::info;
 
 mod api;
 pub(crate) mod extractors;
@@ -19,7 +20,7 @@ pub(crate) mod middleware;
 pub async fn run(db: Data<Box<dyn Repository>>) -> Result<()> {
     let host = env::var("BACKEND_HOST")?;
     let port: u16 = env::var("BACKEND_PORT")?.parse()?;
-    println!("Listening on {}:{}", host, port);
+    info!("Listening on {}:{}", host, port);
     HttpServer::new(move || {
         let logger = Logger::default();
 
