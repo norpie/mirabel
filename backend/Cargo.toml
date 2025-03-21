@@ -13,6 +13,7 @@ derive_more = { version = "2.0.1", features = ["full"] }
 dotenvy = { git = "https://github.com/allan2/dotenvy", features=['macros'] }
 env_logger = "0.11.6"
 eyre = "0.6.12"
+fantoccini = "0.21.4"
 futures = "0.3.31"
 futures-util = "0.3.31"
 include_dir = "0.7.4"
