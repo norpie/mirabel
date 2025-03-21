@@ -26,5 +26,11 @@ services:
         volumes:
           - surrealdb-data:/data
 
+    webdriver:
+        image: instrumentisto/geckodriver
+        command: "--host=0.0.0.0 --allow-hosts=localhost --binary=/opt/firefox/firefox"
+        ports:
+          - 4444:4444
+
 volumes:
   surrealdb-data:
