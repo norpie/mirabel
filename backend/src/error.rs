@@ -46,9 +46,9 @@ pub enum Error {
     #[error("A jsonwebtoken error occurred: {0}")]
     JsonWebToken(#[from] jsonwebtoken::errors::Error),
     #[error("A fantoccini error occurred: {0}")]
-    FantocciniSession(#[from] Box<fantoccini::error::NewSessionError>),
+    FantocciniSession(Box<fantoccini::error::NewSessionError>),
     #[error("A fantoccini error occurred: {0}")]
-    FantocciniCmd(#[from] Box<fantoccini::error::CmdError>),
+    FantocciniCmd(Box<fantoccini::error::CmdError>),
     #[error("A deadpool error occurred: {0}")]
     Deadpool(#[from] deadpool::unmanaged::PoolError),
 
@@ -59,6 +59,18 @@ pub enum Error {
     Parse(#[from] std::num::ParseIntError),
     #[error("Environment variable error: {0}")]
     Var(#[from] std::env::VarError),
+}
+
+impl From<fantoccini::error::NewSessionError> for Error {
+    fn from(e: fantoccini::error::NewSessionError) -> Self {
+        Error::FantocciniSession(Box::new(e))
+    }
+}
+
+impl From<fantoccini::error::CmdError> for Error {
+    fn from(e: fantoccini::error::CmdError) -> Self {
+        Error::FantocciniCmd(Box::new(e))
+    }
 }
 
 impl From<&str> for Error {

@@ -1,6 +1,9 @@
 use std::env;
 
-use deadpool::{managed, unmanaged::{Object, Pool}};
+use deadpool::{
+    managed,
+    unmanaged::{Object, Pool},
+};
 use fantoccini::{Client, ClientBuilder};
 use log::{debug, error};
 
@@ -48,7 +51,7 @@ impl Browsers {
         debug!("Closing {} browsers", self.size);
         for i in 0..self.size {
             let client = self.pool.remove().await?;
-            client.close().await.map_err(Box::new)?;
+            client.close().await?;
             debug!("Closed browser {}/{}", i + 1, self.size);
         }
         debug!("Closed {} browsers", self.size);
