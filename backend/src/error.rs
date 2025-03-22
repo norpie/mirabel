@@ -51,6 +51,8 @@ pub enum Error {
     FantocciniCmd(Box<fantoccini::error::CmdError>),
     #[error("A deadpool error occurred: {0}")]
     Deadpool(#[from] deadpool::unmanaged::PoolError),
+    #[error("A regex error occurred: {0}")]
+    Regex(#[from] regex::Error),
 
     // `std`-error types
     #[error("An IO error occurred: {0}")]
