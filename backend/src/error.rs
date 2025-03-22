@@ -1,4 +1,5 @@
 use miette::Diagnostic;
+use scraper::error::SelectorErrorKind;
 use thiserror::Error;
 
 #[derive(Debug, Error, Diagnostic)]
@@ -53,6 +54,8 @@ pub enum Error {
     Deadpool(#[from] deadpool::unmanaged::PoolError),
     #[error("A regex error occurred: {0}")]
     Regex(#[from] regex::Error),
+    #[error("A scraper error occurred: {0}")]
+    Scraper(String), // TODO: Find a way to keep more information
 
     // `std`-error types
     #[error("An IO error occurred: {0}")]
@@ -61,6 +64,12 @@ pub enum Error {
     Parse(#[from] std::num::ParseIntError),
     #[error("Environment variable error: {0}")]
     Var(#[from] std::env::VarError),
+}
+
+impl<'a> From<SelectorErrorKind<'a>> for Error {
+    fn from(error: SelectorErrorKind<'a>) -> Self {
+        Error::Scraper(format!("{:?}", error))
+    }
 }
 
 impl From<fantoccini::error::NewSessionError> for Error {
