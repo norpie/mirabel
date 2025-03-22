@@ -49,6 +49,8 @@ pub enum Error {
     FantocciniSession(#[from] Box<fantoccini::error::NewSessionError>),
     #[error("A fantoccini error occurred: {0}")]
     FantocciniCmd(#[from] Box<fantoccini::error::CmdError>),
+    #[error("A deadpool error occurred: {0}")]
+    Deadpool(#[from] deadpool::unmanaged::PoolError),
 
     // `std`-error types
     #[error("An IO error occurred: {0}")]
