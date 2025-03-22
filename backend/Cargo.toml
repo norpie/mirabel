@@ -20,7 +20,7 @@ futures-util = "0.3.31"
 include_dir = "0.7.4"
 jsonwebtoken = "9.3.1"
 log = "0.4.25"
-markup5ever = "0.15.0"
+markup5ever = "0.14.1"
 mdka = "1.4.5"
 miette = { version = "7.5.0", features = ["fancy", "serde"] }
 rand = "0.9.0"

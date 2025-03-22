@@ -676,7 +676,7 @@ dependencies = [
  "include_dir",
  "jsonwebtoken",
  "log",
- "markup5ever 0.15.0",
+ "markup5ever 0.14.1",
  "mdka",
  "miette 7.5.0",
  "rand 0.9.0",
@@ -2873,20 +2873,6 @@ name = "markup5ever"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7a7213d12e1864c0f002f52c2923d4556935a43dec5e71355c2760e0f6e7a18"
-dependencies = [
- "log",
- "phf",
- "phf_codegen",
- "string_cache",
- "string_cache_codegen",
- "tendril",
-]
-
-[[package]]
-name = "markup5ever"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03a7b81dfb91586d0677086d40a6d755070e0799b71bb897485bac408dfd5c69"
 dependencies = [
  "log",
  "phf",
