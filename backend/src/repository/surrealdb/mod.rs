@@ -17,9 +17,9 @@ use surrealdb_migrations::MigrationRunner;
 use super::Repository;
 
 pub mod avatars;
+pub mod sessions;
 pub mod users;
 pub mod workspaces;
-pub mod sessions;
 
 const MIGRATOR_DIR: Dir<'_> = include_dir!("../surrealdb");
 
