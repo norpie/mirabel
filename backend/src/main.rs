@@ -1,5 +1,8 @@
 #![allow(dead_code, unused)]
-use driver::{browser::Browser, search::{traits::SearchEngine, SearchEngines}};
+use driver::{
+    browser::Browsers,
+    search::{traits::SearchEngine, SearchEngines},
+};
 use log::info;
 use repository::{surrealdb::SurrealDB, Repository};
 
@@ -40,10 +43,10 @@ async fn run() -> Result<()> {
     if !engines.available().await {
         log::error!("No search engines are available");
     }
-    let browser = Browser::new().await?;
+    let browsers = Browsers::new().await?;
     info!("Running lifecycle tasks");
     handler::run(db).await?;
     info!("Running cleanup tasks");
-    browser.close().await?;
+    browsers.close().await?;
     Ok(())
 }
