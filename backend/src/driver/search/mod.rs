@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::prelude::*;
 
 use async_trait::async_trait;
+use log::debug;
 use models::SearchPage;
 use searxng::SearxNG;
 use serde::{Deserialize, Serialize};
@@ -21,9 +22,14 @@ pub struct SearchEngines {
 
 impl SearchEngines {
     pub fn from_env() -> Self {
+        debug!("Creating search engines from environment variables");
         let mut engines: Vec<Box<dyn SearchEngine>> = Vec::new();
         if let Ok(host) = std::env::var(SEARXNG_HOST_ENV) {
             engines.push(Box::new(SearxNG::new(host)));
+        }
+        debug!("Search engines created ({}):", engines.len());
+        for engine in &engines {
+            debug!("    - Engine: {}", engine.name());
         }
         Self { engines }
     }
@@ -48,5 +54,13 @@ impl SearchEngine for SearchEngines {
             }
         }
         false
+    }
+
+    fn name(&self) -> String {
+        let mut names = Vec::new();
+        for engine in &self.engines {
+            names.push(engine.name());
+        }
+        names.join(", ")
     }
 }

@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 use async_trait::async_trait;
+use log::{debug, info};
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::Value;
@@ -15,6 +16,7 @@ pub struct SearxNG {
 
 impl SearxNG {
     pub fn new(base_url: String) -> Self {
+        info!("Starting SearxNG search engine with base URL: {}", base_url);
         SearxNG {
             base_url,
             client: Client::new(),
@@ -49,6 +51,7 @@ impl From<SearxNGSearchResult> for SearchResult {
 #[async_trait]
 impl SearchEngine for SearxNG {
     async fn search(&self, query: String, page: i32) -> Result<SearchPage> {
+        debug!("Searching for '{}' on page {}", query, page);
         let url = format!(
             "{}/search?q={}&format=json&pageno={}",
             self.base_url, &query, page
@@ -65,6 +68,10 @@ impl SearchEngine for SearxNG {
 
     async fn available(&self) -> bool {
         true
+    }
+
+    fn name(&self) -> String {
+        "SearxNG".into()
     }
 }
 
