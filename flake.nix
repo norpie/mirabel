@@ -37,6 +37,8 @@
               pkg-config
               ra-multiplex
 
+              geckodriver
+
               (pkgs.python312.withPackages (python-pkgs:
                 with python-pkgs; [
                   pip
