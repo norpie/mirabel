@@ -49,7 +49,7 @@
 
             shellHook = ''
               # Start `ra-multiplex server` as a background process which dies when the shell exits
-              systemd-run --user --same-dir --service-type=exec --setenv=PATH --setenv=CARGO_HOME=/home/norpie/.local/share/cargo "$SHELL" ra-multiplex server
+              systemd-run --user --same-dir --service-type=exec --setenv=PATH --setenv=CARGO_HOME --setenv=RUSTUP_HOME "$SHELL" ra-multiplex server
               export LD_LIBRARY_PATH=${libs}
             '';
           };
