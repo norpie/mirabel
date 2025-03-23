@@ -25,6 +25,7 @@ lopdf = "0.36.0"
 markup5ever = "0.14.1"
 mdka = "1.4.5"
 miette = { version = "7.5.0", features = ["fancy", "serde"] }
+pdf-extract = "0.8.2"
 rand = "0.9.0"
 regex = "1.11.1"
 reqwest = { version = "0.12.12", features = ["blocking", "json"] }
