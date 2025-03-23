@@ -66,6 +66,8 @@ pub enum Error {
     // `std`-error types
     #[error("An IO error occurred: {0}")]
     IO(#[from] std::io::Error),
+    #[error("An error occurred while parsing a string: {0}")]
+    Utf8(#[from] std::string::FromUtf8Error),
     #[error("An error occurred while parsing an integer: {0}")]
     Parse(#[from] std::num::ParseIntError),
     #[error("Environment variable error: {0}")]
