@@ -74,6 +74,9 @@ pub enum Error {
     Var(#[from] std::env::VarError),
 }
 
+unsafe impl Send for Error {}
+unsafe impl Sync for Error {}
+
 impl<'a> From<SelectorErrorKind<'a>> for Error {
     fn from(error: SelectorErrorKind<'a>) -> Self {
         Error::Scraper(format!("{:?}", error))
