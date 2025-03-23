@@ -54,6 +54,8 @@ pub enum Error {
     Deadpool(#[from] deadpool::unmanaged::PoolError),
     #[error("A regex error occurred: {0}")]
     Regex(#[from] regex::Error),
+    #[error("A lopdf error occurred: {0}")]
+    Lopdf(#[from] lopdf::Error),
     #[error("A scraper error occurred: {0}")]
     Scraper(String), // TODO: Find a way to keep more information
 
