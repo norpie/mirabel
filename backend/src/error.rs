@@ -56,6 +56,10 @@ pub enum Error {
     Regex(#[from] regex::Error),
     #[error("A lopdf error occurred: {0}")]
     Lopdf(#[from] lopdf::Error),
+    #[error("A pdf_extract error occurred: {0}")]
+    PdfExtract(#[from] pdf_extract::Error),
+    #[error("A pdf_extract output error occurred: {0}")]
+    PdfExtractOutput(#[from] pdf_extract::OutputError),
     #[error("A scraper error occurred: {0}")]
     Scraper(String), // TODO: Find a way to keep more information
 
