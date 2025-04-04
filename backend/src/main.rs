@@ -6,6 +6,8 @@ use driver::{
 use log::info;
 use repository::{surrealdb::SurrealDB, Repository};
 
+extern crate backend_derive;
+
 use crate::prelude::*;
 
 pub(crate) mod error;
