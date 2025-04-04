@@ -11,6 +11,18 @@ pub trait NamedStruct {
     fn plural_name() -> &'static str;
 }
 
+pub trait FieldFindableStruct {
+    fn filterable_fields() -> Vec<String>;
+}
+
+pub trait FieldSearchableStruct {
+    fn searchable_fields() -> Vec<String>;
+}
+
+pub trait FieldSortableStruct {
+    fn sortable_fields() -> Vec<String>;
+}
+
 pub trait Entity: NamedStruct + Send + Sync + Serialize + DeserializeOwned {
     type ID: Clone + Eq + Display;
     fn id(&self) -> Option<&Self::ID>;
@@ -35,12 +47,12 @@ pub trait SoftDeletableRepository<T: Entity>: Repository<T> {
 }
 
 #[async_trait]
-pub trait SearchableRepository<T: Entity>: Repository<T> {
+pub trait SearchableRepository<T: Entity + FieldSearchableStruct>: Repository<T> {
     async fn search(&self, query: &str, page: PageRequest) -> Result<PageResponse<T>, Self::Error>;
 }
 
 #[async_trait]
-pub trait FieldFindableRepository<T: Entity>: Repository<T> {
+pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T> {
     async fn find_by_field(
         &self,
         field: &str,
@@ -88,6 +100,11 @@ pub trait ManyToManyRepository<T: Entity, R: Entity>: Repository<T> {
 #[async_trait]
 pub trait ThroughputRepository<T: Entity>: Repository<T> {
     async fn stream(&self) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
+}
+
+#[async_trait]
+pub trait LiveRepository<T: Entity>: Repository<T> {
+    async fn live(&self) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
 }
 
 #[async_trait]
