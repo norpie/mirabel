@@ -1,6 +1,6 @@
 use convert_case::{Case, Casing};
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::{parse::Parser, parse_macro_input, DeriveInput, Lit, Meta, MetaNameValue, NestedMeta};
 
 /// Attribute macro for implementing the NamedStruct trait.
