@@ -21,7 +21,7 @@ pub mod sessions;
 pub mod users;
 pub mod workspaces;
 
-const MIGRATOR_DIR: Dir<'_> = include_dir!("../surrealdb");
+const MIGRATOR_DIR: Dir<'_> = include_dir!("./surrealdb");
 
 #[derive(Clone)]
 pub struct SurrealDB(Surreal<Client>);
