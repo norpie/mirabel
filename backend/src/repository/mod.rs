@@ -8,6 +8,9 @@ use sessions::SessionRepository;
 use users::UserRepository;
 use workspaces::WorkspaceRepository;
 
+pub(crate) mod traits;
+pub(crate) mod v2;
+
 pub(crate) mod surrealdb;
 
 pub(crate) mod avatars;
