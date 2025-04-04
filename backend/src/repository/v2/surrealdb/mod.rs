@@ -11,6 +11,7 @@ use thiserror::Error;
 use crate::{repository::traits::Database, Error};
 
 pub(crate) mod builder;
+pub(crate) mod repository;
 
 pub struct SurrealDB {
     connection: Surreal<Client>,
