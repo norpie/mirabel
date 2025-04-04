@@ -2,10 +2,16 @@ use std::{fmt::Display, marker::PhantomData};
 
 use async_trait::async_trait;
 use futures::Stream;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::dto::page::{PageRequest, PageResponse};
 
-pub trait Entity {
+pub trait NamedStruct {
+    fn singular_name() -> &'static str;
+    fn plural_name() -> &'static str;
+}
+
+pub trait Entity: NamedStruct + Send + Sync + Serialize + DeserializeOwned {
     type ID: Clone + Eq + Display;
     fn id(&self) -> Option<&Self::ID>;
 }
