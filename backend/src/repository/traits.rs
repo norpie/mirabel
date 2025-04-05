@@ -36,7 +36,7 @@ pub trait Repository<T: Entity> {
     async fn save(&self, entity: T) -> Result<T, Self::Error>;
     async fn delete(&self, id: &T::ID) -> Result<(), Self::Error>;
     async fn exists(&self, id: &T::ID) -> Result<bool, Self::Error>;
-    async fn count(&self) -> Result<i64, Self::Error>;
+    async fn count(&self) -> Result<u64, Self::Error>;
 }
 
 #[async_trait]
