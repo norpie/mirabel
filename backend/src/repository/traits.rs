@@ -23,7 +23,7 @@ pub trait FieldSortableStruct {
     fn sortable_fields() -> Vec<String>;
 }
 
-pub trait Entity: NamedStruct + Send + Sync + Serialize + DeserializeOwned {
+pub trait Entity: NamedStruct + Send + Sync + Serialize + DeserializeOwned + 'static {
     type ID: Clone + Eq + Display;
     fn id(&self) -> Option<&Self::ID>;
 }
@@ -33,7 +33,7 @@ pub trait Repository<T: Entity> {
     type Error: std::error::Error + Send + Sync + 'static;
 
     async fn find(&self, id: &T::ID) -> Result<Option<T>, Self::Error>;
-    async fn save(&self, entity: &T) -> Result<T, Self::Error>;
+    async fn save(&self, entity: T) -> Result<T, Self::Error>;
     async fn delete(&self, id: &T::ID) -> Result<(), Self::Error>;
     async fn exists(&self, id: &T::ID) -> Result<bool, Self::Error>;
     async fn count(&self) -> Result<i64, Self::Error>;
