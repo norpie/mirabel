@@ -27,6 +27,7 @@ services:
           - surrealdb-data:/data
 
     webdriver:
+        container_name: webdriver
         image: instrumentisto/geckodriver
         command: "--host=0.0.0.0 --allow-hosts=localhost --binary=/opt/firefox/firefox"
         ports:
