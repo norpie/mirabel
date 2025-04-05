@@ -24,7 +24,7 @@ pub trait FieldSortableStruct {
 }
 
 pub trait Entity: NamedStruct + Send + Sync + Serialize + DeserializeOwned + 'static {
-    type ID: Clone + Eq + Display;
+    type ID: Clone + Eq + Display + Send + Sync + Serialize + DeserializeOwned + 'static;
     fn id(&self) -> Option<&Self::ID>;
 }
 
