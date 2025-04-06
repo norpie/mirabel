@@ -41,7 +41,7 @@ pub trait Repository<T: Entity> {
 
 #[async_trait]
 pub trait FieldSearchableRepository<T: Entity + FieldSearchableStruct>: Repository<T> {
-    async fn search(&self, query: &str, page: PageRequest) -> Result<PageResponse<T>, Self::Error>;
+    async fn search(&self, fields: &[&str], query: &str, page: PageRequest) -> Result<PageResponse<T>, Self::Error>;
 }
 
 #[async_trait]
