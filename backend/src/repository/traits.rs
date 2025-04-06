@@ -40,13 +40,6 @@ pub trait Repository<T: Entity> {
 }
 
 #[async_trait]
-pub trait SoftDeletableRepository<T: Entity>: Repository<T> {
-    async fn soft_delete(&self, id: &T::ID) -> Result<(), Self::Error>;
-    async fn restore(&self, id: &T::ID) -> Result<(), Self::Error>;
-    async fn exists_deleted(&self, id: &T::ID) -> Result<bool, Self::Error>;
-}
-
-#[async_trait]
 pub trait SearchableRepository<T: Entity + FieldSearchableStruct>: Repository<T> {
     async fn search(&self, query: &str, page: PageRequest) -> Result<PageResponse<T>, Self::Error>;
 }
