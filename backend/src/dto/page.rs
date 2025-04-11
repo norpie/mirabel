@@ -7,6 +7,17 @@ pub struct PageResponse<T> {
     data: Vec<T>,
 }
 
+impl<T> PageResponse<T> {
+    pub fn from(data: Vec<T>, page: i32) -> Self {
+        let page_info = PageInfo {
+            page,
+            size: data.len() as i32,
+            total: data.len() as i32,
+        };
+        Self { page_info, data }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageRequest {
     page: i32,
