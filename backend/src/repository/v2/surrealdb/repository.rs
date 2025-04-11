@@ -1,4 +1,7 @@
-use crate::repository::traits::NamedStruct;
+use crate::{
+    dto::page::{PageRequest, PageResponse},
+    repository::traits::{NamedStruct, PublicEntityRepository},
+};
 use async_trait::async_trait;
 use backend_derive::named_struct;
 use serde::{Deserialize, Serialize};
@@ -71,5 +74,19 @@ impl<T: Entity> Repository<T> for SurrealDB {
             .connection
             .select((T::singular_name(), id.to_string()))
             .await?)
+    }
+}
+
+#[async_trait]
+impl<T: Entity> PublicEntityRepository<T> for SurrealDB {
+    async fn find_all(&self, page: PageRequest) -> Result<PageResponse<T>> {
+        Ok(PageResponse::from(
+            self.connection
+                .query("SELECT * FROM type::table($table);")
+                .bind(("table", T::singular_name()))
+                .await?
+                .take::<Vec<T>>(0)?,
+            page.page(),
+        ))
     }
 }
