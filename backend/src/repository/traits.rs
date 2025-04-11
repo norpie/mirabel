@@ -81,8 +81,12 @@ pub trait ManyToManyRepository<T: Entity, R: Entity>: Repository<T> {
         related_id: &R::ID,
         page: PageRequest,
     ) -> Result<PageResponse<T>, Self::Error>;
+
     async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<(), Self::Error>;
     async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<(), Self::Error>;
+
+    async fn create_associated(&self, entity: T, related_id: &R::ID) -> Result<T, Self::Error>;
+
     async fn is_associated(
         &self,
         entity_id: &T::ID,
