@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct PageResponse<T> {
     #[serde(rename = "pageInfo")]
     page_info: PageInfo,
-    data: T,
+    data: Vec<T>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
