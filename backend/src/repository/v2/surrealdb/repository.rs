@@ -82,8 +82,10 @@ impl<T: Entity> PublicEntityRepository<T> for SurrealDB {
     async fn find_all(&self, page: PageRequest) -> Result<PageResponse<T>> {
         Ok(PageResponse::from(
             self.connection
-                .query("SELECT * FROM type::table($table);")
+                .query("SELECT * FROM type::table($table) LIMIT $limit START $start;")
                 .bind(("table", T::singular_name()))
+                .bind(("limit", page.size()))
+                .bind(("start", (page.page() - 1) * page.size()))
                 .await?
                 .take::<Vec<T>>(0)?,
             page.page(),
