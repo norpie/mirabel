@@ -66,6 +66,7 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     async fn find_related(&self, owner_id: &R::ID) -> Result<Option<T>, Self::Error>;
     async fn exists_related(&self, owner_id: &R::ID) -> Result<bool, Self::Error>;
     async fn create_owned(&self, subject: T, owner_id: &R::ID) -> Result<T, Self::Error>;
+    async fn relate(&self, subject_id: &T::ID, owner_id: &R::ID) -> Result<(), Self::Error>;
 
     // One-to-Many relationship methods
     async fn find_children(
