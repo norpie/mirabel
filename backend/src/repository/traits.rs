@@ -52,6 +52,7 @@ pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T
         value: &str,
         page: PageRequest,
     ) -> Result<PageResponse<T>, Self::Error>;
+    async fn exists_by_field(&self, field: &str, value: &str) -> Result<bool, Self::Error>;
 }
 
 #[async_trait]
