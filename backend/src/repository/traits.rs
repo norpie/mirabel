@@ -12,15 +12,15 @@ pub trait NamedStruct {
 }
 
 pub trait FieldFindableStruct {
-    fn filterable_fields() -> Vec<String>;
+    fn filterable_fields() -> &'static [&'static str];
 }
 
 pub trait FieldSearchableStruct {
-    fn searchable_fields() -> Vec<String>;
+    fn searchable_fields() -> &'static [&'static str];
 }
 
 pub trait FieldSortableStruct {
-    fn sortable_fields() -> Vec<String>;
+    fn sortable_fields() -> &'static [&'static str];
 }
 
 pub trait Entity: NamedStruct + Send + Sync + Serialize + DeserializeOwned + 'static {
