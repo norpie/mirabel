@@ -104,7 +104,8 @@ pub trait ThroughputRepository<T: Entity>: Repository<T> {
 
 #[async_trait]
 pub trait LiveRepository<T: Entity>: Repository<T> {
-    async fn live(&self) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
+    async fn live_single(&self, entity_id: &T::ID) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
+    async fn live_table(&self) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
 }
 
 #[async_trait]
