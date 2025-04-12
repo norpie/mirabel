@@ -65,9 +65,7 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     async fn find_related(&self, related_id: &R::ID) -> Result<Option<T>, Self::Error>;
     async fn exists_related(&self, related_id: &R::ID) -> Result<bool, Self::Error>;
     async fn create_related(&self, entity: T, related_id: &R::ID) -> Result<T, Self::Error>;
-    async fn update_related(&self, entity: T, related_id: &R::ID) -> Result<T, Self::Error>;
-    async fn delete_related(&self, related_id: &R::ID) -> Result<(), Self::Error>;
-    
+
     // One-to-Many relationship methods
     async fn find_children(
         &self,
@@ -76,8 +74,9 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     ) -> Result<PageResponse<T>, Self::Error>;
     async fn count_children(&self, parent_id: &R::ID) -> Result<u64, Self::Error>;
     async fn create_child(&self, entity: T, parent_id: &R::ID) -> Result<T, Self::Error>;
+    async fn create_children(&self, entities: Vec<T>, parent_id: &R::ID) -> Result<Vec<T>, Self::Error>;
     async fn delete_children(&self, parent_id: &R::ID) -> Result<u64, Self::Error>;
-    
+
     // Many-to-Many relationship methods
     async fn find_associated(
         &self,
