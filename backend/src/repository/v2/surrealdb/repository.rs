@@ -1,6 +1,8 @@
 use crate::{
     dto::page::{PageRequest, PageResponse},
-    repository::traits::{NamedStruct, PublicEntityRepository},
+    repository::traits::{
+        AssociatedEntityRepository, NamedStruct, PublicEntityRepository,
+    },
 };
 use async_trait::async_trait;
 use backend_derive::named_struct;
@@ -90,5 +92,124 @@ impl<T: Entity> PublicEntityRepository<T> for SurrealDB {
                 .take::<Vec<T>>(0)?,
             page.page(),
         ))
+    }
+}
+
+#[async_trait]
+impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
+    // One-to-One relationship methods
+    async fn find_related(&self, owner_id: &R::ID) -> Result<Option<T>> {
+        Ok(self.connection
+            .query("SELECT ->$relationship->$table as $plural_table FROM $owner_id FETCH $plural_table")
+            .bind(("relationship", format!("owns_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("plural_table", T::plural_name()))
+            .bind(("owner_id", owner_id.to_string()))
+            .await?
+            .take::<Option<T>>(0)?)
+    }
+
+    async fn exists_related(&self, owner_id: &R::ID) -> Result<bool> {
+        Ok(self.connection
+            .query("SELECT ->$relationship->$table as $plural_table FROM $owner_id FETCH $plural_table")
+            .bind(("relationship", format!("owns_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("plural_table", T::plural_name()))
+            .bind(("owner_id", owner_id.to_string()))
+            .await?
+            .take::<Option<T>>(0)?
+            .is_some())
+    }
+
+    async fn create_owned(&self, subject: T, owner_id: &R::ID) -> Result<T> {
+        self.connection
+            .query("$created = CREATE $table CONTENT $subject")
+            .query("RELATE ONLY type::thing($table, $owner_id)->$relationship->$created")
+            .query("RETURN $created")
+            .bind(("table", T::singular_name()))
+            .bind(("subject", subject))
+            .bind(("owner_id", owner_id.to_string()))
+            .bind(("relationship", format!("owns_{}", T::singular_name())))
+            .await?
+            .take::<Option<T>>(2)?
+            .ok_or(SDBError::NotFoundRecentUpdate(T::singular_name().into()))
+    }
+
+    async fn relate(&self, subject_id: &T::ID, owner_id: &R::ID) -> Result<()> {
+        self.connection
+            .query("RELATE ONLY $type::thing($table, $id)->$relationship->type::thing($related_table, $related_id)")
+            .bind(("table", R::singular_name()))
+            .bind(("id", owner_id.to_string()))
+            .bind(("relationship", format!("owns_{}", T::singular_name())))
+            .bind(("related_table", T::singular_name()))
+            .bind(("related_id", subject_id.to_string()))
+            .await?;
+        Ok(())
+    }
+
+    // One-to-Many relationship methods
+    async fn find_children(&self, parent_id: &R::ID, page: PageRequest) -> Result<PageResponse<T>> {
+        todo!()
+    }
+
+    async fn count_children(&self, parent_id: &R::ID) -> Result<u64> {
+        todo!()
+    }
+
+    async fn create_child(&self, entity: T, parent_id: &R::ID) -> Result<T> {
+        todo!()
+    }
+
+    async fn create_children(&self, entities: Vec<T>, parent_id: &R::ID) -> Result<Vec<T>> {
+        todo!()
+    }
+
+    async fn delete_children(&self, parent_id: &R::ID) -> Result<u64> {
+        todo!()
+    }
+
+    // Many-to-Many relationship methods
+    async fn find_associated(
+        &self,
+        related_id: &R::ID,
+        page: PageRequest,
+    ) -> Result<PageResponse<T>> {
+        todo!()
+    }
+
+    async fn find_associated_to(
+        &self,
+        entity_id: &T::ID,
+        page: PageRequest,
+    ) -> Result<PageResponse<R>> {
+        todo!()
+    }
+
+    async fn count_associated(&self, related_id: &R::ID) -> Result<u64> {
+        todo!()
+    }
+
+    async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
+        todo!()
+    }
+
+    async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
+        todo!()
+    }
+
+    async fn create_associated(&self, entity: T, related_id: &R::ID) -> Result<T> {
+        todo!()
+    }
+
+    async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool> {
+        todo!()
+    }
+
+    async fn dissociate_all(&self, entity_id: &T::ID) -> Result<u64> {
+        todo!()
+    }
+
+    async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<u64> {
+        todo!()
     }
 }
