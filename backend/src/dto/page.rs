@@ -16,12 +16,22 @@ impl<T> PageResponse<T> {
         };
         Self { page_info, data }
     }
+
+    pub fn data(&self) -> &Vec<T> {
+        &self.data
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageRequest {
     page: i32,
     size: i32,
+}
+
+impl PageRequest {
+    pub fn new(page: i32, size: i32) -> Self {
+        Self { page, size }
+    }
 }
 
 impl Default for PageRequest {
