@@ -215,7 +215,19 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         related_id: &R::ID,
         page: PageRequest,
     ) -> Result<PageResponse<T>> {
-        todo!()
+        Ok(PageResponse::from(
+            self.connection
+                .query("SELECT ->$relationship->$table as $plural_table FROM $related_id FETCH $plural_table LIMIT $limit START $start")
+                .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+                .bind(("table", T::singular_name()))
+                .bind(("plural_table", T::plural_name()))
+                .bind(("related_id", related_id.to_string()))
+                .bind(("limit", page.size()))
+                .bind(("start", (page.page() - 1) * page.size()))
+                .await?
+                .take::<Vec<T>>(0)?,
+            page.page(),
+        ))
     }
 
     async fn find_associated_to(
@@ -223,34 +235,109 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         entity_id: &T::ID,
         page: PageRequest,
     ) -> Result<PageResponse<R>> {
-        todo!()
+        Ok(PageResponse::from(
+            self.connection
+                .query("SELECT <-$relationship<-$table as $plural_table FROM $entity_id FETCH $plural_table LIMIT $limit START $start")
+                .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+                .bind(("table", R::singular_name()))
+                .bind(("plural_table", R::plural_name()))
+                .bind(("entity_id", entity_id.to_string()))
+                .bind(("limit", page.size()))
+                .bind(("start", (page.page() - 1) * page.size()))
+                .await?
+                .take::<Vec<R>>(0)?,
+            page.page(),
+        ))
     }
 
     async fn count_associated(&self, related_id: &R::ID) -> Result<u64> {
-        todo!()
+        self.connection
+            .query("SELECT count(->$relationship->$table) FROM type::thing($r_table, $related_id)")
+            .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("r_table", R::singular_name()))
+            .bind(("related_id", related_id.to_string()))
+            .await?
+            .take::<Option<u64>>((0, "count"))?
+            .ok_or(SDBError::NotFoundRecentUpdate(T::singular_name().into()))
     }
 
     async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
-        todo!()
+        self.connection
+            .query("RELATE type::thing($r_table, $related_id)->$relationship->type::thing($table, $entity_id)")
+            .bind(("r_table", R::singular_name()))
+            .bind(("related_id", related_id.to_string()))
+            .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("entity_id", entity_id.to_string()))
+            .await?;
+        Ok(())
     }
 
     async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
-        todo!()
+        self.connection
+            .query("DELETE FROM $r_table->$relationship->$table WHERE in = type::thing($table, $entity_id) AND out = type::thing($r_table, $related_id)")
+            .bind(("r_table", R::singular_name()))
+            .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("entity_id", entity_id.to_string()))
+            .bind(("related_id", related_id.to_string()))
+            .await?;
+        Ok(())
     }
 
     async fn create_associated(&self, entity: T, related_id: &R::ID) -> Result<T> {
-        todo!()
+        self.connection
+            .query("$created = CREATE $table CONTENT $entity")
+            .query("RELATE type::thing($r_table, $related_id)->$relationship->$created")
+            .query("RETURN $created")
+            .bind(("table", T::singular_name()))
+            .bind(("entity", entity))
+            .bind(("r_table", R::singular_name()))
+            .bind(("related_id", related_id.to_string()))
+            .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+            .await?
+            .take::<Option<T>>(2)?
+            .ok_or(SDBError::NotFoundRecentUpdate(T::singular_name().into()))
     }
 
     async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool> {
-        todo!()
+        let result = self.connection
+            .query("SELECT * FROM $r_table->$relationship->$table WHERE in = type::thing($table, $entity_id) AND out = type::thing($r_table, $related_id)")
+            .bind(("r_table", R::singular_name()))
+            .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("entity_id", entity_id.to_string()))
+            .bind(("related_id", related_id.to_string()))
+            .await?
+            .take::<Vec<surrealdb::sql::Object>>(0)?;
+
+        Ok(!result.is_empty())
     }
 
     async fn dissociate_all(&self, entity_id: &T::ID) -> Result<u64> {
-        todo!()
+        let result = self.connection
+            .query("DELETE FROM $r_table->$relationship->$table WHERE in = type::thing($table, $entity_id)")
+            .bind(("r_table", R::singular_name()))
+            .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("entity_id", entity_id.to_string()))
+            .await?
+            .take::<Vec<surrealdb::sql::Object>>(0)?;
+
+        Ok(result.len() as u64)
     }
 
     async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<u64> {
-        todo!()
+        let result = self.connection
+            .query("DELETE FROM $r_table->$relationship->$table WHERE out = type::thing($r_table, $related_id)")
+            .bind(("r_table", R::singular_name()))
+            .bind(("relationship", format!("associates_with_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("related_id", related_id.to_string()))
+            .await?
+            .take::<Vec<surrealdb::sql::Object>>(0)?;
+
+        Ok(result.len() as u64)
     }
 }
