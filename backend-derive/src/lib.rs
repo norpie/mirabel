@@ -65,7 +65,7 @@ pub fn named_struct(attr: TokenStream, item: TokenStream) -> TokenStream {
     let expanded = quote! {
         #input
 
-        impl NamedStruct for #struct_name {
+        impl crate::repository::traits::NamedStruct for #struct_name {
             fn singular_name() -> &'static str {
                 #singular_name
             }
