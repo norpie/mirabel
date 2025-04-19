@@ -1,8 +1,6 @@
 use crate::{
     dto::page::{PageRequest, PageResponse},
-    repository::traits::{
-        AssociatedEntityRepository, NamedStruct, PublicEntityRepository,
-    },
+    repository::traits::{AssociatedEntityRepository, NamedStruct, PublicEntityRepository},
 };
 use async_trait::async_trait;
 use backend_derive::named_struct;
@@ -149,23 +147,66 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
     // One-to-Many relationship methods
     async fn find_children(&self, parent_id: &R::ID, page: PageRequest) -> Result<PageResponse<T>> {
-        todo!()
+        Ok(PageResponse::from(self.connection
+            .query("SELECT ->$relationship->$table as $plural_table FROM $parent_id FETCH $plural_table LIMIT $limit START $start")
+            .bind(("relationship", format!("has_child_{}", T::singular_name())))
+            .bind(("table", T::singular_name()))
+            .bind(("plural_table", T::plural_name()))
+            .bind(("parent_id", parent_id.to_string()))
+            .bind(("limit", page.size()))
+            .bind(("start", (page.page() - 1) * page.size()))
+            .await?
+            .take::<Vec<T>>(0)?, page.page()))
     }
 
     async fn count_children(&self, parent_id: &R::ID) -> Result<u64> {
-        todo!()
+        self.connection
+            .query("SELECT count(->$relationship->$table) FROM type::thing($table, $parent_id)")
+            .bind(("table", T::singular_name()))
+            .bind(("parent_id", parent_id.to_string()))
+            .bind(("relationship", format!("has_child_{}", T::singular_name())))
+            .await?
+            .take::<Option<u64>>((0, "count"))?
+            .ok_or(SDBError::NotFoundRecentUpdate(T::singular_name().into()))
     }
 
     async fn create_child(&self, entity: T, parent_id: &R::ID) -> Result<T> {
-        todo!()
+        self.connection
+            .query("$created = CREATE $table CONTENT $entity")
+            .query("RELATE type::thing($table, $parent_id)->$relationship->$created")
+            .query("RETURN $created")
+            .bind(("table", T::singular_name()))
+            .bind(("entity", entity))
+            .bind(("parent_id", parent_id.to_string()))
+            .bind(("relationship", format!("has_child_{}", T::singular_name())))
+            .await?
+            .take::<Option<T>>(2)?
+            .ok_or(SDBError::NotFoundRecentUpdate(T::singular_name().into()))
     }
 
     async fn create_children(&self, entities: Vec<T>, parent_id: &R::ID) -> Result<Vec<T>> {
-        todo!()
+        Ok(self
+            .connection
+            .query("$created = CREATE $table CONTENT $entities")
+            .query("RELATE type::thing($table, $parent_id)->$relationship->$created")
+            .query("RETURN $created")
+            .bind(("table", T::singular_name()))
+            .bind(("entities", entities))
+            .bind(("parent_id", parent_id.to_string()))
+            .bind(("relationship", format!("has_child_{}", T::singular_name())))
+            .await?
+            .take::<Vec<T>>(2)?)
     }
 
-    async fn delete_children(&self, parent_id: &R::ID) -> Result<u64> {
-        todo!()
+    async fn delete_children(&self, parent_id: &R::ID) -> Result<()> {
+        self.connection
+            .query("DELETE $child_table WHERE <-$relationship<-($table WHERE id = type::thing($table, $parent_id))")
+            .bind(("child_table", T::singular_name()))
+            .bind(("parent_id", parent_id.to_string()))
+            .bind(("relationship", format!("has_child_{}", T::singular_name())))
+            .await?
+            .take::<Vec<()>>(0)?;
+        Ok(())
     }
 
     // Many-to-Many relationship methods
