@@ -62,7 +62,7 @@ impl<T: Entity> Repository<T> for SurrealDB {
     async fn count(&self) -> Result<u64> {
         Ok(self
             .connection
-            .query("SELECT count(id) FROM type::table($table);")
+            .query("SELECT count() FROM type::table($table) GROUP ALL;")
             .bind(("table", T::singular_name()))
             .await?
             .take::<Option<u64>>((0, "count"))?
