@@ -135,7 +135,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
     async fn relate(&self, subject_id: &T::ID, owner_id: &R::ID) -> Result<()> {
         self.connection
-            .query("RELATE ONLY $type::thing($table, $id)->$relationship->type::thing($related_table, $related_id)")
+            .query("RELATE ONLY type::thing($table, $id)->$relationship->type::thing($related_table, $related_id)")
             .bind(("table", R::singular_name()))
             .bind(("id", owner_id.to_string()))
             .bind(("relationship", format!("owns_{}", T::singular_name())))
