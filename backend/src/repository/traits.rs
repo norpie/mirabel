@@ -77,7 +77,7 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     async fn count_children(&self, parent_id: &R::ID) -> Result<u64, Self::Error>;
     async fn create_child(&self, entity: T, parent_id: &R::ID) -> Result<T, Self::Error>;
     async fn create_children(&self, entities: Vec<T>, parent_id: &R::ID) -> Result<Vec<T>, Self::Error>;
-    async fn delete_children(&self, parent_id: &R::ID) -> Result<u64, Self::Error>;
+    async fn delete_children(&self, parent_id: &R::ID) -> Result<(), Self::Error>;
 
     // Many-to-Many relationship methods
     async fn find_associated(
