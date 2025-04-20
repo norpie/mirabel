@@ -4,7 +4,8 @@ use crate::{
 };
 use async_trait::async_trait;
 use backend_derive::named_struct;
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_json::Value;
 use surrealdb::sql::Thing;
 
 use crate::{
@@ -98,13 +99,14 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     // One-to-One relationship methods
     async fn find_related(&self, owner_id: &R::ID) -> Result<Option<T>> {
         Ok(self.connection
-            .query("SELECT ->$relationship->$table as $plural_table FROM $owner_id FETCH $plural_table")
-            .bind(("relationship", format!("owns_{}", T::singular_name())))
-            .bind(("table", T::singular_name()))
-            .bind(("plural_table", T::plural_name()))
+            .query(format!("SELECT ->owns_{}->{} as result FROM type::thing($owner_table, $owner_id) FETCH result", T::singular_name(), T::singular_name()))
+            .bind(("owner_table", R::singular_name()))
             .bind(("owner_id", owner_id.to_string()))
             .await?
-            .take::<Option<T>>(0)?)
+            .take::<Vec<Vec<T>>>((0, "result"))?
+            .into_iter()
+            .next()
+            .and_then(|v| v.into_iter().next()))
     }
 
     async fn exists_related(&self, owner_id: &R::ID) -> Result<bool> {
@@ -134,12 +136,25 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     }
 
     async fn relate(&self, subject_id: &T::ID, owner_id: &R::ID) -> Result<()> {
-        self.connection
-            .query("RELATE ONLY $owner->$relationship->$subject")
-            .bind(("owner", Thing::from((R::singular_name(), owner_id.to_string().as_str()))))
-            .bind(("relationship", format!("owns_{}", T::singular_name())))
-            .bind(("subject", Thing::from((T::singular_name(), subject_id.to_string().as_str()))))
-            .await?;
+        let errors = self
+            .connection
+            .query(format!(
+                "RELATE ONLY $owner->owns_{}->$subject",
+                T::singular_name()
+            ))
+            .bind((
+                "owner",
+                Thing::from((R::singular_name(), owner_id.to_string().as_str())),
+            ))
+            .bind((
+                "subject",
+                Thing::from((T::singular_name(), subject_id.to_string().as_str())),
+            ))
+            .await?
+            .take_errors();
+        if let Some((index, err)) = errors.into_iter().next() {
+            return Err(err.into());
+        }
         Ok(())
     }
 
