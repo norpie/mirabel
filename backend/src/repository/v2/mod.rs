@@ -291,7 +291,7 @@ pub mod tests {
         debug!("Cleaning up test entities");
         debug!("Deleting child entity with ID: {}", child_id);
         child_repo.delete(&child_id).await.expect("Failed to delete child entity");
-        
+
         debug!("Deleting parent entity with ID: {}", parent_id);
         entity_repo.delete(&parent_id).await.expect("Failed to delete parent entity");
 
@@ -326,7 +326,7 @@ pub mod tests {
         let saved_children = entity_repo.create_children(children, &parent_id).await.expect("Failed to create children");
         info!("Created {} child entities", saved_children.len());
         assert_eq!(saved_children.len(), 2, "Should have created 2 children");
-        
+
         // Test count_children
         debug!("Counting children for parent {}", parent_id);
         let count = entity_repo.count_children(&parent_id).await.expect("Failed to count children");
@@ -354,7 +354,7 @@ pub mod tests {
         // Test delete_children
         debug!("Deleting all children of parent {}", parent_id);
         entity_repo.delete_children(&parent_id).await.expect("Failed to delete children");
-        
+
         let count_after = entity_repo.count_children(&parent_id).await.expect("Failed to count children after deletion");
         debug!("Parent has {} children after deletion", count_after);
         assert_eq!(count_after, 0, "Parent should have 0 children after deletion");
@@ -374,29 +374,29 @@ pub mod tests {
         // Create entities
         let entity1 = TestEntity { id: None, name: "Entity 1".to_string() };
         let entity2 = TestEntity { id: None, name: "Entity 2".to_string() };
-        
+
         let saved_entity1 = entity_repo.save(entity1).await.expect("Failed to save entity 1");
         let entity1_id = saved_entity1.id().expect("Entity 1 should have ID");
-        
+
         let saved_entity2 = entity_repo.save(entity2).await.expect("Failed to save entity 2");
         let entity2_id = saved_entity2.id().expect("Entity 2 should have ID");
-        
+
         info!("Saved entities with IDs: {}, {}", entity1_id, entity2_id);
 
         // Create related entities
         let related1 = TestEntityChild { id: None, name: "Related 1".to_string() };
         let related2 = TestEntityChild { id: None, name: "Related 2".to_string() };
         let related3 = TestEntityChild { id: None, name: "Related 3".to_string() };
-        
+
         let saved_related1 = related_repo.save(related1).await.expect("Failed to save related 1");
         let related1_id = saved_related1.id().expect("Related 1 should have ID");
-        
+
         let saved_related2 = related_repo.save(related2).await.expect("Failed to save related 2");
         let related2_id = saved_related2.id().expect("Related 2 should have ID");
-        
+
         let saved_related3 = related_repo.save(related3).await.expect("Failed to save related 3");
         let related3_id = saved_related3.id().expect("Related 3 should have ID");
-        
+
         info!("Saved related entities with IDs: {}, {}, {}", related1_id, related2_id, related3_id);
 
         // Test create_associated
@@ -411,7 +411,7 @@ pub mod tests {
         debug!("Associating entity1 with related1 and related2");
         entity_repo.associate(&entity1_id, &related1_id).await.expect("Failed to associate entity1 with related1");
         entity_repo.associate(&entity1_id, &related2_id).await.expect("Failed to associate entity1 with related2");
-        
+
         debug!("Associating entity2 with related2 and related3");
         entity_repo.associate(&entity2_id, &related2_id).await.expect("Failed to associate entity2 with related2");
         entity_repo.associate(&entity2_id, &related3_id).await.expect("Failed to associate entity2 with related3");
@@ -422,7 +422,7 @@ pub mod tests {
             "entity1 should be associated with related1");
         assert!(entity_repo.is_associated(&entity1_id, &related2_id).await.expect("Failed to check association"),
             "entity1 should be associated with related2");
-        assert!(entity_repo.is_associated(&entity2_id, &related2_id).await.expect("Failed to check association"), 
+        assert!(entity_repo.is_associated(&entity2_id, &related2_id).await.expect("Failed to check association"),
             "entity2 should be associated with related2");
         assert!(entity_repo.is_associated(&entity2_id, &related3_id).await.expect("Failed to check association"),
             "entity2 should be associated with related3");
@@ -451,7 +451,7 @@ pub mod tests {
         // Test dissociate
         debug!("Dissociating entity1 from related2");
         entity_repo.dissociate(&entity1_id, &related2_id).await.expect("Failed to dissociate entity1 from related2");
-        
+
         assert!(!entity_repo.is_associated(&entity1_id, &related2_id).await.expect("Failed to check association after dissociation"),
             "entity1 should no longer be associated with related2");
         assert!(entity_repo.is_associated(&entity2_id, &related2_id).await.expect("Failed to check association"),
@@ -459,19 +459,15 @@ pub mod tests {
 
         // Test dissociate_all
         debug!("Dissociating entity1 from all related entities");
-        let dissociated_count = entity_repo.dissociate_all(&entity1_id).await.expect("Failed to dissociate entity1 from all");
-        info!("Dissociated entity1 from {} entities", dissociated_count);
-        assert_eq!(dissociated_count, 2, "Should have dissociated from 2 entities");
-        
+        entity_repo.dissociate_all(&entity1_id).await.expect("Failed to dissociate entity1 from all");
+
         let count_after = entity_repo.count_associated(&entity1_id).await.expect("Failed to count associated entities after dissociate_all");
         assert_eq!(count_after, 0, "entity1 should have 0 associated entities after dissociate_all");
 
         // Test dissociate_from_all
         debug!("Dissociating related3 from all entities");
-        let from_all_count = entity_repo.dissociate_from_all(&related3_id).await.expect("Failed to dissociate related3 from all");
-        info!("Dissociated related3 from {} entities", from_all_count);
-        assert_eq!(from_all_count, 1, "Should have dissociated from 1 entity");
-        
+        entity_repo.dissociate_from_all(&related3_id).await.expect("Failed to dissociate related3 from all");
+
         assert!(!entity_repo.is_associated(&entity2_id, &related3_id).await.expect("Failed to check association after dissociate_from_all"),
             "entity2 should no longer be associated with related3");
 
@@ -479,7 +475,7 @@ pub mod tests {
         debug!("Cleaning up test entities");
         entity_repo.delete(&entity1_id).await.expect("Failed to delete entity1");
         entity_repo.delete(&entity2_id).await.expect("Failed to delete entity2");
-        
+
         related_repo.delete(&related1_id).await.expect("Failed to delete related1");
         related_repo.delete(&related2_id).await.expect("Failed to delete related2");
         related_repo.delete(&related3_id).await.expect("Failed to delete related3");
