@@ -46,13 +46,21 @@ pub trait FieldSearchableRepository<T: Entity + FieldSearchableStruct>: Reposito
 
 #[async_trait]
 pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T> {
-    async fn find_by_field(
+    async fn find_single_by_fields(
         &self,
-        field: &str,
-        value: &str,
+        fields: &[(&str, &str)]
+    ) -> Result<Option<T>, Self::Error>;
+
+    async fn find_by_fields(
+        &self,
+        fields: &[(&str, &str)],
         page: PageRequest,
     ) -> Result<PageResponse<T>, Self::Error>;
-    async fn exists_by_field(&self, field: &str, value: &str) -> Result<bool, Self::Error>;
+
+    async fn exists_by_fields(
+        &self,
+        fields: &[(&str, &str)],
+    ) -> Result<bool, Self::Error>;
 }
 
 #[async_trait]
