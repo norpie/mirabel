@@ -14,6 +14,7 @@ pub(crate) mod builder;
 pub(crate) mod models;
 pub(crate) mod repository;
 
+#[derive(Debug, Clone)]
 pub struct SurrealDB {
     connection: Surreal<Client>,
 }
