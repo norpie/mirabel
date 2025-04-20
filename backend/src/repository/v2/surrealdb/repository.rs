@@ -465,8 +465,11 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         entity_id: &T::ID,
         page: PageRequest,
     ) -> Result<PageResponse<R>> {
-        let query = format!("SELECT ->{}->{} as result FROM type::thing($entity_table, $entity_id) LIMIT $limit START $start FETCH result",
-                          associates_with_rel_name(R::singular_name()), R::singular_name());
+        let rel_name = associates_with_rel_name(R::singular_name());
+        let query = format!(
+            "SELECT out AS result FROM {} WHERE in = type::thing($entity_table, $entity_id) LIMIT $limit START $start FETCH result",
+            rel_name
+        );
         let entity_id_str = entity_id.to_string();
         let limit_str = page.size().to_string();
         let start_str = ((page.page() - 1) * page.size()).to_string();
@@ -487,14 +490,12 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             .bind(("start", (page.page() - 1) * page.size()))
             .await?;
 
-        let associated_nested = result.take::<Vec<Vec<R>>>((0, "result"))?;
-        // Flatten the nested vectors
-        let flattened: Vec<R> = associated_nested.into_iter().flatten().collect();
+        let associated = result.take::<Vec<R>>((0, "result"))?;
         debug!(
             "Query result: found {} associated entities",
-            flattened.len()
+            associated.len()
         );
-        Ok(PageResponse::from(flattened, page.page()))
+        Ok(PageResponse::from(associated, page.page()))
     }
 
     async fn find_associated_to(
@@ -502,8 +503,11 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         related_id: &R::ID,
         page: PageRequest,
     ) -> Result<PageResponse<T>> {
-        let query = format!("SELECT <-{}<-{} as result FROM type::thing($related_table, $related_id) LIMIT $limit START $start FETCH result",
-                          associates_with_rel_name(R::singular_name()), T::singular_name());
+        let rel_name = associates_with_rel_name(R::singular_name());
+        let query = format!(
+            "SELECT in AS result FROM {} WHERE out = type::thing($related_table, $related_id) LIMIT $limit START $start FETCH result",
+            rel_name
+        );
         let related_id_str = related_id.to_string();
         let limit_str = page.size().to_string();
         let start_str = ((page.page() - 1) * page.size()).to_string();
@@ -524,14 +528,12 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             .bind(("start", (page.page() - 1) * page.size()))
             .await?;
 
-        let associated_nested = result.take::<Vec<Vec<T>>>((0, "result"))?;
-        // Flatten the nested vectors
-        let flattened: Vec<T> = associated_nested.into_iter().flatten().collect();
+        let associated = result.take::<Vec<T>>((0, "result"))?;
         debug!(
             "Query result: found {} associated entities",
-            flattened.len()
+            associated.len()
         );
-        Ok(PageResponse::from(flattened, page.page()))
+        Ok(PageResponse::from(associated, page.page()))
     }
 
     async fn count_associated(&self, entity_id: &T::ID) -> Result<u64> {
@@ -561,7 +563,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
     async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
         let query_fmt = format!(
-            "RELATE $entity->{}->$related",
+            "RELATE ONLY $entity->{}->$related",
             associates_with_rel_name(R::singular_name())
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
@@ -589,7 +591,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
     async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
         let query_fmt = format!(
-            "DELETE {} WHERE in = $related AND out = $entity",
+            "DELETE {} WHERE out = $related AND in = $entity",
             associates_with_rel_name(R::singular_name())
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
@@ -619,7 +621,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     }
 
     async fn create_associated(&self, entity_id: &T::ID, related: R) -> Result<R> {
-        let query1 = "$created = CREATE $table CONTENT $related";
+        let query1 = "$created = CREATE type::table($table) CONTENT $related";
         let query2 = format!(
             "RELATE $entity->{}->$created",
             associates_with_rel_name(R::singular_name())
@@ -656,7 +658,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
     async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool> {
         let query = format!(
-            "SELECT * FROM {} WHERE out = $entity AND in = $related",
+            "SELECT * FROM {} WHERE in = $entity AND out = $related",
             associates_with_rel_name(R::singular_name())
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
@@ -688,7 +690,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
     async fn dissociate_all(&self, entity_id: &T::ID) -> Result<u64> {
         let query = format!(
-            "DELETE {} WHERE out = $entity",
+            "DELETE {} WHERE in = $entity",
             associates_with_rel_name(R::singular_name())
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
@@ -719,7 +721,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
     async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<u64> {
         let query = format!(
-            "DELETE {} WHERE in = $related",
+            "DELETE {} WHERE out = $related",
             associates_with_rel_name(R::singular_name())
         );
         let related_bind = Thing::from((R::singular_name(), related_id.to_string().as_str()));
