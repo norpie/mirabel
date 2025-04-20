@@ -109,5 +109,7 @@ mod tests {
         // repository::v2::tests::test_field_findable_repository(db).await;
         repository::v2::tests::test_public_entity_repository(db.clone()).await;
         repository::v2::tests::test_associated_entity_one_to_one(db.clone(), db.clone()).await;
+        repository::v2::tests::test_associated_entity_one_to_many(db.clone(), db.clone()).await;
+        repository::v2::tests::test_associated_entity_many_to_many(db.clone(), db.clone()).await;
     }
 }
