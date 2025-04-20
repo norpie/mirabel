@@ -95,8 +95,8 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<(), Self::Error>;
     async fn create_associated(&self, entity_id: &T::ID, related: R) -> Result<R, Self::Error>;
     async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool, Self::Error>;
-    async fn dissociate_all(&self, entity_id: &T::ID) -> Result<u64, Self::Error>;
-    async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<u64, Self::Error>;
+    async fn dissociate_all(&self, entity_id: &T::ID) -> Result<(), Self::Error>;
+    async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<(), Self::Error>;
 }
 
 #[async_trait]

@@ -688,7 +688,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(is_associated)
     }
 
-    async fn dissociate_all(&self, entity_id: &T::ID) -> Result<u64> {
+    async fn dissociate_all(&self, entity_id: &T::ID) -> Result<()> {
         let query = format!(
             "DELETE {} WHERE in = $entity",
             associates_with_rel_name(R::singular_name())
@@ -713,13 +713,11 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             return Err(err.into());
         }
 
-        let objects = result.take::<Vec<surrealdb::sql::Object>>(0)?;
-        let count = objects.len() as u64;
-        debug!("Dissociated all: removed {} relationships", count);
-        Ok(count)
+        debug!("Dissociated all relationships");
+        Ok(())
     }
 
-    async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<u64> {
+    async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<()> {
         let query = format!(
             "DELETE {} WHERE out = $related",
             associates_with_rel_name(R::singular_name())
@@ -744,9 +742,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             return Err(err.into());
         }
 
-        let objects = result.take::<Vec<surrealdb::sql::Object>>(0)?;
-        let count = objects.len() as u64;
-        debug!("Dissociated from all: removed {} relationships", count);
-        Ok(count)
+        debug!("Dissociated from all relationships");
+        Ok(())
     }
 }
