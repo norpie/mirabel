@@ -81,3 +81,30 @@ impl Database for SurrealDB {
         Ok(true)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::repository::v2::surrealdb::builder::SurrealDBBuilder;
+    use crate::repository::{self, Repository};
+    use actix_web::web::Data;
+    use surrealdb::engine::remote::ws::{Client, Ws};
+    use surrealdb::Surreal;
+
+    #[tokio::test]
+    async fn test() {
+        env_logger::init();
+        let db = SurrealDBBuilder::new("localhost:8000")
+            .with_root("root", "root")
+            .use_ns("test")
+            .use_db("test")
+            .build()
+            .await
+            .unwrap();
+        repository::v2::tests::test_repository(db.clone()).await;
+        // repository::v2::tests::test_field_searchable_repository(db).await;
+        // repository::v2::tests::test_field_findable_repository(db).await;
+        repository::v2::tests::test_public_entity_repository(db.clone()).await;
+        repository::v2::tests::test_associated_entity_repository(db.clone(), db.clone()).await;
+    }
+}
