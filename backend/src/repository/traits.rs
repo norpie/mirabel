@@ -23,8 +23,8 @@ pub trait FieldSortableStruct {
     fn sortable_fields() -> &'static [&'static str];
 }
 
-pub trait Entity: NamedStruct + Send + Sync + Serialize + DeserializeOwned + 'static {
-    type ID: Clone + Eq + Display + Send + Sync + Serialize + DeserializeOwned + 'static;
+pub trait Entity: std::fmt::Debug + NamedStruct + Send + Sync + Serialize + DeserializeOwned + 'static {
+    type ID: std::fmt::Debug + Clone + Eq + Display + Send + Sync + Serialize + DeserializeOwned + 'static;
     fn id(&self) -> Option<Self::ID>;
 }
 
