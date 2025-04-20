@@ -13,6 +13,7 @@ use crate::{repository::traits::Database, Error};
 pub(crate) mod builder;
 pub(crate) mod models;
 pub(crate) mod repository;
+pub(crate) mod relationships;
 
 #[derive(Debug, Clone)]
 pub struct SurrealDB {
@@ -88,11 +89,13 @@ mod tests {
     use crate::repository::v2::surrealdb::builder::SurrealDBBuilder;
     use crate::repository::{self, Repository};
     use actix_web::web::Data;
+    use dotenvy::EnvLoader;
     use surrealdb::engine::remote::ws::{Client, Ws};
     use surrealdb::Surreal;
 
     #[tokio::test]
     async fn test() {
+        EnvLoader::new().load().unwrap();
         env_logger::init();
         let db = SurrealDBBuilder::new("localhost:8000")
             .with_root("root", "root")
@@ -105,6 +108,6 @@ mod tests {
         // repository::v2::tests::test_field_searchable_repository(db).await;
         // repository::v2::tests::test_field_findable_repository(db).await;
         repository::v2::tests::test_public_entity_repository(db.clone()).await;
-        repository::v2::tests::test_associated_entity_repository(db.clone(), db.clone()).await;
+        repository::v2::tests::test_associated_entity_one_to_one(db.clone(), db.clone()).await;
     }
 }
