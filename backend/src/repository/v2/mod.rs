@@ -811,6 +811,116 @@ pub mod tests {
         info!("test_associated_entity_many_to_many completed successfully");
     }
 
+    /*pub async fn test_field_sortable_repository(repo: impl FieldSortableRepository<TestEntity>) {
+        info!("Starting test_field_sortable_repository");
+        // Create test entities with values that can be sorted
+        let entities = vec![
+            TestEntity {
+                id: None,
+                name: "C Test Entity".to_string(), // Middle value
+            },
+            TestEntity {
+                id: None,
+                name: "A Test Entity".to_string(), // First value
+            },
+            TestEntity {
+                id: None,
+                name: "E Test Entity".to_string(), // Last value
+            },
+            TestEntity {
+                id: None,
+                name: "B Test Entity".to_string(), // Second value
+            },
+            TestEntity {
+                id: None,
+                name: "D Test Entity".to_string(), // Fourth value
+            },
+        ];
+        debug!("Created {} test entities for sorting", entities.len());
+
+        let mut saved_ids = Vec::new();
+        for entity in entities {
+            let saved = repo.save(entity).await.expect("Failed to save entity for sorting test");
+            if let Some(id) = saved.id() {
+                debug!("Saved entity with ID: {}", id);
+                saved_ids.push(id);
+            }
+        }
+        info!("Saved {} entities for sorting test", saved_ids.len());
+
+        // Test sorting in ascending order
+        let page_req = PageRequest::new(1, 10);
+        debug!("Testing sorting by 'name' in ascending order");
+        let ascending_results = repo.find_sorted("name", true, page_req.clone()).await
+            .expect("Failed to find with ascending sort");
+
+        assert_eq!(ascending_results.data().len(), 5, "Should return all 5 entities");
+
+        // Check if sorted correctly (A, B, C, D, E)
+        let names: Vec<&str> = ascending_results.data().iter()
+            .map(|e| e.name.as_str())
+            .collect();
+        info!("Ascending order results: {:?}", names);
+        assert_eq!(
+            names,
+            vec!["A Test Entity", "B Test Entity", "C Test Entity", "D Test Entity", "E Test Entity"],
+            "Entities should be sorted alphabetically in ascending order"
+        );
+
+        // Test sorting in descending order
+        debug!("Testing sorting by 'name' in descending order");
+        let descending_results = repo.find_sorted("name", false, page_req).await
+            .expect("Failed to find with descending sort");
+
+        assert_eq!(descending_results.data().len(), 5, "Should return all 5 entities");
+
+        // Check if sorted correctly (E, D, C, B, A)
+        let names: Vec<&str> = descending_results.data().iter()
+            .map(|e| e.name.as_str())
+            .collect();
+        info!("Descending order results: {:?}", names);
+        assert_eq!(
+            names,
+            vec!["E Test Entity", "D Test Entity", "C Test Entity", "B Test Entity", "A Test Entity"],
+            "Entities should be sorted alphabetically in descending order"
+        );
+
+        // Test pagination with sorting
+        let page_req = PageRequest::new(1, 2);
+        debug!("Testing first page with 2 items in ascending order");
+        let first_page = repo.find_sorted("name", true, page_req).await
+            .expect("Failed to get first page with sort");
+
+        assert_eq!(first_page.data().len(), 2, "First page should have 2 items");
+        assert_eq!(
+            first_page.data()[0].name, "A Test Entity",
+            "First item should be 'A Test Entity'"
+        );
+        assert_eq!(
+            first_page.data()[1].name, "B Test Entity",
+            "Second item should be 'B Test Entity'"
+        );
+
+        let page_req = PageRequest::new(2, 2);
+        debug!("Testing second page with 2 items in ascending order");
+        let second_page = repo.find_sorted("name", true, page_req).await
+            .expect("Failed to get second page with sort");
+
+        assert_eq!(second_page.data().len(), 2, "Second page should have 2 items");
+        assert_eq!(
+            second_page.data()[0].name, "C Test Entity",
+            "First item on second page should be 'C Test Entity'"
+        );
+
+        // Clean up
+        debug!("Cleaning up {} test entities", saved_ids.len());
+        for id in saved_ids {
+            repo.delete(&id).await.expect("Failed to delete test entity");
+            debug!("Deleted entity with ID: {}", id);
+        }
+        info!("test_field_sortable_repository completed successfully");
+    }*/
+
     // pub async fn test_throughput_repository(repo: impl ThroughputRepository<TestEntity>) {
     //     // Create test entities
     //     let entities = vec![
