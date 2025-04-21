@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
 
 async fn run() -> Result<()> {
     info!("Running setup tasks");
-    let db = SurrealDB::setup().await?;
+    let db = SurrealDB::from_env().await?;
     let engines = SearchEngines::from_env();
     if !engines.available().await {
         log::error!("No search engines are available");
