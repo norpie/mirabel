@@ -6,7 +6,7 @@ use argon2::{
     Argon2, PasswordHasher,
 };
 
-use crate::{model::user::User, repository::Repository};
+use crate::model::user::User;
 
 pub struct UserService {
     user_repo: Box<dyn FieldFindableRepository<User, Error = Error>>,

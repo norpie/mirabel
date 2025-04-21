@@ -13,9 +13,7 @@ use crate::dto::register_user::RegisterUser;
 use crate::model::user::User;
 use crate::prelude::*;
 
-use crate::repository::traits::{Entity, FieldFindableRepository, FieldFindableStruct};
-use crate::repository::users::UserRepository;
-use crate::repository::Repository;
+use crate::repository::traits::{Entity, FieldFindableRepository};
 use crate::security::jwt_util::TokenFactory;
 use crate::{repository::surrealdb::SurrealDB, security::jwt_util::TokenPair};
 
