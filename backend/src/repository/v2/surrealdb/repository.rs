@@ -134,7 +134,28 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
         &self,
         fields: Vec<(&'static str, String)>,
     ) -> Result<Option<T>> {
-        todo!()
+        debug!("Finding single {} by fields: {:?}", T::singular_name(), fields);
+
+        let mut query_str = "SELECT * FROM type::table($table) WHERE ".to_string();
+        for (field, _) in fields.iter() {
+            query_str += &format!("{} = ${} AND ", field, field);
+        }
+        query_str = query_str.trim_end_matches(" AND ").to_string();
+        query_str += " LIMIT 1;";
+
+        debug!("Executing query: {} with binds: table={}", query_str, T::singular_name());
+
+        let mut query = self.connection
+            .query(&query_str)
+            .bind(("table", T::singular_name()));
+        for (field, value) in fields.into_iter() {
+            query = query.bind((field, value));
+        }
+
+        let result = query.await?.take::<Option<T>>(0)?;
+        debug!("Query result: entity found = {}", result.is_some());
+
+        Ok(result)
     }
 
     async fn find_by_fields(
@@ -142,14 +163,64 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
         fields: Vec<(&'static str, String)>,
         page: PageRequest,
     ) -> Result<PageResponse<T>> {
-        todo!()
+        debug!(
+            "Finding {} by fields: {:?} with pagination: page={}, size={}",
+            T::singular_name(), fields, page.page(), page.size()
+        );
+
+        let mut query_str = "SELECT * FROM type::table($table) WHERE ".to_string();
+        for (field, _) in fields.iter() {
+            query_str += &format!("{} = ${} AND ", field, field);
+        }
+        query_str = query_str.trim_end_matches(" AND ").to_string();
+        query_str += " LIMIT $limit START $start";
+
+        debug!(
+            "Executing query: {} with binds: table={}, limit={}, start={}",
+            query_str, T::singular_name(), page.size(), (page.page() - 1) * page.size()
+        );
+
+        let mut query = self.connection
+            .query(&query_str)
+            .bind(("table", T::singular_name()));
+        for (field, value) in fields.into_iter() {
+            query = query.bind((field, value));
+        }
+        query = query
+            .bind(("limit", page.size()))
+            .bind(("start", (page.page() - 1) * page.size()));
+
+        let entities = query.await?.take::<Vec<T>>(0)?;
+        debug!("Query result: found {} entities", entities.len());
+
+        Ok(PageResponse::from(entities, page.page()))
     }
 
     async fn exists_by_fields(
         &self,
         fields: Vec<(&'static str, String)>,
     ) -> Result<bool> {
-        todo!()
+        debug!("Checking existence of {} by fields: {:?}", T::singular_name(), fields);
+
+        let mut query_str = "SELECT * FROM type::table($table) WHERE ".to_string();
+        for (field, _) in fields.iter() {
+            query_str += &format!("{} = ${} OR ", field, field);
+        }
+        query_str = query_str.trim_end_matches(" OR ").to_string();
+
+        debug!("Executing query: {} with binds: table={}", query_str, T::singular_name());
+
+        let mut query = self.connection
+            .query(&query_str)
+            .bind(("table", T::singular_name()));
+        for (field, value) in fields.into_iter() {
+            query = query.bind((field, value));
+        }
+
+        let result = query.await?.take::<Option<T>>(0)?;
+        debug!("Query result: entity exists = {}", result.is_some());
+
+        Ok(result.is_some())
     }
 }
 
