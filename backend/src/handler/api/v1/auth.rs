@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use crate::{
-    dto::{api_response::ApiResponse, token::AccessToken},
-    model::user::{LoginUser, RegisterUser, User},
+    dto::{api_response::ApiResponse, login_user::LoginUser, register_user::RegisterUser, token::AccessToken},
+    model::user::User,
     prelude::*,
     repository::{surrealdb::SurrealDB, Repository},
     security::jwt_util::TokenFactory,
-    service::{auth, security},
+    service::{auth::{self, AuthService}, security},
 };
 
 use actix_web::{
@@ -16,8 +16,6 @@ use actix_web::{
     web::{self, Data, Json},
     HttpMessage, HttpRequest, Responder, Scope,
 };
-
-use crate::model::user::NewUser;
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -31,10 +29,10 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 
 #[post("/register")]
 pub async fn register(
-    db: Data<Box<dyn Repository>>,
+    auth: Data<AuthService>,
     user: Json<RegisterUser>,
 ) -> Result<impl Responder> {
-    let token_pair = auth::register(db, user.0).await?;
+    let token_pair = auth.register(user.0).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
         .customize()
@@ -45,8 +43,8 @@ pub async fn register(
 }
 
 #[post("/login")]
-pub async fn login(db: Data<Box<dyn Repository>>, user: Json<LoginUser>) -> Result<impl Responder> {
-    let token_pair = auth::login(db, user.0).await?;
+pub async fn login(auth: Data<AuthService>, user: Json<LoginUser>) -> Result<impl Responder> {
+    let token_pair = auth.login(user.0).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
         .customize()

@@ -7,8 +7,10 @@ use backend_derive::named_struct;
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 
+use crate::dto::login_user::LoginUser;
 use crate::dto::page::PageRequest;
-use crate::model::user::{LoginUser, NewUser, RegisterUser, User};
+use crate::dto::register_user::RegisterUser;
+use crate::model::user::User;
 use crate::prelude::*;
 
 use crate::repository::traits::{Entity, FieldFindableRepository, FieldFindableStruct};
@@ -17,76 +19,13 @@ use crate::repository::Repository;
 use crate::security::jwt_util::TokenFactory;
 use crate::{repository::surrealdb::SurrealDB, security::jwt_util::TokenPair};
 
-pub async fn register(db: Data<Box<dyn Repository>>, user: RegisterUser) -> Result<TokenPair> {
-    let RegisterUser {
-        email,
-        username,
-        password,
-    } = user;
-
-    let found = db.get_user_by_email(email.clone()).await?;
-    if found.is_some() {
-        return Err(Error::BadRequest("Email already exists".into()));
-    }
-
-    let argon2 = Argon2::default();
-    let salt = SaltString::generate(&mut OsRng);
-    let password_hash = argon2
-        .hash_password(password.as_bytes(), &salt)?
-        .to_string();
-
-    let user = db
-        .create_user(NewUser::new(email, username, password_hash))
-        .await?;
-    TokenFactory::from_env()?.generate_token(user.id().to_string())
-}
-
-pub async fn login(db: Data<Box<dyn Repository>>, user: LoginUser) -> Result<TokenPair> {
-    let LoginUser { email, password } = user;
-    let found_user = db
-        .get_user_by_email(email)
-        .await?
-        .ok_or(Error::BadRequest("Wrong email or password".into()))?;
-
-    let argon2 = Argon2::default();
-    let password_hash = PasswordHash::new(found_user.password())?;
-    Argon2::default()
-        .verify_password(password.as_bytes(), &password_hash)
-        .map_err(|_| Error::BadRequest("Wrong email or password".into()))?;
-
-    TokenFactory::from_env()?.generate_token(found_user.id().to_string())
-}
-
 pub struct AuthService {
-    db: Box<dyn FieldFindableRepository<UserV2, Error = Error>>,
+    db: Box<dyn FieldFindableRepository<User, Error = Error>>,
     token_factory: TokenFactory,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[named_struct()]
-pub struct UserV2 {
-    id: Option<Thing>,
-    email: String,
-    username: String,
-    password: String,
-}
-
-impl Entity for UserV2 {
-    type ID = String;
-
-    fn id(&self) -> Option<Self::ID> {
-        self.id.as_ref().map(|thing| thing.id.to_string())
-    }
-}
-
-impl FieldFindableStruct for UserV2 {
-    fn filterable_fields() -> &'static [&'static str] {
-        &["email", "username"]
-    }
-}
-
 impl AuthService {
-    fn from(db: Box<dyn FieldFindableRepository<UserV2, Error = Error>>) -> Result<Self> {
+    fn from(db: Box<dyn FieldFindableRepository<User, Error = Error>>) -> Result<Self> {
         Ok(AuthService {
             db,
             token_factory: TokenFactory::from_env()?,
@@ -95,7 +34,7 @@ impl AuthService {
 
     pub async fn login(&self, user: LoginUser) -> Result<TokenPair> {
         let mut fields = vec![("email", user.email)];
-        let found_user: UserV2 = self
+        let found_user: User = self
             .db
             .find_single_by_fields(fields)
             .await?
@@ -130,12 +69,11 @@ impl AuthService {
 
         let user = self
             .db
-            .save(UserV2 {
-                id: None,
+            .save(User::new(
                 email,
                 username,
-                password: password_hash,
-            })
+                password,
+            ))
             .await?;
         self.token_factory
             .generate_token(user.id().unwrap().to_string())
