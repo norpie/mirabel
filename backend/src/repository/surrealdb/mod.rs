@@ -1,75 +1,170 @@
-use crate::{dto::page::PageRequest, prelude::*};
+use crate::prelude::*;
 
-use std::{env, sync::Arc};
-
-use actix_web::web::Data;
 use async_trait::async_trait;
-use futures::TryFutureExt;
-use include_dir::{include_dir, Dir};
-use log::{debug, info};
+use builder::SurrealDBBuilder;
 use surrealdb::{
-    engine::remote::ws::{self, Client, Ws},
-    opt::auth::Root,
+    engine::remote::ws::{Client, Ws},
     Surreal,
 };
-use surrealdb_migrations::MigrationRunner;
+use thiserror::Error;
 
-use super::Repository;
+use crate::{repository::traits::Database, Error};
 
-pub mod avatars;
-pub mod sessions;
-pub mod users;
-pub mod workspaces;
+pub(crate) mod builder;
+pub(crate) mod models;
+pub(crate) mod relationships;
+pub(crate) mod repository;
 
-const MIGRATOR_DIR: Dir<'_> = include_dir!("./surrealdb");
-
-#[derive(Clone)]
-pub struct SurrealDB(Surreal<Client>);
-
-impl Repository for SurrealDB {}
-
-pub struct SurrealDbPagination {
-    limit: i32,
-    start: i32,
-}
-
-impl From<PageRequest> for SurrealDbPagination {
-    fn from(page: PageRequest) -> Self {
-        let limit = page.size();
-        let start = page.page() * page.size();
-        Self { limit, start }
-    }
+#[derive(Debug, Clone)]
+pub struct SurrealDB {
+    connection: Surreal<Client>,
 }
 
 impl SurrealDB {
-    pub async fn setup() -> Result<Data<Box<dyn Repository>>> {
-        let host = env::var("DATABASE_HOST")?;
-        let port = env::var("DATABASE_PORT")?;
-        let ns = env::var("DATABASE_NS")?;
-        let db = env::var("DATABASE_DB")?;
-        let user = env::var("DATABASE_USER")?;
-        let pass = env::var("DATABASE_PASS")?;
+    pub async fn from_env() -> Result<Self> {
+        let url = std::env::var("SURREALDB_URL").unwrap_or_else(|_| "ws://localhost:8000".into());
+        let auth_type = std::env::var("SURREALDB_TYPE").unwrap_or_else(|_| "root".to_string());
+        let username = std::env::var("SURREALDB_USERNAME").unwrap_or_else(|_| "root".to_string());
+        let password = std::env::var("SURREALDB_PASSWORD").unwrap_or_else(|_| "root".to_string());
+        let namespace =
+            std::env::var("SURREALDB_NAMESPACE").unwrap_or_else(|_| "mirabel".to_string());
+        let database =
+            std::env::var("SURREALDB_DATABASE").unwrap_or_else(|_| "mirabel".to_string());
 
-        info!("Connecting to database at `{}:{}`", &host, &port);
-        let conn = Surreal::new::<Ws>(format!("{}:{}", &host, &port)).await?;
+        Self::from_vars(
+            &url, &auth_type, &username, &password, &namespace, &database,
+        )
+        .await
+    }
 
-        // Signin as a namespace, database, or root user
-        debug!("Signing in as `root` user");
-        conn.signin(Root {
-            username: &user,
-            password: &pass,
-        })
-        .await?;
+    pub async fn from_vars(
+        url: &str,
+        auth_type: &str,
+        username: &str,
+        password: &str,
+        namespace: &str,
+        database: &str,
+    ) -> Result<Self> {
+        match auth_type {
+            "namespace" => {
+                SurrealDBBuilder::new(url)
+                    .with_namespace_user(namespace, username, password)
+                    .use_db(database)
+                    .build()
+                    .await
+            }
+            "database" => {
+                SurrealDBBuilder::new(url)
+                    .with_database_user(namespace, database, username, password)
+                    .build()
+                    .await
+            }
+            _ => {
+                SurrealDBBuilder::new(url)
+                    .with_root(username, password)
+                    .use_ns(namespace)
+                    .use_db(database)
+                    .build()
+                    .await
+            }
+        }
+    }
+}
 
-        debug!("Using namespace `{}` and database `{}`", &ns, &db);
-        conn.use_ns(ns).use_db(db).await?;
+impl From<Surreal<Client>> for SurrealDB {
+    fn from(connection: Surreal<Client>) -> Self {
+        SurrealDB { connection }
+    }
+}
 
-        debug!("Running migrations");
-        let runner = MigrationRunner::new(&conn);
-        let runner = runner.load_files(&MIGRATOR_DIR);
-        runner.validate_version_order().await?;
-        runner.up().await?;
+#[async_trait]
+impl Database for SurrealDB {
+    type Error = Error;
 
-        Ok(Data::new(Box::new(Self(conn))))
+    async fn ping(&self) -> Result<bool> {
+        self.connection.version().await?;
+        Ok(true)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::repository::v2::surrealdb::builder::SurrealDBBuilder;
+    use crate::repository::{self, Repository};
+    use actix_web::web::Data;
+    use dotenvy::EnvLoader;
+    use surrealdb::engine::remote::ws::{Client, Ws};
+    use surrealdb::Surreal;
+
+    async fn get_test_db() -> SurrealDB {
+        SurrealDBBuilder::new("localhost:8000")
+            .with_root("root", "root")
+            .use_ns("test")
+            .use_db("test")
+            .build()
+            .await
+            .unwrap()
+    }
+
+    fn init_test_env() {
+        let _ = EnvLoader::new().load();
+        let _ = env_logger::try_init();
+    }
+
+    #[tokio::test]
+    async fn test_ping() {
+        init_test_env();
+        let db = get_test_db().await;
+        assert!(db.ping().await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_repository() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_repository(db).await;
+    }
+
+    // #[tokio::test]
+    // async fn test_field_searchable_repository() {
+    //     init_test_env();
+    //     let db = get_test_db().await;
+    //     repository::v2::tests::test_field_searchable_repository(db).await;
+    // }
+
+    #[tokio::test]
+    async fn test_field_findable_repository() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_field_findable_repository(db).await;
+    }
+
+    #[tokio::test]
+    async fn test_public_entity_repository() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_public_entity_repository(db).await;
+    }
+
+    #[tokio::test]
+    async fn test_associated_entity_one_to_one() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_associated_entity_one_to_one(db.clone(), db).await;
+    }
+
+    #[tokio::test]
+    async fn test_associated_entity_one_to_many() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_associated_entity_one_to_many(db.clone(), db).await;
+    }
+
+    #[tokio::test]
+    async fn test_associated_entity_many_to_many() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_associated_entity_many_to_many(db.clone(), db).await;
     }
 }
