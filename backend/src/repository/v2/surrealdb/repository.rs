@@ -1,6 +1,10 @@
 use crate::{
     dto::page::{PageRequest, PageResponse},
-    repository::traits::{AssociatedEntityRepository, NamedStruct, PublicEntityRepository},
+    repository::traits::{
+        AssociatedEntityRepository, FieldFindableRepository, FieldFindableStruct,
+        FieldSearchableRepository, FieldSearchableStruct, FieldSortableStruct, NamedStruct,
+        PublicEntityRepository,
+    },
 };
 use async_trait::async_trait;
 use backend_derive::named_struct;
@@ -109,6 +113,43 @@ impl<T: Entity> Repository<T> for SurrealDB {
             .await?;
         debug!("Query result: {:?}", result);
         Ok(result)
+    }
+}
+
+#[async_trait]
+impl<T: FieldSearchableStruct> FieldSearchableRepository<T> for SurrealDB {
+    async fn search(
+        &self,
+        fields: &[&str],
+        query: &str,
+        page: PageRequest,
+    ) -> Result<PageResponse<T>> {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
+    async fn find_single_by_fields(
+        &self,
+        fields: &[(&str, &str)],
+    ) -> Result<Option<T>> {
+        todo!()
+    }
+
+    async fn find_by_fields(
+        &self,
+        fields: &[(&str, &str)],
+        page: PageRequest,
+    ) -> Result<PageResponse<T>> {
+        todo!()
+    }
+
+    async fn exists_by_fields(
+        &self,
+        fields: &[(&str, &str)],
+    ) -> Result<bool> {
+        todo!()
     }
 }
 
