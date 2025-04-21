@@ -1,5 +1,8 @@
 pub(crate) mod api_response;
 pub(crate) mod avatar;
 pub(crate) mod error_response;
+pub(crate) mod frontend_user;
+pub(crate) mod login_user;
 pub(crate) mod page;
+pub(crate) mod register_user;
 pub(crate) mod token;
