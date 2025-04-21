@@ -97,23 +97,74 @@ mod tests {
     use surrealdb::engine::remote::ws::{Client, Ws};
     use surrealdb::Surreal;
 
-    #[tokio::test]
-    async fn test() {
-        EnvLoader::new().load().unwrap();
-        env_logger::init();
-        let db = SurrealDBBuilder::new("localhost:8000")
+    async fn get_test_db() -> SurrealDB {
+        SurrealDBBuilder::new("localhost:8000")
             .with_root("root", "root")
             .use_ns("test")
             .use_db("test")
             .build()
             .await
-            .unwrap();
-        repository::v2::tests::test_repository(db.clone()).await;
-        // repository::v2::tests::test_field_searchable_repository(db).await;
-        // repository::v2::tests::test_field_findable_repository(db).await;
-        repository::v2::tests::test_public_entity_repository(db.clone()).await;
-        repository::v2::tests::test_associated_entity_one_to_one(db.clone(), db.clone()).await;
-        repository::v2::tests::test_associated_entity_one_to_many(db.clone(), db.clone()).await;
-        repository::v2::tests::test_associated_entity_many_to_many(db.clone(), db.clone()).await;
+            .unwrap()
+    }
+
+    fn init_test_env() {
+        let _ = EnvLoader::new().load();
+        let _ = env_logger::try_init();
+    }
+
+    #[tokio::test]
+    async fn test_ping() {
+        init_test_env();
+        let db = get_test_db().await;
+        assert!(db.ping().await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_repository() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_repository(db).await;
+    }
+
+    // #[tokio::test]
+    // async fn test_field_searchable_repository() {
+    //     init_test_env();
+    //     let db = get_test_db().await;
+    //     repository::v2::tests::test_field_searchable_repository(db).await;
+    // }
+
+    #[tokio::test]
+    async fn test_field_findable_repository() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_field_findable_repository(db).await;
+    }
+
+    #[tokio::test]
+    async fn test_public_entity_repository() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_public_entity_repository(db).await;
+    }
+
+    #[tokio::test]
+    async fn test_associated_entity_one_to_one() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_associated_entity_one_to_one(db.clone(), db).await;
+    }
+
+    #[tokio::test]
+    async fn test_associated_entity_one_to_many() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_associated_entity_one_to_many(db.clone(), db).await;
+    }
+
+    #[tokio::test]
+    async fn test_associated_entity_many_to_many() {
+        init_test_env();
+        let db = get_test_db().await;
+        repository::v2::tests::test_associated_entity_many_to_many(db.clone(), db).await;
     }
 }
