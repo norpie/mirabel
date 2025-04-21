@@ -1,4 +1,8 @@
+use backend_derive::named_struct;
 use serde::{Deserialize, Serialize};
+use surrealdb::sql::Thing;
+
+use crate::repository::traits::Entity;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewWorkspace {
@@ -11,18 +15,23 @@ pub struct UpdatedWorkspace {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[named_struct]
 pub struct Workspace {
-    id: String,
+    id: Option<Thing>,
     name: String,
 }
 
-impl Workspace {
-    pub(crate) fn new(id: String, name: String) -> Self {
-        Self { id, name }
-    }
+impl Entity for Workspace {
+    type ID = String;
 
-    pub fn id(&self) -> &str {
-        &self.id
+    fn id(&self) -> Option<Self::ID> {
+        self.id.as_ref().map(|thing| thing.id.to_string())
+    }
+}
+
+impl Workspace {
+    pub fn new(name: String) -> Self {
+        Self { id: None, name }
     }
 
     pub fn name(&self) -> &str {
