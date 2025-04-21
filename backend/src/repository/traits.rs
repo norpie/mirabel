@@ -11,15 +11,15 @@ pub trait NamedStruct {
     fn plural_name() -> &'static str;
 }
 
-pub trait FieldFindableStruct {
+pub trait FieldFindableStruct: Entity {
     fn filterable_fields() -> &'static [&'static str];
 }
 
-pub trait FieldSearchableStruct {
+pub trait FieldSearchableStruct: Entity {
     fn searchable_fields() -> &'static [&'static str];
 }
 
-pub trait FieldSortableStruct {
+pub trait FieldSortableStruct: Entity {
     fn sortable_fields() -> &'static [&'static str];
 }
 
