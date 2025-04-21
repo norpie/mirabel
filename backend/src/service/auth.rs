@@ -94,10 +94,7 @@ impl AuthService {
     }
 
     pub async fn login(&self, user: LoginUser) -> Result<TokenPair> {
-        let mut fields = vec![(
-            "email",
-            user.email,
-        )];
+        let mut fields = vec![("email", user.email)];
         let found_user: UserV2 = self
             .db
             .find_single_by_fields(fields)
@@ -119,16 +116,9 @@ impl AuthService {
             password,
         } = user;
 
-        let fields = vec![
-            ("email", email.clone()),
-            ("username", username.clone()),
-        ];
+        let fields = vec![("email", email.clone()), ("username", username.clone())];
 
-        let found = self
-            .db
-            .find_single_by_fields(fields)
-            .await?;
-        if found.is_some() {
+        if self.db.exists_by_fields(fields).await? {
             return Err(Error::BadRequest("Email already exists".into()));
         }
 
