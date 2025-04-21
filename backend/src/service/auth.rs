@@ -20,14 +20,14 @@ use crate::security::jwt_util::TokenFactory;
 use crate::{repository::surrealdb::SurrealDB, security::jwt_util::TokenPair};
 
 pub struct AuthService {
-    db: Box<dyn FieldFindableRepository<User, Error = Error>>,
+    user_repo: Box<dyn FieldFindableRepository<User, Error = Error>>,
     token_factory: TokenFactory,
 }
 
 impl AuthService {
     fn from(db: Box<dyn FieldFindableRepository<User, Error = Error>>) -> Result<Self> {
         Ok(AuthService {
-            db,
+            user_repo: db,
             token_factory: TokenFactory::from_env()?,
         })
     }
@@ -35,7 +35,7 @@ impl AuthService {
     pub async fn login(&self, user: LoginUser) -> Result<TokenPair> {
         let mut fields = vec![("email", user.email)];
         let found_user: User = self
-            .db
+            .user_repo
             .find_single_by_fields(fields)
             .await?
             .ok_or(Error::BadRequest("Wrong email or password".into()))?;
@@ -57,7 +57,7 @@ impl AuthService {
 
         let fields = vec![("email", email.clone()), ("username", username.clone())];
 
-        if self.db.exists_by_fields(fields).await? {
+        if self.user_repo.exists_by_fields(fields).await? {
             return Err(Error::BadRequest("Email already exists".into()));
         }
 
@@ -68,7 +68,7 @@ impl AuthService {
             .to_string();
 
         let user = self
-            .db
+            .user_repo
             .save(User::new(
                 email,
                 username,
