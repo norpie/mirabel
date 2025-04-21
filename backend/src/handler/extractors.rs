@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, service::users::UserService};
 
 use std::{future::Future, pin::Pin};
 
@@ -16,14 +16,14 @@ impl FromRequest for User {
 
     fn from_request(req: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
         let id_opt = req.extensions().get::<String>().cloned();
-        let db_opt = req.app_data::<Data<Box<dyn Repository>>>().cloned();
+        let db_opt = req.app_data::<Data<UserService>>().cloned();
 
         Box::pin(async move {
             let id = id_opt.ok_or(Error::Unauthorized("Invalid Token".into()))?;
             info!("id: {}", id);
             let db = db_opt.ok_or(Error::InternalServer)?;
 
-            db.get_user_by_id(id)
+            db.get_user(&id)
                 .await?
                 .ok_or(Error::Unauthorized("Invalid Token".into()))
         })
