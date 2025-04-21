@@ -63,11 +63,11 @@ pub async fn logout(req: HttpRequest) -> Result<impl Responder> {
 }
 
 #[post("/refresh")]
-pub async fn refresh(req: HttpRequest) -> Result<impl Responder> {
+pub async fn refresh(auth_service: Data<AuthService>, req: HttpRequest) -> Result<impl Responder> {
     let cookie = req
         .cookie("refresh")
         .ok_or(Error::Unauthorized("No refresh cookie".into()))?;
-    let token_pair = security::refresh(cookie.value().to_string())?;
+    let token_pair = auth_service.refresh(cookie.value().to_string())?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()?
         .customize()

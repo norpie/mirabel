@@ -76,4 +76,9 @@ impl AuthService {
         self.token_factory
             .generate_token(user.id().unwrap().to_string())
     }
+
+    pub fn refresh(&self, token: String) -> Result<TokenPair> {
+        let subject = self.token_factory.subject(&token)?;
+        self.token_factory.generate_token(subject)
+    }
 }
