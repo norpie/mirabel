@@ -94,9 +94,13 @@ impl AuthService {
     }
 
     pub async fn login(&self, user: LoginUser) -> Result<TokenPair> {
+        let mut fields = vec![(
+            "email",
+            user.email,
+        )];
         let found_user: UserV2 = self
             .db
-            .find_single_by_fields(&[("email", &user.email)])
+            .find_single_by_fields(fields)
             .await?
             .ok_or(Error::BadRequest("Wrong email or password".into()))?;
         let argon2 = Argon2::default();
@@ -115,9 +119,14 @@ impl AuthService {
             password,
         } = user;
 
+        let fields = vec![
+            ("email", email.clone()),
+            ("username", username.clone()),
+        ];
+
         let found = self
             .db
-            .find_single_by_fields(&[("email", &email), ("username", &username)])
+            .find_single_by_fields(fields)
             .await?;
         if found.is_some() {
             return Err(Error::BadRequest("Email already exists".into()));

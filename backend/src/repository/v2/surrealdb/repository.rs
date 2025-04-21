@@ -132,14 +132,14 @@ impl<T: FieldSearchableStruct> FieldSearchableRepository<T> for SurrealDB {
 impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
     async fn find_single_by_fields(
         &self,
-        fields: &[(&str, &str)],
+        fields: Vec<(&'static str, String)>,
     ) -> Result<Option<T>> {
         todo!()
     }
 
     async fn find_by_fields(
         &self,
-        fields: &[(&str, &str)],
+        fields: Vec<(&'static str, String)>,
         page: PageRequest,
     ) -> Result<PageResponse<T>> {
         todo!()
@@ -147,7 +147,7 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
 
     async fn exists_by_fields(
         &self,
-        fields: &[(&str, &str)],
+        fields: Vec<(&'static str, String)>,
     ) -> Result<bool> {
         todo!()
     }

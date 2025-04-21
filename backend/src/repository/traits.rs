@@ -63,16 +63,19 @@ pub trait FieldSearchableRepository<T: Entity + FieldSearchableStruct>: Reposito
 pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T> {
     async fn find_single_by_fields(
         &self,
-        fields: &[(&str, &str)],
+        fields: Vec<(&'static str, String)>,
     ) -> Result<Option<T>, Self::Error>;
 
     async fn find_by_fields(
         &self,
-        fields: &[(&str, &str)],
+        fields: Vec<(&'static str, String)>,
         page: PageRequest,
     ) -> Result<PageResponse<T>, Self::Error>;
 
-    async fn exists_by_fields(&self, fields: &[(&str, &str)]) -> Result<bool, Self::Error>;
+    async fn exists_by_fields(
+        &self,
+        fields: Vec<(&'static str, String)>,
+    ) -> Result<bool, Self::Error>;
 }
 
 #[async_trait]

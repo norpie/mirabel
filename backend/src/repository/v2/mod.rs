@@ -206,7 +206,7 @@ pub mod tests {
         // Test find_single_by_fields
         debug!("Finding single entity by field 'name'='FindableEntity'");
         let single_result = repo
-            .find_single_by_fields(&[("name", "FindableEntity")])
+            .find_single_by_fields(vec![("name", "FindableEntity".into())])
             .await
             .expect("Failed to find single entity by fields");
         info!("Find single by fields returned: {:?}", single_result);
@@ -229,7 +229,7 @@ pub mod tests {
             page_req
         );
         let find_results = repo
-            .find_by_fields(&[("name", "FindableEntity")], page_req)
+            .find_by_fields(vec![("name", "FindableEntity".into())], page_req)
             .await
             .expect("Failed to find by fields");
         info!(
@@ -252,7 +252,7 @@ pub mod tests {
         // Test exists_by_fields
         debug!("Checking if entity exists by field 'name'='FindableEntity'");
         let exists = repo
-            .exists_by_fields(&[("name", "FindableEntity")])
+            .exists_by_fields(vec![("name", "FindableEntity".into())])
             .await
             .expect("Failed to check existence by fields");
         debug!("Entity exists check: {}", exists);
@@ -260,7 +260,7 @@ pub mod tests {
 
         debug!("Checking if entity exists by field 'name'='NonexistentEntity'");
         let nonexistent = repo
-            .exists_by_fields(&[("name", "NonexistentEntity")])
+            .exists_by_fields(vec![("name", "NonexistentEntity".into())])
             .await
             .expect("Failed to check existence by fields");
         debug!("Nonexistent entity exists check: {}", nonexistent);
