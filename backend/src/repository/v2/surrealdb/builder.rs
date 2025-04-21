@@ -90,11 +90,7 @@ impl<'a> SurrealDBBuilder<'a, NonAuthed> {
         }
     }
 
-    pub fn with_root(
-        self,
-        username: &'a str,
-        password: &'a str,
-    ) -> RootAuthedBuilder<'a> {
+    pub fn with_root(self, username: &'a str, password: &'a str) -> RootAuthedBuilder<'a> {
         RootAuthedBuilder {
             url: self.url,
             state: RootAuthed { username, password },
@@ -138,10 +134,7 @@ impl<'a> SurrealDBBuilder<'a, NonAuthed> {
 
 // Root authenticated state implementation
 impl<'a> RootAuthedBuilder<'a> {
-    pub fn use_ns(
-        self,
-        namespace: &'a str,
-    ) -> RootWithNsBuilder<'a> {
+    pub fn use_ns(self, namespace: &'a str) -> RootWithNsBuilder<'a> {
         RootWithNsBuilder {
             url: self.url,
             state: self.state,
@@ -152,10 +145,7 @@ impl<'a> RootAuthedBuilder<'a> {
 
 // Root with namespace implementation
 impl<'a> RootWithNsBuilder<'a> {
-    pub fn use_db(
-        self,
-        database: &'a str,
-    ) -> RootWithNsDbBuilder<'a> {
+    pub fn use_db(self, database: &'a str) -> RootWithNsDbBuilder<'a> {
         RootWithNsDbBuilder {
             url: self.url,
             state: self.state,
@@ -166,13 +156,15 @@ impl<'a> RootWithNsBuilder<'a> {
 }
 
 // Root with namespace and database implementation
-impl<'a> RootWithNsDbBuilder<'a> {
+impl RootWithNsDbBuilder<'_> {
     pub async fn build(self) -> Result<SurrealDB> {
         let connection = Surreal::new::<Ws>(self.url).await?;
-        connection.signin(Root {
-            username: self.state.username,
-            password: self.state.password
-        }).await?;
+        connection
+            .signin(Root {
+                username: self.state.username,
+                password: self.state.password,
+            })
+            .await?;
 
         connection.use_ns(self.ns).await?;
         connection.use_db(self.db).await?;
@@ -183,10 +175,7 @@ impl<'a> RootWithNsDbBuilder<'a> {
 
 // Namespace authenticated state implementation
 impl<'a> NamespaceAuthedBuilder<'a> {
-    pub fn use_db(
-        self,
-        database: &'a str,
-    ) -> NamespaceWithDbBuilder<'a> {
+    pub fn use_db(self, database: &'a str) -> NamespaceWithDbBuilder<'a> {
         NamespaceWithDbBuilder {
             url: self.url,
             state: self.state,
@@ -196,14 +185,16 @@ impl<'a> NamespaceAuthedBuilder<'a> {
 }
 
 // Namespace with database implementation
-impl<'a> NamespaceWithDbBuilder<'a> {
+impl NamespaceWithDbBuilder<'_> {
     pub async fn build(self) -> Result<SurrealDB> {
         let connection = Surreal::new::<Ws>(self.url).await?;
-        connection.signin(Namespace {
-            namespace: self.state.namespace,
-            username: self.state.username,
-            password: self.state.password,
-        }).await?;
+        connection
+            .signin(Namespace {
+                namespace: self.state.namespace,
+                username: self.state.username,
+                password: self.state.password,
+            })
+            .await?;
 
         // Always use the namespace we authenticated with
         connection.use_ns(self.state.namespace).await?;
@@ -217,12 +208,14 @@ impl<'a> NamespaceWithDbBuilder<'a> {
 impl<'a> SurrealDBBuilder<'a, DatabaseAuthed<'a>> {
     pub async fn build(self) -> Result<SurrealDB> {
         let connection = Surreal::new::<Ws>(self.url).await?;
-        connection.signin(Database {
-            namespace: self.state.namespace,
-            database: self.state.database,
-            username: self.state.username,
-            password: self.state.password,
-        }).await?;
+        connection
+            .signin(Database {
+                namespace: self.state.namespace,
+                database: self.state.database,
+                username: self.state.username,
+                password: self.state.password,
+            })
+            .await?;
 
         // Always use the namespace and database we authenticated with
         connection.use_ns(self.state.namespace).await?;

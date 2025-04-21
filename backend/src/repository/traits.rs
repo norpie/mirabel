@@ -23,8 +23,18 @@ pub trait FieldSortableStruct {
     fn sortable_fields() -> &'static [&'static str];
 }
 
-pub trait Entity: std::fmt::Debug + NamedStruct + Send + Sync + Serialize + DeserializeOwned + 'static {
-    type ID: std::fmt::Debug + Clone + Eq + Display + Send + Sync + Serialize + DeserializeOwned + 'static;
+pub trait Entity:
+    std::fmt::Debug + NamedStruct + Send + Sync + Serialize + DeserializeOwned + 'static
+{
+    type ID: std::fmt::Debug
+        + Clone
+        + Eq
+        + Display
+        + Send
+        + Sync
+        + Serialize
+        + DeserializeOwned
+        + 'static;
     fn id(&self) -> Option<Self::ID>;
 }
 
@@ -41,14 +51,19 @@ pub trait Repository<T: Entity> {
 
 #[async_trait]
 pub trait FieldSearchableRepository<T: Entity + FieldSearchableStruct>: Repository<T> {
-    async fn search(&self, fields: &[&str], query: &str, page: PageRequest) -> Result<PageResponse<T>, Self::Error>;
+    async fn search(
+        &self,
+        fields: &[&str],
+        query: &str,
+        page: PageRequest,
+    ) -> Result<PageResponse<T>, Self::Error>;
 }
 
 #[async_trait]
 pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T> {
     async fn find_single_by_fields(
         &self,
-        fields: &[(&str, &str)]
+        fields: &[(&str, &str)],
     ) -> Result<Option<T>, Self::Error>;
 
     async fn find_by_fields(
@@ -57,10 +72,7 @@ pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T
         page: PageRequest,
     ) -> Result<PageResponse<T>, Self::Error>;
 
-    async fn exists_by_fields(
-        &self,
-        fields: &[(&str, &str)],
-    ) -> Result<bool, Self::Error>;
+    async fn exists_by_fields(&self, fields: &[(&str, &str)]) -> Result<bool, Self::Error>;
 }
 
 #[async_trait]
@@ -84,7 +96,11 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     ) -> Result<PageResponse<R>, Self::Error>;
     async fn count_children(&self, parent_id: &T::ID) -> Result<u64, Self::Error>;
     async fn create_child(&self, entity: R, parent_id: &T::ID) -> Result<R, Self::Error>;
-    async fn create_children(&self, entities: Vec<R>, parent_id: &T::ID) -> Result<Vec<R>, Self::Error>;
+    async fn create_children(
+        &self,
+        entities: Vec<R>,
+        parent_id: &T::ID,
+    ) -> Result<Vec<R>, Self::Error>;
     async fn delete_children(&self, parent_id: &T::ID) -> Result<(), Self::Error>;
 
     // Many-to-Many relationship methods
@@ -102,7 +118,11 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<(), Self::Error>;
     async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<(), Self::Error>;
     async fn create_associated(&self, entity_id: &T::ID, related: R) -> Result<R, Self::Error>;
-    async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool, Self::Error>;
+    async fn is_associated(
+        &self,
+        entity_id: &T::ID,
+        related_id: &R::ID,
+    ) -> Result<bool, Self::Error>;
     async fn dissociate_all(&self, entity_id: &T::ID) -> Result<(), Self::Error>;
     async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<(), Self::Error>;
 }
@@ -114,7 +134,10 @@ pub trait ThroughputRepository<T: Entity>: Repository<T> {
 
 #[async_trait]
 pub trait LiveRepository<T: Entity>: Repository<T> {
-    async fn live_single(&self, entity_id: &T::ID) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
+    async fn live_single(
+        &self,
+        entity_id: &T::ID,
+    ) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
     async fn live_table(&self) -> Result<impl Stream<Item = Result<T, Self::Error>>, Self::Error>;
 }
 

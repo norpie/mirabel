@@ -5,8 +5,8 @@ use markdown::Markdown;
 use pdf::Pdf;
 
 pub mod html;
-pub mod pdf;
 pub mod markdown;
+pub mod pdf;
 
 pub struct Converter<T> {
     data: T,

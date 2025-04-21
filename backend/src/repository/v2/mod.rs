@@ -2,18 +2,18 @@ pub(crate) mod surrealdb;
 
 #[cfg(test)]
 pub mod tests {
-    use backend_derive::{named_struct};
+    use backend_derive::named_struct;
+    use futures::StreamExt;
+    use log::{debug, info};
     use serde::{Deserialize, Serialize};
     use surrealdb::sql::Thing;
-    use futures::StreamExt;
-    use log::{info, debug};
 
-    use crate::repository::traits::{
-        Entity, Repository, FieldSearchableRepository, FieldFindableRepository,
-        PublicEntityRepository, AssociatedEntityRepository, ThroughputRepository,
-        LiveRepository, FieldFindableStruct, FieldSearchableStruct
-    };
     use crate::dto::page::{PageRequest, PageResponse};
+    use crate::repository::traits::{
+        AssociatedEntityRepository, Entity, FieldFindableRepository, FieldFindableStruct,
+        FieldSearchableRepository, FieldSearchableStruct, LiveRepository, PublicEntityRepository,
+        Repository, ThroughputRepository,
+    };
 
     #[derive(Debug, Clone, Serialize, Deserialize)]
     #[named_struct()]
@@ -79,9 +79,15 @@ pub mod tests {
         debug!("Created test entity: {:?}", entity);
 
         // Test save
-        let saved_entity = repo.save(entity.clone()).await.expect("Failed to save entity");
+        let saved_entity = repo
+            .save(entity.clone())
+            .await
+            .expect("Failed to save entity");
         info!("Saved entity with ID: {:?}", saved_entity.id());
-        assert!(saved_entity.id().is_some(), "Saved entity should have an ID");
+        assert!(
+            saved_entity.id().is_some(),
+            "Saved entity should have an ID"
+        );
 
         let id = saved_entity.id().unwrap();
         debug!("Using ID for further operations: {}", id);
@@ -91,7 +97,10 @@ pub mod tests {
         debug!("Found entity: {:?}", found_entity);
         assert!(found_entity.is_some(), "Entity should be found");
         let found_entity = found_entity.unwrap();
-        assert_eq!(found_entity.name, saved_entity.name, "Found entity should match saved entity");
+        assert_eq!(
+            found_entity.name, saved_entity.name,
+            "Found entity should match saved entity"
+        );
         info!("Entity found successfully");
 
         // Test exists
@@ -109,11 +118,16 @@ pub mod tests {
         repo.delete(&id).await.expect("Failed to delete entity");
         let exists_after_delete = repo.exists(&id).await.expect("Failed to check existence");
         debug!("Entity exists after deletion: {}", exists_after_delete);
-        assert!(!exists_after_delete, "Entity should not exist after deletion");
+        assert!(
+            !exists_after_delete,
+            "Entity should not exist after deletion"
+        );
         info!("test_repository completed successfully");
     }
 
-    pub async fn test_field_searchable_repository(repo: impl FieldSearchableRepository<TestEntity>) {
+    pub async fn test_field_searchable_repository(
+        repo: impl FieldSearchableRepository<TestEntity>,
+    ) {
         info!("Starting test_field_searchable_repository");
         // Create test entities
         let entity1 = TestEntity {
@@ -128,16 +142,31 @@ pub mod tests {
 
         let saved1 = repo.save(entity1).await.expect("Failed to save entity 1");
         let saved2 = repo.save(entity2).await.expect("Failed to save entity 2");
-        info!("Saved entities with IDs: {:?}, {:?}", saved1.id(), saved2.id());
+        info!(
+            "Saved entities with IDs: {:?}, {:?}",
+            saved1.id(),
+            saved2.id()
+        );
 
         // Test search
         let page_req = PageRequest::new(1, 10); // Changed from 0 to 1
         debug!("Searching for 'Unique' with page request: {:?}", page_req);
-        let search_results = repo.search(&["name"], "Unique", page_req).await.expect("Failed to search");
+        let search_results = repo
+            .search(&["name"], "Unique", page_req)
+            .await
+            .expect("Failed to search");
         info!("Search returned {} results", search_results.data().len());
 
-        assert_eq!(search_results.data().len(), 1, "Search should return one result");
-        assert_eq!(search_results.data()[0].name, saved1.name, "Search result should match");
+        assert_eq!(
+            search_results.data().len(),
+            1,
+            "Search should return one result"
+        );
+        assert_eq!(
+            search_results.data()[0].name,
+            saved1.name,
+            "Search result should match"
+        );
         debug!("Search result matched as expected");
 
         // Clean up
@@ -168,38 +197,71 @@ pub mod tests {
 
         let saved1 = repo.save(entity1).await.expect("Failed to save entity 1");
         let saved2 = repo.save(entity2).await.expect("Failed to save entity 2");
-        info!("Saved entities with IDs: {:?}, {:?}", saved1.id(), saved2.id());
+        info!(
+            "Saved entities with IDs: {:?}, {:?}",
+            saved1.id(),
+            saved2.id()
+        );
 
         // Test find_single_by_fields
         debug!("Finding single entity by field 'name'='FindableEntity'");
-        let single_result = repo.find_single_by_fields(&[("name", "FindableEntity")]).await
+        let single_result = repo
+            .find_single_by_fields(&[("name", "FindableEntity")])
+            .await
             .expect("Failed to find single entity by fields");
         info!("Find single by fields returned: {:?}", single_result);
-        
-        assert!(single_result.is_some(), "Find single by fields should return an entity");
-        assert_eq!(single_result.unwrap().name, saved1.name, "Found entity should match");
+
+        assert!(
+            single_result.is_some(),
+            "Find single by fields should return an entity"
+        );
+        assert_eq!(
+            single_result.unwrap().name,
+            saved1.name,
+            "Found entity should match"
+        );
         debug!("Find single by fields result matched as expected");
 
         // Test find_by_fields
         let page_req = PageRequest::new(1, 10);
-        debug!("Finding by fields 'name'='FindableEntity' with page request: {:?}", page_req);
-        let find_results = repo.find_by_fields(&[("name", "FindableEntity")], page_req).await
+        debug!(
+            "Finding by fields 'name'='FindableEntity' with page request: {:?}",
+            page_req
+        );
+        let find_results = repo
+            .find_by_fields(&[("name", "FindableEntity")], page_req)
+            .await
             .expect("Failed to find by fields");
-        info!("Find by fields returned {} results", find_results.data().len());
+        info!(
+            "Find by fields returned {} results",
+            find_results.data().len()
+        );
 
-        assert_eq!(find_results.data().len(), 1, "Find by fields should return one result");
-        assert_eq!(find_results.data()[0].name, saved1.name, "Found entity should match");
+        assert_eq!(
+            find_results.data().len(),
+            1,
+            "Find by fields should return one result"
+        );
+        assert_eq!(
+            find_results.data()[0].name,
+            saved1.name,
+            "Found entity should match"
+        );
         debug!("Find by fields result matched as expected");
 
         // Test exists_by_fields
         debug!("Checking if entity exists by field 'name'='FindableEntity'");
-        let exists = repo.exists_by_fields(&[("name", "FindableEntity")]).await
+        let exists = repo
+            .exists_by_fields(&[("name", "FindableEntity")])
+            .await
             .expect("Failed to check existence by fields");
         debug!("Entity exists check: {}", exists);
         assert!(exists, "Entity should exist by fields");
 
         debug!("Checking if entity exists by field 'name'='NonexistentEntity'");
-        let nonexistent = repo.exists_by_fields(&[("name", "NonexistentEntity")]).await
+        let nonexistent = repo
+            .exists_by_fields(&[("name", "NonexistentEntity")])
+            .await
             .expect("Failed to check existence by fields");
         debug!("Nonexistent entity exists check: {}", nonexistent);
         assert!(!nonexistent, "Nonexistent entity should not exist");
@@ -221,9 +283,18 @@ pub mod tests {
         info!("Starting test_public_entity_repository");
         // Create multiple test entities
         let entities = vec![
-            TestEntity { id: None, name: "Public Entity 1".to_string() },
-            TestEntity { id: None, name: "Public Entity 2".to_string() },
-            TestEntity { id: None, name: "Public Entity 3".to_string() },
+            TestEntity {
+                id: None,
+                name: "Public Entity 1".to_string(),
+            },
+            TestEntity {
+                id: None,
+                name: "Public Entity 2".to_string(),
+            },
+            TestEntity {
+                id: None,
+                name: "Public Entity 3".to_string(),
+            },
         ];
         debug!("Created {} test entities", entities.len());
 
@@ -240,23 +311,38 @@ pub mod tests {
         // Test find_all
         let page_req = PageRequest::new(1, 10); // Changed from 0 to 1
         debug!("Finding all entities with page request: {:?}", page_req);
-        let all_entities = repo.find_all(page_req).await.expect("Failed to find all entities");
+        let all_entities = repo
+            .find_all(page_req)
+            .await
+            .expect("Failed to find all entities");
         info!("Found {} entities", all_entities.data().len());
 
-        assert!(all_entities.data().len() >= 3, "Should find at least 3 entities");
+        assert!(
+            all_entities.data().len() >= 3,
+            "Should find at least 3 entities"
+        );
 
         // Test pagination
         let page_req = PageRequest::new(1, 2); // Changed from 0 to 1
         debug!("Getting first page with size 2");
-        let first_page = repo.find_all(page_req).await.expect("Failed to get first page");
+        let first_page = repo
+            .find_all(page_req)
+            .await
+            .expect("Failed to get first page");
         info!("First page contains {} items", first_page.data().len());
         assert_eq!(first_page.data().len(), 2, "First page should have 2 items");
 
         let page_req = PageRequest::new(2, 2); // Changed from 1 to 2
         debug!("Getting second page with size 2");
-        let second_page = repo.find_all(page_req).await.expect("Failed to get second page");
+        let second_page = repo
+            .find_all(page_req)
+            .await
+            .expect("Failed to get second page");
         info!("Second page contains {} items", second_page.data().len());
-        assert!(!second_page.data().is_empty(), "Second page should have at least 1 item");
+        assert!(
+            !second_page.data().is_empty(),
+            "Second page should have at least 1 item"
+        );
 
         // Clean up
         debug!("Cleaning up {} test entities", saved_ids.len());
@@ -269,17 +355,26 @@ pub mod tests {
 
     pub async fn test_associated_entity_one_to_one(
         entity_repo: impl AssociatedEntityRepository<TestEntity, TestEntityChild>,
-        child_repo: impl Repository<TestEntityChild>
+        child_repo: impl Repository<TestEntityChild>,
     ) {
         info!("Starting test_associated_entity_repository");
         // Create parent and child entities
-        let parent = TestEntity { id: None, name: "Parent Entity".to_string() };
+        let parent = TestEntity {
+            id: None,
+            name: "Parent Entity".to_string(),
+        };
         debug!("Created parent entity: {:?}", parent);
-        let saved_parent = entity_repo.save(parent).await.expect("Failed to save parent");
+        let saved_parent = entity_repo
+            .save(parent)
+            .await
+            .expect("Failed to save parent");
         let parent_id = saved_parent.id().expect("Parent should have ID");
         info!("Saved parent entity with ID: {}", parent_id);
 
-        let child = TestEntityChild { id: None, name: "Child Entity".to_string() };
+        let child = TestEntityChild {
+            id: None,
+            name: "Child Entity".to_string(),
+        };
         debug!("Created child entity: {:?}", child);
         let saved_child = child_repo.save(child).await.expect("Failed to save child");
         let child_id = saved_child.id().expect("Child should have ID");
@@ -287,209 +382,431 @@ pub mod tests {
 
         // Test one-to-one relationship methods
         debug!("Relating parent {} to child {}", parent_id, child_id);
-        entity_repo.relate(&child_id, &parent_id).await.expect("Failed to relate entities");
+        entity_repo
+            .relate(&child_id, &parent_id)
+            .await
+            .expect("Failed to relate entities");
 
-        let related = entity_repo.find_related(&parent_id).await.expect("Failed to find related");
+        let related = entity_repo
+            .find_related(&parent_id)
+            .await
+            .expect("Failed to find related");
         debug!("Found related entity: {:?}", related);
         assert!(related.is_some(), "Related entity should exist");
 
-        let exists_related = entity_repo.exists_related(&parent_id).await.expect("Failed to check existence");
+        let exists_related = entity_repo
+            .exists_related(&parent_id)
+            .await
+            .expect("Failed to check existence");
         debug!("Related entity exists: {}", exists_related);
         assert!(exists_related, "Related entity should exist");
 
         // Clean up
         debug!("Cleaning up test entities");
         debug!("Deleting child entity with ID: {}", child_id);
-        child_repo.delete(&child_id).await.expect("Failed to delete child entity");
+        child_repo
+            .delete(&child_id)
+            .await
+            .expect("Failed to delete child entity");
 
         debug!("Deleting parent entity with ID: {}", parent_id);
-        entity_repo.delete(&parent_id).await.expect("Failed to delete parent entity");
+        entity_repo
+            .delete(&parent_id)
+            .await
+            .expect("Failed to delete parent entity");
 
         info!("test_associated_entity_one_to_one completed successfully");
     }
 
     pub async fn test_associated_entity_one_to_many(
         entity_repo: impl AssociatedEntityRepository<TestEntity, TestEntityChild>,
-        child_repo: impl Repository<TestEntityChild>
+        child_repo: impl Repository<TestEntityChild>,
     ) {
         info!("Starting test_associated_entity_one_to_many");
         // Create parent entity
-        let parent = TestEntity { id: None, name: "Parent Entity".to_string() };
+        let parent = TestEntity {
+            id: None,
+            name: "Parent Entity".to_string(),
+        };
         debug!("Created parent entity: {:?}", parent);
-        let saved_parent = entity_repo.save(parent).await.expect("Failed to save parent");
+        let saved_parent = entity_repo
+            .save(parent)
+            .await
+            .expect("Failed to save parent");
         let parent_id = saved_parent.id().expect("Parent should have ID");
         info!("Saved parent entity with ID: {}", parent_id);
 
         // Test create_child
-        let child1 = TestEntityChild { id: None, name: "Child Entity 1".to_string() };
+        let child1 = TestEntityChild {
+            id: None,
+            name: "Child Entity 1".to_string(),
+        };
         debug!("Creating child entity as child of parent: {:?}", child1);
-        let saved_child1 = entity_repo.create_child(child1, &parent_id).await.expect("Failed to create child");
+        let saved_child1 = entity_repo
+            .create_child(child1, &parent_id)
+            .await
+            .expect("Failed to create child");
         let child1_id = saved_child1.id().expect("Child should have ID");
         info!("Created child entity with ID: {}", child1_id);
 
         // Test create_children
         let children = vec![
-            TestEntityChild { id: None, name: "Child Entity 2".to_string() },
-            TestEntityChild { id: None, name: "Child Entity 3".to_string() },
+            TestEntityChild {
+                id: None,
+                name: "Child Entity 2".to_string(),
+            },
+            TestEntityChild {
+                id: None,
+                name: "Child Entity 3".to_string(),
+            },
         ];
         debug!("Creating multiple children for parent");
-        let saved_children = entity_repo.create_children(children, &parent_id).await.expect("Failed to create children");
+        let saved_children = entity_repo
+            .create_children(children, &parent_id)
+            .await
+            .expect("Failed to create children");
         info!("Created {} child entities", saved_children.len());
         assert_eq!(saved_children.len(), 2, "Should have created 2 children");
 
         // Test count_children
         debug!("Counting children for parent {}", parent_id);
-        let count = entity_repo.count_children(&parent_id).await.expect("Failed to count children");
+        let count = entity_repo
+            .count_children(&parent_id)
+            .await
+            .expect("Failed to count children");
         info!("Parent has {} children", count);
         assert_eq!(count, 3, "Parent should have 3 children");
 
         // Test find_children
         let page_req = PageRequest::new(1, 10);
-        debug!("Finding children for parent {} with page request: {:?}", parent_id, page_req);
-        let found_children = entity_repo.find_children(&parent_id, page_req).await.expect("Failed to find children");
+        debug!(
+            "Finding children for parent {} with page request: {:?}",
+            parent_id, page_req
+        );
+        let found_children = entity_repo
+            .find_children(&parent_id, page_req)
+            .await
+            .expect("Failed to find children");
         info!("Found {} children", found_children.data().len());
         assert_eq!(found_children.data().len(), 3, "Should find 3 children");
 
         // Test pagination of children
         let page_req = PageRequest::new(1, 2);
         debug!("Getting first page of children with size 2");
-        let first_page = entity_repo.find_children(&parent_id, page_req).await.expect("Failed to get first page");
-        assert_eq!(first_page.data().len(), 2, "First page should have 2 children");
+        let first_page = entity_repo
+            .find_children(&parent_id, page_req)
+            .await
+            .expect("Failed to get first page");
+        assert_eq!(
+            first_page.data().len(),
+            2,
+            "First page should have 2 children"
+        );
 
         let page_req = PageRequest::new(2, 2);
         debug!("Getting second page of children with size 2");
-        let second_page = entity_repo.find_children(&parent_id, page_req).await.expect("Failed to get second page");
-        assert_eq!(second_page.data().len(), 1, "Second page should have 1 child");
+        let second_page = entity_repo
+            .find_children(&parent_id, page_req)
+            .await
+            .expect("Failed to get second page");
+        assert_eq!(
+            second_page.data().len(),
+            1,
+            "Second page should have 1 child"
+        );
 
         // Test delete_children
         debug!("Deleting all children of parent {}", parent_id);
-        entity_repo.delete_children(&parent_id).await.expect("Failed to delete children");
+        entity_repo
+            .delete_children(&parent_id)
+            .await
+            .expect("Failed to delete children");
 
-        let count_after = entity_repo.count_children(&parent_id).await.expect("Failed to count children after deletion");
+        let count_after = entity_repo
+            .count_children(&parent_id)
+            .await
+            .expect("Failed to count children after deletion");
         debug!("Parent has {} children after deletion", count_after);
-        assert_eq!(count_after, 0, "Parent should have 0 children after deletion");
+        assert_eq!(
+            count_after, 0,
+            "Parent should have 0 children after deletion"
+        );
 
         // Clean up
         debug!("Deleting parent entity with ID: {}", parent_id);
-        entity_repo.delete(&parent_id).await.expect("Failed to delete parent entity");
+        entity_repo
+            .delete(&parent_id)
+            .await
+            .expect("Failed to delete parent entity");
 
         info!("test_associated_entity_one_to_many completed successfully");
     }
 
     pub async fn test_associated_entity_many_to_many(
         entity_repo: impl AssociatedEntityRepository<TestEntity, TestEntityChild>,
-        related_repo: impl Repository<TestEntityChild>
+        related_repo: impl Repository<TestEntityChild>,
     ) {
         info!("Starting test_associated_entity_many_to_many");
         // Create entities
-        let entity1 = TestEntity { id: None, name: "Entity 1".to_string() };
-        let entity2 = TestEntity { id: None, name: "Entity 2".to_string() };
+        let entity1 = TestEntity {
+            id: None,
+            name: "Entity 1".to_string(),
+        };
+        let entity2 = TestEntity {
+            id: None,
+            name: "Entity 2".to_string(),
+        };
 
-        let saved_entity1 = entity_repo.save(entity1).await.expect("Failed to save entity 1");
+        let saved_entity1 = entity_repo
+            .save(entity1)
+            .await
+            .expect("Failed to save entity 1");
         let entity1_id = saved_entity1.id().expect("Entity 1 should have ID");
 
-        let saved_entity2 = entity_repo.save(entity2).await.expect("Failed to save entity 2");
+        let saved_entity2 = entity_repo
+            .save(entity2)
+            .await
+            .expect("Failed to save entity 2");
         let entity2_id = saved_entity2.id().expect("Entity 2 should have ID");
 
         info!("Saved entities with IDs: {}, {}", entity1_id, entity2_id);
 
         // Create related entities
-        let related1 = TestEntityChild { id: None, name: "Related 1".to_string() };
-        let related2 = TestEntityChild { id: None, name: "Related 2".to_string() };
-        let related3 = TestEntityChild { id: None, name: "Related 3".to_string() };
+        let related1 = TestEntityChild {
+            id: None,
+            name: "Related 1".to_string(),
+        };
+        let related2 = TestEntityChild {
+            id: None,
+            name: "Related 2".to_string(),
+        };
+        let related3 = TestEntityChild {
+            id: None,
+            name: "Related 3".to_string(),
+        };
 
-        let saved_related1 = related_repo.save(related1).await.expect("Failed to save related 1");
+        let saved_related1 = related_repo
+            .save(related1)
+            .await
+            .expect("Failed to save related 1");
         let related1_id = saved_related1.id().expect("Related 1 should have ID");
 
-        let saved_related2 = related_repo.save(related2).await.expect("Failed to save related 2");
+        let saved_related2 = related_repo
+            .save(related2)
+            .await
+            .expect("Failed to save related 2");
         let related2_id = saved_related2.id().expect("Related 2 should have ID");
 
-        let saved_related3 = related_repo.save(related3).await.expect("Failed to save related 3");
+        let saved_related3 = related_repo
+            .save(related3)
+            .await
+            .expect("Failed to save related 3");
         let related3_id = saved_related3.id().expect("Related 3 should have ID");
 
-        info!("Saved related entities with IDs: {}, {}, {}", related1_id, related2_id, related3_id);
+        info!(
+            "Saved related entities with IDs: {}, {}, {}",
+            related1_id, related2_id, related3_id
+        );
 
         // Test create_associated
         debug!("Creating a new associated entity for entity1");
-        let new_related = TestEntityChild { id: None, name: "New Related".to_string() };
-        let saved_new_related = entity_repo.create_associated(&entity1_id, new_related).await
+        let new_related = TestEntityChild {
+            id: None,
+            name: "New Related".to_string(),
+        };
+        let saved_new_related = entity_repo
+            .create_associated(&entity1_id, new_related)
+            .await
             .expect("Failed to create associated entity");
-        let new_related_id = saved_new_related.id().expect("New related entity should have ID");
+        let new_related_id = saved_new_related
+            .id()
+            .expect("New related entity should have ID");
         info!("Created new associated entity with ID: {}", new_related_id);
 
         // Test associate
         debug!("Associating entity1 with related1 and related2");
-        entity_repo.associate(&entity1_id, &related1_id).await.expect("Failed to associate entity1 with related1");
-        entity_repo.associate(&entity1_id, &related2_id).await.expect("Failed to associate entity1 with related2");
+        entity_repo
+            .associate(&entity1_id, &related1_id)
+            .await
+            .expect("Failed to associate entity1 with related1");
+        entity_repo
+            .associate(&entity1_id, &related2_id)
+            .await
+            .expect("Failed to associate entity1 with related2");
 
         debug!("Associating entity2 with related2 and related3");
-        entity_repo.associate(&entity2_id, &related2_id).await.expect("Failed to associate entity2 with related2");
-        entity_repo.associate(&entity2_id, &related3_id).await.expect("Failed to associate entity2 with related3");
+        entity_repo
+            .associate(&entity2_id, &related2_id)
+            .await
+            .expect("Failed to associate entity2 with related2");
+        entity_repo
+            .associate(&entity2_id, &related3_id)
+            .await
+            .expect("Failed to associate entity2 with related3");
 
         // Test is_associated
         debug!("Checking associations");
-        assert!(entity_repo.is_associated(&entity1_id, &related1_id).await.expect("Failed to check association"),
-            "entity1 should be associated with related1");
-        assert!(entity_repo.is_associated(&entity1_id, &related2_id).await.expect("Failed to check association"),
-            "entity1 should be associated with related2");
-        assert!(entity_repo.is_associated(&entity2_id, &related2_id).await.expect("Failed to check association"),
-            "entity2 should be associated with related2");
-        assert!(entity_repo.is_associated(&entity2_id, &related3_id).await.expect("Failed to check association"),
-            "entity2 should be associated with related3");
-        assert!(!entity_repo.is_associated(&entity1_id, &related3_id).await.expect("Failed to check association"),
-            "entity1 should not be associated with related3");
+        assert!(
+            entity_repo
+                .is_associated(&entity1_id, &related1_id)
+                .await
+                .expect("Failed to check association"),
+            "entity1 should be associated with related1"
+        );
+        assert!(
+            entity_repo
+                .is_associated(&entity1_id, &related2_id)
+                .await
+                .expect("Failed to check association"),
+            "entity1 should be associated with related2"
+        );
+        assert!(
+            entity_repo
+                .is_associated(&entity2_id, &related2_id)
+                .await
+                .expect("Failed to check association"),
+            "entity2 should be associated with related2"
+        );
+        assert!(
+            entity_repo
+                .is_associated(&entity2_id, &related3_id)
+                .await
+                .expect("Failed to check association"),
+            "entity2 should be associated with related3"
+        );
+        assert!(
+            !entity_repo
+                .is_associated(&entity1_id, &related3_id)
+                .await
+                .expect("Failed to check association"),
+            "entity1 should not be associated with related3"
+        );
 
         // Test count_associated
         debug!("Counting associated entities for entity1");
-        let entity1_count = entity_repo.count_associated(&entity1_id).await.expect("Failed to count associated entities");
+        let entity1_count = entity_repo
+            .count_associated(&entity1_id)
+            .await
+            .expect("Failed to count associated entities");
         info!("entity1 has {} associated entities", entity1_count);
-        assert_eq!(entity1_count, 3, "entity1 should have 3 associations (related1, related2, and new_related)");
+        assert_eq!(
+            entity1_count, 3,
+            "entity1 should have 3 associations (related1, related2, and new_related)"
+        );
 
         // Test find_associated
         let page_req = PageRequest::new(1, 10);
         debug!("Finding associated entities for entity1");
-        let entity1_associated = entity_repo.find_associated(&entity1_id, page_req.clone()).await.expect("Failed to find associated entities");
-        info!("Found {} associated entities for entity1", entity1_associated.data().len());
-        assert_eq!(entity1_associated.data().len(), 3, "Should find 3 associated entities for entity1");
+        let entity1_associated = entity_repo
+            .find_associated(&entity1_id, page_req.clone())
+            .await
+            .expect("Failed to find associated entities");
+        info!(
+            "Found {} associated entities for entity1",
+            entity1_associated.data().len()
+        );
+        assert_eq!(
+            entity1_associated.data().len(),
+            3,
+            "Should find 3 associated entities for entity1"
+        );
 
         // Test find_associated_to
         debug!("Finding entities associated to related2");
-        let related2_associated = entity_repo.find_associated_to(&related2_id, page_req).await.expect("Failed to find entities associated to related2");
-        info!("Found {} entities associated to related2", related2_associated.data().len());
-        assert_eq!(related2_associated.data().len(), 2, "Should find 2 entities associated to related2");
+        let related2_associated = entity_repo
+            .find_associated_to(&related2_id, page_req)
+            .await
+            .expect("Failed to find entities associated to related2");
+        info!(
+            "Found {} entities associated to related2",
+            related2_associated.data().len()
+        );
+        assert_eq!(
+            related2_associated.data().len(),
+            2,
+            "Should find 2 entities associated to related2"
+        );
 
         // Test dissociate
         debug!("Dissociating entity1 from related2");
-        entity_repo.dissociate(&entity1_id, &related2_id).await.expect("Failed to dissociate entity1 from related2");
+        entity_repo
+            .dissociate(&entity1_id, &related2_id)
+            .await
+            .expect("Failed to dissociate entity1 from related2");
 
-        assert!(!entity_repo.is_associated(&entity1_id, &related2_id).await.expect("Failed to check association after dissociation"),
-            "entity1 should no longer be associated with related2");
-        assert!(entity_repo.is_associated(&entity2_id, &related2_id).await.expect("Failed to check association"),
-            "entity2 should still be associated with related2");
+        assert!(
+            !entity_repo
+                .is_associated(&entity1_id, &related2_id)
+                .await
+                .expect("Failed to check association after dissociation"),
+            "entity1 should no longer be associated with related2"
+        );
+        assert!(
+            entity_repo
+                .is_associated(&entity2_id, &related2_id)
+                .await
+                .expect("Failed to check association"),
+            "entity2 should still be associated with related2"
+        );
 
         // Test dissociate_all
         debug!("Dissociating entity1 from all related entities");
-        entity_repo.dissociate_all(&entity1_id).await.expect("Failed to dissociate entity1 from all");
+        entity_repo
+            .dissociate_all(&entity1_id)
+            .await
+            .expect("Failed to dissociate entity1 from all");
 
-        let count_after = entity_repo.count_associated(&entity1_id).await.expect("Failed to count associated entities after dissociate_all");
-        assert_eq!(count_after, 0, "entity1 should have 0 associated entities after dissociate_all");
+        let count_after = entity_repo
+            .count_associated(&entity1_id)
+            .await
+            .expect("Failed to count associated entities after dissociate_all");
+        assert_eq!(
+            count_after, 0,
+            "entity1 should have 0 associated entities after dissociate_all"
+        );
 
         // Test dissociate_from_all
         debug!("Dissociating related3 from all entities");
-        entity_repo.dissociate_from_all(&related3_id).await.expect("Failed to dissociate related3 from all");
+        entity_repo
+            .dissociate_from_all(&related3_id)
+            .await
+            .expect("Failed to dissociate related3 from all");
 
-        assert!(!entity_repo.is_associated(&entity2_id, &related3_id).await.expect("Failed to check association after dissociate_from_all"),
-            "entity2 should no longer be associated with related3");
+        assert!(
+            !entity_repo
+                .is_associated(&entity2_id, &related3_id)
+                .await
+                .expect("Failed to check association after dissociate_from_all"),
+            "entity2 should no longer be associated with related3"
+        );
 
         // Clean up
         debug!("Cleaning up test entities");
-        entity_repo.delete(&entity1_id).await.expect("Failed to delete entity1");
-        entity_repo.delete(&entity2_id).await.expect("Failed to delete entity2");
+        entity_repo
+            .delete(&entity1_id)
+            .await
+            .expect("Failed to delete entity1");
+        entity_repo
+            .delete(&entity2_id)
+            .await
+            .expect("Failed to delete entity2");
 
-        related_repo.delete(&related1_id).await.expect("Failed to delete related1");
-        related_repo.delete(&related2_id).await.expect("Failed to delete related2");
-        related_repo.delete(&related3_id).await.expect("Failed to delete related3");
-        related_repo.delete(&new_related_id).await.expect("Failed to delete new_related");
+        related_repo
+            .delete(&related1_id)
+            .await
+            .expect("Failed to delete related1");
+        related_repo
+            .delete(&related2_id)
+            .await
+            .expect("Failed to delete related2");
+        related_repo
+            .delete(&related3_id)
+            .await
+            .expect("Failed to delete related3");
+        related_repo
+            .delete(&new_related_id)
+            .await
+            .expect("Failed to delete new_related");
 
         info!("test_associated_entity_many_to_many completed successfully");
     }
