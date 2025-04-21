@@ -12,8 +12,8 @@ use actix_web::web::Data;
 use crate::model::workspace::Workspace;
 
 pub struct WorkspaceService {
-    user_repo: Box<dyn AssociatedEntityRepository<User, Workspace, Error = Error>>,
-    workspace_repo: Box<dyn Repository<Workspace, Error = Error>>,
+    user_repo: Box<dyn AssociatedEntityRepository<User, Workspace>>,
+    workspace_repo: Box<dyn Repository<Workspace>>,
 }
 
 impl WorkspaceService {

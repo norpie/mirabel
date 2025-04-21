@@ -18,12 +18,12 @@ use crate::security::jwt_util::TokenFactory;
 use crate::{repository::surrealdb::SurrealDB, security::jwt_util::TokenPair};
 
 pub struct AuthService {
-    user_repo: Box<dyn FieldFindableRepository<User, Error = Error>>,
+    user_repo: Box<dyn FieldFindableRepository<User>>,
     token_factory: TokenFactory,
 }
 
 impl AuthService {
-    fn from(db: Box<dyn FieldFindableRepository<User, Error = Error>>) -> Result<Self> {
+    fn from(db: Box<dyn FieldFindableRepository<User>>) -> Result<Self> {
         Ok(AuthService {
             user_repo: db,
             token_factory: TokenFactory::from_env()?,

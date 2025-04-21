@@ -1,5 +1,26 @@
+use std::sync::Arc;
+
+use traits::Repository;
+
+use crate::{model::user::User, Error};
+
 pub(crate) mod surrealdb;
 pub(crate) mod traits;
+
+pub struct RepositoryProvider {
+    user_repo: Arc<dyn Repository<User>>,
+}
+
+impl RepositoryProvider {
+    pub fn new<DB>(db: Arc<DB>) -> Self
+    where
+        DB: Repository<User> + Send + Sync + 'static,
+    {
+        Self {
+            user_repo: db.clone(),
+        }
+    }
+}
 
 #[cfg(test)]
 pub mod tests {

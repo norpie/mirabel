@@ -17,7 +17,7 @@ mod api;
 pub(crate) mod extractors;
 pub(crate) mod middleware;
 
-pub async fn run(db: Data<Box<dyn Repository>>) -> Result<()> {
+pub async fn run(repos: Data<Box<dyn Repository>>) -> Result<()> {
     let host = env::var("BACKEND_HOST")?;
     let port: u16 = env::var("BACKEND_PORT")?.parse()?;
     info!("Listening on {}:{}", host, port);

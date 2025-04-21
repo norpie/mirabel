@@ -5,7 +5,7 @@ use std::{future::Future, pin::Pin};
 use actix_web::{web::Data, FromRequest, HttpMessage, HttpRequest};
 use log::info;
 
-use crate::{model::user::User, repository::Repository};
+use crate::model::user::User;
 
 use super::Error;
 

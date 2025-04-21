@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use crate::{
     dto::page::{PageRequest, PageResponse},
     repository::traits::{
@@ -25,8 +26,6 @@ use super::{
     SurrealDB,
 };
 
-type Result<T> = std::result::Result<T, SDBError>;
-
 #[derive(Serialize, Deserialize, Debug)]
 struct SurrealDBRelationship {
     id: Thing,
@@ -36,8 +35,6 @@ struct SurrealDBRelationship {
 
 #[async_trait]
 impl<T: Entity> Repository<T> for SurrealDB {
-    type Error = SDBError;
-
     async fn save(&self, entity: T) -> Result<T> {
         let name = T::singular_name();
         if let Some(id) = entity.id() {

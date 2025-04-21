@@ -15,7 +15,7 @@ pub(crate) mod prelude;
 
 pub(crate) mod driver;
 pub(crate) mod dto;
-// pub(crate) mod handler;
+pub(crate) mod handler;
 pub(crate) mod messaging;
 pub(crate) mod model;
 pub(crate) mod repository;
@@ -47,7 +47,7 @@ async fn run() -> Result<()> {
     }
     let browsers = Browsers::new().await?;
     info!("Running lifecycle tasks");
-    // handler::run(db).await?;
+    handler::run(db).await?;
     info!("Running cleanup tasks");
     browsers.close().await?;
     Ok(())

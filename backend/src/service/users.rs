@@ -9,7 +9,7 @@ use argon2::{
 use crate::model::user::User;
 
 pub struct UserService {
-    user_repo: Box<dyn FieldFindableRepository<User, Error = Error>>,
+    user_repo: Box<dyn FieldFindableRepository<User>>,
 }
 
 impl UserService {
