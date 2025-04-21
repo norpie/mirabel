@@ -170,27 +170,37 @@ pub mod tests {
         let saved2 = repo.save(entity2).await.expect("Failed to save entity 2");
         info!("Saved entities with IDs: {:?}, {:?}", saved1.id(), saved2.id());
 
-        // Test find by field
-        let page_req = PageRequest::new(1, 10); // Changed from 0 to 1
-        debug!("Finding by field 'name'='FindableEntity' with page request: {:?}", page_req);
-        let find_results = repo.find_by_field("name", "FindableEntity", page_req).await
-            .expect("Failed to find by field");
-        info!("Find by field returned {} results", find_results.data().len());
+        // Test find_single_by_fields
+        debug!("Finding single entity by field 'name'='FindableEntity'");
+        let single_result = repo.find_single_by_fields(&[("name", "FindableEntity")]).await
+            .expect("Failed to find single entity by fields");
+        info!("Find single by fields returned: {:?}", single_result);
+        
+        assert!(single_result.is_some(), "Find single by fields should return an entity");
+        assert_eq!(single_result.unwrap().name, saved1.name, "Found entity should match");
+        debug!("Find single by fields result matched as expected");
 
-        assert_eq!(find_results.data().len(), 1, "Find by field should return one result");
+        // Test find_by_fields
+        let page_req = PageRequest::new(1, 10);
+        debug!("Finding by fields 'name'='FindableEntity' with page request: {:?}", page_req);
+        let find_results = repo.find_by_fields(&[("name", "FindableEntity")], page_req).await
+            .expect("Failed to find by fields");
+        info!("Find by fields returned {} results", find_results.data().len());
+
+        assert_eq!(find_results.data().len(), 1, "Find by fields should return one result");
         assert_eq!(find_results.data()[0].name, saved1.name, "Found entity should match");
-        debug!("Find by field result matched as expected");
+        debug!("Find by fields result matched as expected");
 
-        // Test exists by field
+        // Test exists_by_fields
         debug!("Checking if entity exists by field 'name'='FindableEntity'");
-        let exists = repo.exists_by_field("name", "FindableEntity").await
-            .expect("Failed to check existence by field");
+        let exists = repo.exists_by_fields(&[("name", "FindableEntity")]).await
+            .expect("Failed to check existence by fields");
         debug!("Entity exists check: {}", exists);
-        assert!(exists, "Entity should exist by field");
+        assert!(exists, "Entity should exist by fields");
 
         debug!("Checking if entity exists by field 'name'='NonexistentEntity'");
-        let nonexistent = repo.exists_by_field("name", "NonexistentEntity").await
-            .expect("Failed to check existence by field");
+        let nonexistent = repo.exists_by_fields(&[("name", "NonexistentEntity")]).await
+            .expect("Failed to check existence by fields");
         debug!("Nonexistent entity exists check: {}", nonexistent);
         assert!(!nonexistent, "Nonexistent entity should not exist");
 
