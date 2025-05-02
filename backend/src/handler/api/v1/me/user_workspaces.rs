@@ -1,7 +1,11 @@
 use crate::{
     dto::{api_response::ApiResponse, page::PageRequest},
-    model::{user::User, workspace::NewWorkspace},
+    model::{
+        user::User,
+        workspace::{self, NewWorkspace},
+    },
     prelude::*,
+    repository::traits::Entity,
     service::workspaces,
 };
 
@@ -11,7 +15,7 @@ use actix_web::{
     Responder, Scope,
 };
 
-use crate::repository::Repository;
+use self::workspaces::WorkspaceService;
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -23,22 +27,26 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 
 #[get("")]
 pub async fn get_user_workspaces(
-    db: Data<Box<dyn Repository>>,
+    workspace_service: Data<WorkspaceService>,
     user: User,
     page: Query<PageRequest>,
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
-        workspaces::get_user_workspaces(db, user.id().to_string(), page.0).await?,
+        workspace_service
+            .get_user_workspaces(user.id().unwrap(), page.into_inner())
+            .await?,
     ))
 }
 
 #[post("")]
 pub async fn new_user_workspace(
-    db: Data<Box<dyn Repository>>,
+    workspace_service: Data<WorkspaceService>,
     user: User,
     new_workspace: Json<NewWorkspace>,
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
-        workspaces::create_user_workspace(db, user.id().to_string(), new_workspace.0).await?,
+        workspace_service
+            .create_user_workspace(user.id().unwrap(), new_workspace.into_inner())
+            .await?,
     ))
 }

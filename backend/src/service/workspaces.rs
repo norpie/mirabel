@@ -1,29 +1,37 @@
 use crate::{
     dto::page::{PageRequest, PageResponse},
-    model::{
-        session::{NewSession, Session, UpdatedSession}, user::User, workspace::NewWorkspace
-    },
+    model::{session::Session, user::User, workspace::NewWorkspace},
     prelude::*,
-    repository::traits::{AssociatedEntityRepository, Repository},
+    repository::{
+        traits::{AssociatedEntityRepository, Repository},
+        RepositoryProvider,
+    },
 };
 
 use actix_web::web::Data;
+use chrono::Utc;
 
 use crate::model::workspace::Workspace;
 
 pub struct WorkspaceService {
-    user_repo: Box<dyn AssociatedEntityRepository<User, Workspace>>,
-    workspace_repo: Box<dyn Repository<Workspace>>,
+    repository: Data<RepositoryProvider>,
 }
 
 impl WorkspaceService {
+    pub fn from(repository: Data<RepositoryProvider>) -> Result<Self> {
+        Ok(Self { repository })
+    }
+
     pub async fn create_user_workspace(
         &self,
         user_id: String,
         workspace: NewWorkspace,
     ) -> Result<Workspace> {
         let workspace = Workspace::new(workspace.name);
-        self.user_repo.create_child(workspace, &user_id).await
+        self.repository
+            .user_workspace_repo()
+            .create_child(workspace, &user_id)
+            .await
     }
 
     pub async fn get_user_workspaces(
@@ -31,66 +39,89 @@ impl WorkspaceService {
         user_id: String,
         page: PageRequest,
     ) -> Result<PageResponse<Workspace>> {
-        self.user_repo.find_children(&user_id, page).await
+        self.repository
+            .user_workspace_repo()
+            .find_children(&user_id, page)
+            .await
     }
 
-    /*pub async fn set_workspace_avatar(
+    pub async fn set_workspace_avatar(
         &self,
-        path: String,
         user_id: String,
         workspace_id: String,
-    ) -> Result<String> {
-        db.set_avatar("workspace".into(), workspace_id, path).await
+        path: String,
+    ) -> Result<Workspace> {
+        let mut workspace = self
+            .repository
+            .workspace_repo()
+            .find(&workspace_id)
+            .await?
+            .ok_or(Error::NotFound)?;
+        workspace.set_avatar(path);
+        self.repository.workspace_repo().save(workspace).await
     }
 
-    pub async fn get_workspace_avatar(
-        db: Data<Box<dyn Repository>>,
+    pub async fn create_workspace_session(
+        &self,
         user_id: String,
         workspace_id: String,
-    ) -> Result<Option<String>> {
-        db.get_avatar("workspace".into(), workspace_id).await
-    }*/
-
-    /*pub async fn create_workspace_session(
-        db: Data<Box<dyn Repository>>,
-        new: NewSession,
-    ) -> Result<Option<Session>> {
-        db.create_session(new).await
+    ) -> Result<Session> {
+        self.repository
+            .workspace_session_repo()
+            .create_child(
+                Session::new(format!("New Session: {}", Utc::now().to_rfc2822()), None),
+                &workspace_id,
+            )
+            .await
     }
 
     pub async fn get_user_session_by_id(
-        db: Data<Box<dyn Repository>>,
-        _user_id: String,
-        _workspace_id: String,
+        &self,
+        user_id: String,
+        workspace_id: String,
         id: String,
     ) -> Result<Option<Session>> {
-        db.get_session_by_id(id).await
+        self.repository.session_repo().find(&id).await
     }
 
-    pub async fn update_user_session(
-        db: Data<Box<dyn Repository>>,
-        id: String,
-        session: UpdatedSession,
-    ) -> Result<Option<Session>> {
-        db.update_session(id, session).await
+    pub async fn update_user_session(&self, id: String, title: Option<String>) -> Result<Session> {
+        let mut session = self
+            .repository
+            .session_repo()
+            .find(&id)
+            .await?
+            .ok_or(Error::NotFound)?;
+        session.set_user_title(title);
+        self.repository.session_repo().save(session).await
     }
 
     pub async fn delete_user_session(
-        db: Data<Box<dyn Repository>>,
-        _user_id: String,
-        _workspace_id: String,
+        &self,
+        user_id: String,
+        workspace_id: String,
         id: String,
-    ) -> Result<Option<Session>> {
-        db.delete_session(id).await
+    ) -> Result<()> {
+        self.repository.session_repo().delete(&id).await
     }
 
     pub async fn get_user_workspace_sessions(
-        db: Data<Box<dyn Repository>>,
+        &self,
         workspace_id: String,
         user_id: String,
         page: PageRequest,
-    ) -> Result<Vec<Session>> {
-        db.get_workspaces_users_sessions(workspace_id, user_id, page)
+    ) -> Result<PageResponse<Session>> {
+        self.repository
+            .workspace_session_repo()
+            .find_children(&workspace_id, page)
             .await
-    }*/
+    }
+
+    pub async fn get_workspace_session_by_id(
+        &self,
+        user_id: String,
+        workspace_id: String,
+        session_id: String,
+    ) -> Result<Option<Session>> {
+        self.repository.session_repo().find(&session_id).await
+    }
 }

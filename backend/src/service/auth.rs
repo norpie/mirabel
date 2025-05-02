@@ -14,18 +14,19 @@ use crate::model::user::User;
 use crate::prelude::*;
 
 use crate::repository::traits::{Entity, FieldFindableRepository};
+use crate::repository::RepositoryProvider;
 use crate::security::jwt_util::TokenFactory;
 use crate::{repository::surrealdb::SurrealDB, security::jwt_util::TokenPair};
 
 pub struct AuthService {
-    user_repo: Box<dyn FieldFindableRepository<User>>,
+    repository: Data<RepositoryProvider>,
     token_factory: TokenFactory,
 }
 
 impl AuthService {
-    fn from(db: Box<dyn FieldFindableRepository<User>>) -> Result<Self> {
+    pub fn from(repo: Data<RepositoryProvider>) -> Result<Self> {
         Ok(AuthService {
-            user_repo: db,
+            repository: repo,
             token_factory: TokenFactory::from_env()?,
         })
     }
@@ -33,7 +34,8 @@ impl AuthService {
     pub async fn login(&self, user: LoginUser) -> Result<TokenPair> {
         let mut fields = vec![("email", user.email)];
         let found_user: User = self
-            .user_repo
+            .repository
+            .user_repo()
             .find_single_by_fields(fields)
             .await?
             .ok_or(Error::BadRequest("Wrong email or password".into()))?;
@@ -55,7 +57,7 @@ impl AuthService {
 
         let fields = vec![("email", email.clone()), ("username", username.clone())];
 
-        if self.user_repo.exists_by_fields(fields).await? {
+        if self.repository.user_repo().exists_by_fields(fields).await? {
             return Err(Error::BadRequest("Email already exists".into()));
         }
 
@@ -66,11 +68,12 @@ impl AuthService {
             .to_string();
 
         let user = self
-            .user_repo
+            .repository
+            .user_repo()
             .save(User::new(
                 email,
                 username,
-                password,
+                password_hash,
             ))
             .await?;
         self.token_factory

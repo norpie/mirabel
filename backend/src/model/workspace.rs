@@ -19,6 +19,7 @@ pub struct UpdatedWorkspace {
 pub struct Workspace {
     id: Option<Thing>,
     name: String,
+    avatar: Option<String>,
 }
 
 impl Entity for Workspace {
@@ -31,10 +32,18 @@ impl Entity for Workspace {
 
 impl Workspace {
     pub fn new(name: String) -> Self {
-        Self { id: None, name }
+        Self { id: None, name, avatar: None }
     }
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn set_avatar(&mut self, path: String) {
+        self.avatar = Some(path);
+    }
+
+    pub fn avatar(&self) -> Option<&String> {
+        self.avatar.as_ref()
     }
 }

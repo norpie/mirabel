@@ -21,7 +21,6 @@ use crate::{
 };
 
 use super::{
-    models::SDBError,
     relationships::{associates_with_rel_name, has_child_rel_name, owns_rel_name},
     SurrealDB,
 };
@@ -45,12 +44,12 @@ impl<T: Entity> Repository<T> for SurrealDB {
                 .content(entity)
                 .await?;
             debug!("Query result: {:?}", result);
-            Ok(result.ok_or(SDBError::NotFoundRecentUpdate(name.into()))?)
+            Ok(result.ok_or(Error::NotFoundRecentUpdate(name.into()))?)
         } else {
             debug!("Executing query: CREATE {} CONTENT {:?}", name, entity);
             let result = self.connection.create(name).content(entity).await?;
             debug!("Query result: {:?}", result);
-            Ok(result.ok_or_else(|| SDBError::NotFoundRecentUpdate(name.into()))?)
+            Ok(result.ok_or_else(|| Error::NotFoundRecentUpdate(name.into()))?)
         }
     }
 
@@ -61,7 +60,7 @@ impl<T: Entity> Repository<T> for SurrealDB {
             .delete((T::singular_name(), id.to_string()))
             .await?;
         debug!("Query result: {:?}", result);
-        result.map(|e: T| ()).ok_or(SDBError::NotFound)
+        result.map(|e: T| ()).ok_or(Error::NotFound)
     }
 
     async fn exists(&self, id: &T::ID) -> Result<bool> {
@@ -345,7 +344,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
         let created = result.take::<Option<R>>(2)?;
         debug!("Created owned entity: {:?}", created);
-        created.ok_or(SDBError::NotFoundRecentUpdate(R::singular_name().into()))
+        created.ok_or(Error::NotFoundRecentUpdate(R::singular_name().into()))
     }
 
     async fn relate(&self, subject_id: &R::ID, owner_id: &T::ID) -> Result<()> {
@@ -465,7 +464,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
         let created = result.take::<Option<R>>(2)?;
         debug!("Created child entity: {:?}", created);
-        created.ok_or(SDBError::NotFoundRecentUpdate(R::singular_name().into()))
+        created.ok_or(Error::NotFoundRecentUpdate(R::singular_name().into()))
     }
 
     async fn create_children(&self, entities: Vec<R>, parent_id: &T::ID) -> Result<Vec<R>> {
@@ -522,7 +521,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             errored = true;
         }
         if errored {
-            return Err(SDBError::NotFound);
+            return Err(Error::NotFound);
         }
 
         let created = result.take::<Vec<Vec<R>>>(result.num_statements() - 1)?;
@@ -762,7 +761,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
         let created = result.take::<Option<R>>(2)?;
         debug!("Created associated entity: {:?}", created);
-        created.ok_or(SDBError::NotFoundRecentUpdate(R::singular_name().into()))
+        created.ok_or(Error::NotFoundRecentUpdate(R::singular_name().into()))
     }
 
     async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool> {

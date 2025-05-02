@@ -90,7 +90,7 @@ impl Database for SurrealDB {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::repository::v2::surrealdb::builder::SurrealDBBuilder;
+    use crate::repository::surrealdb::builder::SurrealDBBuilder;
     use crate::repository::{self, Repository};
     use actix_web::web::Data;
     use dotenvy::EnvLoader;
@@ -123,48 +123,48 @@ mod tests {
     async fn test_repository() {
         init_test_env();
         let db = get_test_db().await;
-        repository::v2::tests::test_repository(db).await;
+        repository::tests::test_repository(db).await;
     }
 
     // #[tokio::test]
     // async fn test_field_searchable_repository() {
     //     init_test_env();
     //     let db = get_test_db().await;
-    //     repository::v2::tests::test_field_searchable_repository(db).await;
+    //     repository::tests::test_field_searchable_repository(db).await;
     // }
 
     #[tokio::test]
     async fn test_field_findable_repository() {
         init_test_env();
         let db = get_test_db().await;
-        repository::v2::tests::test_field_findable_repository(db).await;
+        repository::tests::test_field_findable_repository(db).await;
     }
 
     #[tokio::test]
     async fn test_public_entity_repository() {
         init_test_env();
         let db = get_test_db().await;
-        repository::v2::tests::test_public_entity_repository(db).await;
+        repository::tests::test_public_entity_repository(db).await;
     }
 
     #[tokio::test]
     async fn test_associated_entity_one_to_one() {
         init_test_env();
         let db = get_test_db().await;
-        repository::v2::tests::test_associated_entity_one_to_one(db.clone(), db).await;
+        repository::tests::test_associated_entity_one_to_one(db.clone(), db).await;
     }
 
     #[tokio::test]
     async fn test_associated_entity_one_to_many() {
         init_test_env();
         let db = get_test_db().await;
-        repository::v2::tests::test_associated_entity_one_to_many(db.clone(), db).await;
+        repository::tests::test_associated_entity_one_to_many(db.clone(), db).await;
     }
 
     #[tokio::test]
     async fn test_associated_entity_many_to_many() {
         init_test_env();
         let db = get_test_db().await;
-        repository::v2::tests::test_associated_entity_many_to_many(db.clone(), db).await;
+        repository::tests::test_associated_entity_many_to_many(db.clone(), db).await;
     }
 }

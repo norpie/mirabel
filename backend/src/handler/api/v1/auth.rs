@@ -4,9 +4,9 @@ use crate::{
     dto::{api_response::ApiResponse, login_user::LoginUser, register_user::RegisterUser, token::AccessToken},
     model::user::User,
     prelude::*,
-    repository::{surrealdb::SurrealDB, Repository},
+    repository::{surrealdb::SurrealDB},
     security::jwt_util::TokenFactory,
-    service::{auth::{self, AuthService}, security},
+    service::{auth::{self, AuthService}},
 };
 
 use actix_web::{
@@ -32,7 +32,7 @@ pub async fn register(
     auth: Data<AuthService>,
     user: Json<RegisterUser>,
 ) -> Result<impl Responder> {
-    let token_pair = auth.register(user.0).await?;
+    let token_pair = auth.register(user.into_inner()).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
         .customize()
@@ -44,7 +44,7 @@ pub async fn register(
 
 #[post("/login")]
 pub async fn login(auth: Data<AuthService>, user: Json<LoginUser>) -> Result<impl Responder> {
-    let token_pair = auth.login(user.0).await?;
+    let token_pair = auth.login(user.into_inner()).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()
         .customize()

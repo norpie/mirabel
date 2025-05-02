@@ -40,7 +40,7 @@ pub trait Entity:
 }
 
 #[async_trait]
-pub trait Repository<T: Entity> {
+pub trait Repository<T: Entity>: Send + Sync + 'static {
     async fn find(&self, id: &T::ID) -> Result<Option<T>>;
     async fn save(&self, entity: T) -> Result<T>;
     async fn delete(&self, id: &T::ID) -> Result<()>;

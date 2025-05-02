@@ -1,24 +1,66 @@
 use std::sync::Arc;
 
-use traits::Repository;
+use traits::{AssociatedEntityRepository, FieldFindableRepository, Repository};
 
-use crate::{model::user::User, Error};
+use crate::{model::{session::Session, user::User, workspace::Workspace}, Error};
 
 pub(crate) mod surrealdb;
 pub(crate) mod traits;
 
 pub struct RepositoryProvider {
-    user_repo: Arc<dyn Repository<User>>,
+    user_repo: Arc<dyn FieldFindableRepository<User>>,
+    workspace_repo: Arc<dyn Repository<Workspace>>,
+    session_repo: Arc<dyn Repository<Session>>,
+    user_workspace_repo: Arc<dyn AssociatedEntityRepository<User, Workspace>>,
+    workspace_session_repo: Arc<dyn AssociatedEntityRepository<Workspace, Session>>,
 }
 
 impl RepositoryProvider {
     pub fn new<DB>(db: Arc<DB>) -> Self
     where
-        DB: Repository<User> + Send + Sync + 'static,
+        DB:
+        FieldFindableRepository<User> +
+        Repository<Workspace> +
+        Repository<Session> +
+        AssociatedEntityRepository<User, Workspace> +
+        AssociatedEntityRepository<Workspace, Session> +
+        Send + Sync + 'static,
     {
         Self {
             user_repo: db.clone(),
+            workspace_repo: db.clone(),
+            session_repo: db.clone(),
+            user_workspace_repo: db.clone(),
+            workspace_session_repo: db.clone(),
         }
+    }
+
+    pub fn user_repo(&self) -> Arc<dyn FieldFindableRepository<User>> {
+        self.user_repo.clone()
+    }
+
+    pub fn workspace_repo(
+        &self,
+    ) -> Arc<dyn Repository<Workspace>> {
+        self.workspace_repo.clone()
+    }
+
+    pub fn session_repo(
+        &self,
+    ) -> Arc<dyn Repository<Session>> {
+        self.session_repo.clone()
+    }
+
+    pub fn user_workspace_repo(
+        &self,
+    ) -> Arc<dyn AssociatedEntityRepository<User, Workspace>> {
+        self.user_workspace_repo.clone()
+    }
+
+    pub fn workspace_session_repo(
+        &self,
+    ) -> Arc<dyn AssociatedEntityRepository<Workspace, Session>> {
+        self.workspace_session_repo.clone()
     }
 }
 

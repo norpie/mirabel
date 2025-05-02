@@ -13,7 +13,7 @@ impl ResponseError for Error {
             Error::BadRequest(_) => StatusCode::BAD_REQUEST,
             Error::Unauthorized(_) => StatusCode::UNAUTHORIZED,
             Error::Forbidden(_) => StatusCode::FORBIDDEN,
-            Error::NotFound(_) => StatusCode::NOT_FOUND,
+            Error::NotFound => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

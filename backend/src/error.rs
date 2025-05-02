@@ -20,8 +20,10 @@ pub enum Error {
     Unauthorized(String),
     #[error("{0}")]
     Forbidden(String),
-    #[error("Resource not found: {0}")]
-    NotFound(String),
+    #[error("Resource not found")]
+    NotFound,
+    #[error("Resource not while updating: {0}")]
+    NotFoundRecentUpdate(String),
 
     // 500.. HTTP error types
     #[error("Internal server error")]

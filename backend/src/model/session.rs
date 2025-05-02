@@ -1,54 +1,42 @@
+use actix_web::http::header::EntityTag;
+use backend_derive::named_struct;
 use serde::{Deserialize, Serialize};
+use surrealdb::sql::Thing;
+
+use crate::repository::traits::Entity;
 
 use super::{chat::Chat, plan::Plan};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NewSession {
-    workspace_id: String,
-    user_id: String,
-    generated_title: String,
-}
-
-impl NewSession {
-    pub fn new(workspace_id: String, user_id: String, generated_title: String) -> Self {
-        Self {
-            workspace_id,
-            user_id,
-            generated_title,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[named_struct]
 pub struct Session {
-    id: String,
-    workspace_id: String,
-    user_id: String,
+    id: Option<Thing>,
     generated_title: String,
     user_title: Option<String>,
 }
 
+impl Entity for Session {
+    type ID = String;
+
+    fn id(&self) -> Option<Self::ID> {
+        self.id.as_ref().map(|thing| thing.id.to_string())
+    }
+}
+
 impl Session {
-    pub fn new(
-        id: String,
-        workspace_id: String,
-        user_id: String,
-        generated_title: String,
-        user_title: Option<String>,
-    ) -> Self {
+    pub fn new(generated_title: String, user_title: Option<String>) -> Self {
         Self {
-            id,
-            workspace_id,
-            user_id,
+            id: None,
             generated_title,
             user_title,
         }
     }
-}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdatedSession {
-    id: String,
-    generated_title: Option<String>,
-    user_title: Option<String>,
+    pub fn set_generated_title(&mut self, generated_title: String) {
+        self.generated_title = generated_title;
+    }
+
+    pub fn set_user_title(&mut self, user_title: Option<String>) {
+        self.user_title = user_title;
+    }
 }

@@ -1,10 +1,11 @@
 #![allow(dead_code, unused)]
+use actix_web::web::Data;
 use driver::{
     browser::Browsers,
     search::{traits::SearchEngine, SearchEngines},
 };
 use log::info;
-use repository::{surrealdb::SurrealDB};
+use repository::{surrealdb::SurrealDB, RepositoryProvider};
 
 extern crate backend_derive;
 
@@ -41,13 +42,14 @@ async fn main() -> Result<()> {
 async fn run() -> Result<()> {
     info!("Running setup tasks");
     let db = SurrealDB::from_env().await?;
+    let repos = RepositoryProvider::new(db.into());
     let engines = SearchEngines::from_env();
     if !engines.available().await {
         log::error!("No search engines are available");
     }
     let browsers = Browsers::new().await?;
     info!("Running lifecycle tasks");
-    handler::run(db).await?;
+    handler::run(Data::new(repos)).await?;
     info!("Running cleanup tasks");
     browsers.close().await?;
     Ok(())

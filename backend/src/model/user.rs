@@ -13,6 +13,7 @@ pub struct User {
     pub email: String,
     pub password: String,
     pub created_at: DateTime<Utc>,
+    pub avatar: Option<String>,
 }
 
 impl Entity for User {
@@ -41,6 +42,23 @@ impl User {
             email,
             password,
             created_at: Utc::now(),
+            avatar: None,
         }
+    }
+
+    pub fn set_username(&mut self, username: String) {
+        self.username = username;
+    }
+
+    pub fn set_email(&mut self, email: String) {
+        self.email = email;
+    }
+
+    pub fn set_password(&mut self, password: String) {
+        self.password = password;
+    }
+
+    pub fn set_avatar(&mut self, avatar: String) {
+        self.avatar = Some(avatar);
     }
 }
