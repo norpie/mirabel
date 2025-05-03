@@ -18,6 +18,7 @@
         }
 
         const response = await post<Result<{ access_token: string }>>('v1/auth/register', {
+            username: username,
             email: email,
             password: password
         });
@@ -37,6 +38,7 @@
         goto('/');
     }
 
+    let username = $state();
     let email = $state();
     let password = $state();
     let password2 = $state();
@@ -50,6 +52,10 @@
         </Card.Header>
         <Card.Content>
             <div class="grid gap-4">
+                <div class="grid gap-2">
+                    <Label for="username">Username</Label>
+                    <Input id="username" bind:value={username} required />
+                </div>
                 <div class="grid gap-2">
                     <Label for="email">Email</Label>
                     <Input id="email" type="email" placeholder="m@example.com" bind:value={email} required />
