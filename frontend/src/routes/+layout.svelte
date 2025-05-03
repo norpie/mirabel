@@ -62,7 +62,7 @@
 			toast.error(result.error);
 			workspaces.set([]);
 		} else {
-			workspaces.set(result.data);
+			workspaces.set(result.data.data);
 		}
 		// Selected workspace
 		// TODO: Implement proper recent workspace logic
