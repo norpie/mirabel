@@ -29,7 +29,6 @@
 	});
 
 	import {
-		avatar,
 		user,
 		workspaces,
 		selectedWorkspace,
@@ -53,15 +52,6 @@
 				toast.error(result.error);
 				return;
 			}
-		}
-		// Avatar
-		if (!$avatar) {
-			let result = await get<Result<string | null>>('v1/me/avatar');
-			if (result.error) {
-				toast.error(result.error);
-				return;
-			}
-			avatar.set(result.data);
 		}
 		// Workspaces
 		let result = await get<Result<Workspace[]>>(`v1/me/workspaces`, {

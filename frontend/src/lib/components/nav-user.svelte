@@ -13,7 +13,7 @@
 	import Sun from 'lucide-svelte/icons/sun';
 	import Moon from 'lucide-svelte/icons/moon';
 
-	import { avatar, user } from '$lib/store';
+	import { user } from '$lib/store';
 	import { del } from '$lib/request';
 	import { goto } from '$app/navigation';
 
@@ -38,7 +38,7 @@
 							{...props}
 						>
 							<Avatar.Root class="h-8 w-8 rounded-lg">
-								<Avatar.Image src={$avatar} alt={$user.username} />
+								<Avatar.Image src={$user.avatar} alt={$user.username} />
 								<Avatar.Fallback class="rounded-lg">{$user.username[0]}</Avatar.Fallback>
 							</Avatar.Root>
 							<div class="grid flex-1 text-left text-sm leading-tight">
@@ -58,7 +58,7 @@
 					<DropdownMenu.Label class="p-0 font-normal">
 						<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 							<Avatar.Root class="h-8 w-8 rounded-lg">
-								<Avatar.Image src={$avatar} alt={$user.username} />
+								<Avatar.Image src={$user.avatar} alt={$user.username} />
 								<Avatar.Fallback class="rounded-lg">{$user.username[0]}</Avatar.Fallback>
 							</Avatar.Root>
 							<div class="grid flex-1 text-left text-sm leading-tight">
