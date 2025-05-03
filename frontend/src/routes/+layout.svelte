@@ -67,7 +67,6 @@
 		// Selected workspace
 		// TODO: Implement proper recent workspace logic
 		if (!$workspaces || $workspaces.length == 0) {
-			goto('/workspaces');
 			return;
 		}
 		selectedWorkspace.set($workspaces[0]);
