@@ -67,6 +67,7 @@
 		// Selected workspace
 		// TODO: Implement proper recent workspace logic
 		if (!$workspaces || $workspaces.length == 0) {
+            selectedWorkspace.set(null);
 			return;
 		}
 		selectedWorkspace.set($workspaces[0]);
