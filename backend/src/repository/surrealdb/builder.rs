@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+use log::debug;
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
     opt::auth::{Database, Namespace, Root},
@@ -158,17 +159,20 @@ impl<'a> RootWithNsBuilder<'a> {
 // Root with namespace and database implementation
 impl RootWithNsDbBuilder<'_> {
     pub async fn build(self) -> Result<SurrealDB> {
+        debug!("Connecting to SurrealDB at {} with root authentication", self.url);
         let connection = Surreal::new::<Ws>(self.url).await?;
+        debug!("Authenticating with root user");
         connection
             .signin(Root {
                 username: self.state.username,
                 password: self.state.password,
             })
             .await?;
-
+        debug!("Using namespace: {}", self.ns);
         connection.use_ns(self.ns).await?;
+        debug!("Using database: {}", self.db);
         connection.use_db(self.db).await?;
-
+        debug!("Successfully connected to SurrealDB");
         Ok(connection.into())
     }
 }

@@ -2,6 +2,7 @@ use crate::prelude::*;
 
 use async_trait::async_trait;
 use builder::SurrealDBBuilder;
+use log::{debug, info};
 use surrealdb::{
     engine::remote::ws::{Client, Ws},
     Surreal,
@@ -22,19 +23,18 @@ pub struct SurrealDB {
 
 impl SurrealDB {
     pub async fn from_env() -> Result<Self> {
+        debug!("Initializing SurrealDB from environment variables");
         let url = std::env::var("SURREALDB_URL").unwrap_or_else(|_| "ws://localhost:8000".into());
         let auth_type = std::env::var("SURREALDB_TYPE").unwrap_or_else(|_| "root".to_string());
         let username = std::env::var("SURREALDB_USERNAME").unwrap_or_else(|_| "root".to_string());
         let password = std::env::var("SURREALDB_PASSWORD").unwrap_or_else(|_| "root".to_string());
-        let namespace =
-            std::env::var("SURREALDB_NAMESPACE").unwrap_or_else(|_| "mirabel".to_string());
-        let database =
-            std::env::var("SURREALDB_DATABASE").unwrap_or_else(|_| "mirabel".to_string());
+        let namespace = std::env::var("SURREALDB_NAMESPACE").unwrap_or_else(|_| "mirabel".to_string());
+        let database = std::env::var("SURREALDB_DATABASE").unwrap_or_else(|_| "mirabel".to_string());
 
-        Self::from_vars(
-            &url, &auth_type, &username, &password, &namespace, &database,
-        )
-        .await
+        debug!("Connecting to SurrealDB at {url} with {auth_type} authentication");
+        let db = Self::from_vars(&url, &auth_type, &username, &password, &namespace, &database).await?;
+        info!("Successfully connected to SurrealDB at {url}");
+        Ok(db)
     }
 
     pub async fn from_vars(
@@ -45,8 +45,10 @@ impl SurrealDB {
         namespace: &str,
         database: &str,
     ) -> Result<Self> {
-        match auth_type {
+        debug!("Connecting to SurrealDB with explicit configuration");
+        let result = match auth_type {
             "namespace" => {
+                debug!("Using namespace authentication");
                 SurrealDBBuilder::new(url)
                     .with_namespace_user(namespace, username, password)
                     .use_db(database)
@@ -54,12 +56,14 @@ impl SurrealDB {
                     .await
             }
             "database" => {
+                debug!("Using database authentication");
                 SurrealDBBuilder::new(url)
                     .with_database_user(namespace, database, username, password)
                     .build()
                     .await
             }
             _ => {
+                debug!("Using root authentication");
                 SurrealDBBuilder::new(url)
                     .with_root(username, password)
                     .use_ns(namespace)
@@ -67,7 +71,12 @@ impl SurrealDB {
                     .build()
                     .await
             }
+        };
+        match &result {
+            Ok(_) => info!("Successfully established database connection"),
+            Err(e) => debug!("Failed to connect to database: {e}"),
         }
+        result
     }
 }
 
