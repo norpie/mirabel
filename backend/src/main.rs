@@ -4,7 +4,7 @@ use driver::{
     browser::Browsers,
     search::{traits::SearchEngine, SearchEngines},
 };
-use log::info;
+use log::{info, warn};
 use repository::{surrealdb::SurrealDB, RepositoryProvider};
 
 extern crate backend_derive;
@@ -45,7 +45,7 @@ async fn run() -> Result<()> {
     let repos = RepositoryProvider::new(db.into());
     let engines = SearchEngines::from_env();
     if !engines.available().await {
-        log::error!("No search engines are available");
+        warn!("No search engines are available");
     }
     let browsers = Browsers::new().await?;
     info!("Running lifecycle tasks");
