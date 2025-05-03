@@ -14,6 +14,7 @@
 	const sidebar = useSidebar();
 </script>
 
+{#if $sessions !== null}
 <Sidebar.Group class="group-data-[collapsible=icon]:hidden">
 	<Sidebar.GroupLabel>Sessions</Sidebar.GroupLabel>
 	<Sidebar.Menu>
@@ -69,3 +70,4 @@
 		{/if}
 	</Sidebar.Menu>
 </Sidebar.Group>
+{/if}
