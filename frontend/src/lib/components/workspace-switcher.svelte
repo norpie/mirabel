@@ -43,6 +43,7 @@
 		if ($workspaces) {
 			$workspaces.push(result.data);
 		}
+        selectedWorkspace.set(result.data);
 		workspaceDialogOpen = false;
 	}
 
@@ -131,6 +132,18 @@
 					</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
+		{:else if $workspaces && $workspaces.length > 0}
+			<Button variant="ghost" onclick={() => selectedWorkspace.set($workspaces[0])} class="w-full justify-start">
+				<div class="grid flex-1 text-left text-sm leading-tight">
+					<span class="truncate font-semibold">Select a workspace</span>
+				</div>
+			</Button>
+		{:else if $workspaces && $workspaces.length === 0}
+			<Button variant="ghost" onclick={() => (workspaceDialogOpen = true)} class="w-full justify-start">
+				<div class="grid flex-1 text-left text-sm leading-tight">
+					<span class="truncate font-semibold">Create a workspace</span>
+				</div>
+			</Button>
 		{:else}
 			<div>
 				<Spinner />
