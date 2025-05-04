@@ -50,8 +50,8 @@ impl AuthService {
 
     pub async fn register(&self, user: RegisterUser) -> Result<TokenPair> {
         let RegisterUser {
-            email,
             username,
+            email,
             password,
         } = user;
 
@@ -71,8 +71,8 @@ impl AuthService {
             .repository
             .user_repo()
             .save(User::new(
-                email,
                 username,
+                email,
                 password_hash,
             ))
             .await?;
