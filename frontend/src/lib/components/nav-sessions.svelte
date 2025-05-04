@@ -26,10 +26,12 @@
 							<button {...props}>
 								<a
 									href="##"
+									class="w-full block truncate"
 									onclick={() => {
 										goto(`/session/${session.id}`);
-									}}>{session.title}</a
-								>
+									}}>
+									<span class="truncate">{session.title}</span>
+								</a>
 							</button>
 						{/snippet}
 					</Sidebar.MenuButton>
