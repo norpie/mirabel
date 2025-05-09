@@ -378,7 +378,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     // One-to-Many relationship methods
     async fn find_children(&self, parent_id: &T::ID, page: PageRequest) -> Result<PageResponse<R>> {
         let query = format!("SELECT out FROM {} WHERE in = type::thing($parent_table, $parent_id) LIMIT $limit START $start FETCH out",
-                          has_child_rel_name(T::singular_name()));
+                          has_child_rel_name(R::singular_name()));
         let parent_id_str = parent_id.to_string();
         let limit_str = page.size().to_string();
         let start_str = ((page.page() - 1) * page.size()).to_string();
@@ -409,7 +409,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     async fn count_children(&self, parent_id: &T::ID) -> Result<u64> {
         let query = format!(
             "SELECT count(->{}->{}) as count FROM type::thing($parent_table, $parent_id)",
-            has_child_rel_name(T::singular_name()),
+            has_child_rel_name(R::singular_name()),
             R::singular_name()
         );
         let parent_id_str = parent_id.to_string();
@@ -435,7 +435,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         let query1 = "$created = CREATE type::table($table) CONTENT $entity";
         let query2 = format!(
             "RELATE $parent->{}->$created",
-            has_child_rel_name(T::singular_name())
+            has_child_rel_name(R::singular_name())
         );
         let query3 = "RETURN $created";
         let parent_bind = Thing::from((T::singular_name(), parent_id.to_string().as_str()));
@@ -473,7 +473,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
         debug!(
             "Starting transaction to create {} child entities of type '{}' for parent {} '{}', using relationship '{}'",
-            entities_len, R::singular_name(), T::singular_name(), parent_id, has_child_rel_name(T::singular_name())
+            entities_len, R::singular_name(), T::singular_name(), parent_id, has_child_rel_name(R::singular_name())
         );
 
         let mut transaction = self.connection.query("true;");
@@ -499,7 +499,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             transaction = transaction.bind((format!("child{i}"), child));
             transaction = transaction.query(format!(
                 "RELATE $parent->{}->$new_child{}",
-                has_child_rel_name(T::singular_name()),
+                has_child_rel_name(R::singular_name()),
                 i
             ));
             transaction = transaction.bind(("parent", parent_bind.clone()));
@@ -539,7 +539,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         //DELETE test_entity_child WHERE <-has_child_test_entity<-(test_entity WHERE id = type::thing($parent_table, $parent_id))
         let query = format!(
             "DELETE type::table($child_table) WHERE <-{}<-({} WHERE id = type::thing($parent_table, $parent_id))",
-            has_child_rel_name(T::singular_name()),
+            has_child_rel_name(R::singular_name()),
             T::singular_name()
         );
 
