@@ -1,4 +1,4 @@
-#![allow(dead_code, unused)]
+#![allow(dead_code)]
 use actix_web::web::Data;
 use driver::{
     browser::Browsers,

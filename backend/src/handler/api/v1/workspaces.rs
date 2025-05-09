@@ -89,7 +89,7 @@ pub async fn delete_user_session(
 #[patch("/{id}/sessions/{session_id}")]
 pub async fn update_user_session(
     workspace_service: Data<WorkspaceService>,
-    id: Path<String>,
+    _id: Path<String>,
     session_id: Path<String>,
     session: Json<UpdatedSession>,
 ) -> Result<impl Responder> {

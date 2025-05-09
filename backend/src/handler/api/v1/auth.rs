@@ -50,7 +50,7 @@ pub async fn login(auth: Data<AuthService>, user: Json<LoginUser>) -> Result<imp
 }
 
 #[delete("/logout")]
-pub async fn logout(req: HttpRequest) -> Result<impl Responder> {
+pub async fn logout(_req: HttpRequest) -> Result<impl Responder> {
     Ok(ApiResponse::ok("Logged out successfully")
         .as_response()?
         .customize()
