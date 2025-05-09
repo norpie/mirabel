@@ -201,7 +201,7 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
         let entities = query.await?.take::<Vec<T>>(0)?;
         debug!("Query result: found {} entities", entities.len());
 
-        Ok(PageResponse::from(entities, page.page()))
+        Ok(PageResponse::from_vec(entities, page.page()))
     }
 
     async fn exists_by_fields(&self, fields: Vec<(&'static str, String)>) -> Result<bool> {
@@ -261,7 +261,7 @@ impl<T: Entity> PublicEntityRepository<T> for SurrealDB {
 
         let entities = result.take::<Vec<T>>(0)?;
         debug!("Query result: found {} entities", entities.len());
-        Ok(PageResponse::from(entities, page.page()))
+        Ok(PageResponse::from_vec(entities, page.page()))
     }
 }
 
@@ -422,7 +422,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         // Flatten the nested vectors
         // let flattened: Vec<R> = children_nested.into_iter().flatten().collect();
         // debug!("Query result: found {} children", flattened.len());
-        Ok(PageResponse::from(children_nested, page.page()))
+        Ok(PageResponse::from_vec(children_nested, page.page()))
     }
 
     async fn count_children(&self, parent_id: &T::ID) -> Result<u64> {
@@ -621,7 +621,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             "Query result: found {} associated entities",
             associated.len()
         );
-        Ok(PageResponse::from(associated, page.page()))
+        Ok(PageResponse::from_vec(associated, page.page()))
     }
 
     async fn find_associated_to(
@@ -659,7 +659,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             "Query result: found {} associated entities",
             associated.len()
         );
-        Ok(PageResponse::from(associated, page.page()))
+        Ok(PageResponse::from_vec(associated, page.page()))
     }
 
     async fn count_associated(&self, entity_id: &T::ID) -> Result<u64> {

@@ -8,7 +8,17 @@ pub struct PageResponse<T> {
 }
 
 impl<T> PageResponse<T> {
-    pub fn from(data: Vec<T>, page: i32) -> Self {
+    pub fn to<R>(self) -> PageResponse<R>
+    where
+        T: Into<R>,
+    {
+        PageResponse {
+            page_info: self.page_info,
+            data: self.data.into_iter().map(Into::into).collect(),
+        }
+    }
+
+    pub fn from_vec(data: Vec<T>, page: i32) -> Self {
         let page_info = PageInfo {
             page,
             size: data.len() as i32,

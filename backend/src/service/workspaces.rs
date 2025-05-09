@@ -1,5 +1,8 @@
 use crate::{
-    dto::page::{PageRequest, PageResponse},
+    dto::{
+        page::{PageRequest, PageResponse},
+        workspace::FrontendWorkspace,
+    },
     model::{session::Session, workspace::NewWorkspace},
     prelude::*,
     repository::RepositoryProvider,
@@ -35,11 +38,13 @@ impl WorkspaceService {
         &self,
         user_id: String,
         page: PageRequest,
-    ) -> Result<PageResponse<Workspace>> {
-        self.repository
+    ) -> Result<PageResponse<FrontendWorkspace>> {
+        Ok(self
+            .repository
             .user_workspace_repo()
             .find_children(&user_id, page)
-            .await
+            .await?
+            .to())
     }
 
     pub async fn set_workspace_avatar(
