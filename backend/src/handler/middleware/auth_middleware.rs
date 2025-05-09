@@ -6,7 +6,7 @@ use actix_web::{
     Error, HttpMessage, HttpResponse,
 };
 use futures_util::future::LocalBoxFuture;
-use log::{error, info};
+use log::{debug, error, info};
 
 use crate::security::jwt_util::TokenFactory;
 
@@ -74,7 +74,7 @@ where
         };
 
         let Ok(sub) = token_factory.subject(token) else {
-            info!("Invalid token");
+            debug!("Invalid token in request");
             return Box::pin(async {
                 Ok(req.into_response(HttpResponse::Unauthorized().finish().map_into_right_body()))
             });

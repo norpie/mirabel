@@ -1,5 +1,5 @@
 use actix_web::{body::BoxBody, http::StatusCode, ResponseError};
-use log::error;
+use log::{debug, error};
 
 use crate::Error;
 
@@ -19,11 +19,12 @@ impl ResponseError for Error {
     }
 
     fn error_response(&self) -> actix_web::HttpResponse<actix_web::body::BoxBody> {
-        let api_response = ApiResponse::error(self.status_code(), self.to_string());
+        let message = self.to_string();
+        let api_response = ApiResponse::error(self.status_code(), message.clone());
         let serde_res = serde_json::to_string(&api_response);
         match serde_res {
             Ok(json) => {
-                error!("Error response: {}", json);
+                debug!("Error: {}", message);
                 actix_web::HttpResponse::new(self.status_code()).set_body(BoxBody::new(json))
             }
             Err(e) => {
