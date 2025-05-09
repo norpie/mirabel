@@ -126,7 +126,11 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
         &self,
         fields: Vec<(&'static str, String)>,
     ) -> Result<Option<T>> {
-        debug!("Finding single {} by fields: {:?}", T::singular_name(), fields);
+        debug!(
+            "Finding single {} by fields: {:?}",
+            T::singular_name(),
+            fields
+        );
 
         let mut query_str = "SELECT * FROM type::table($table) WHERE ".to_string();
         for (field, _) in fields.iter() {
@@ -135,9 +139,14 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
         query_str = query_str.trim_end_matches(" AND ").to_string();
         query_str += " LIMIT 1;";
 
-        debug!("Executing query: {} with binds: table={}", query_str, T::singular_name());
+        debug!(
+            "Executing query: {} with binds: table={}",
+            query_str,
+            T::singular_name()
+        );
 
-        let mut query = self.connection
+        let mut query = self
+            .connection
             .query(&query_str)
             .bind(("table", T::singular_name()));
         for (field, value) in fields.into_iter() {
@@ -157,7 +166,10 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
     ) -> Result<PageResponse<T>> {
         debug!(
             "Finding {} by fields: {:?} with pagination: page={}, size={}",
-            T::singular_name(), fields, page.page(), page.size()
+            T::singular_name(),
+            fields,
+            page.page(),
+            page.size()
         );
 
         let mut query_str = "SELECT * FROM type::table($table) WHERE ".to_string();
@@ -169,10 +181,14 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
 
         debug!(
             "Executing query: {} with binds: table={}, limit={}, start={}",
-            query_str, T::singular_name(), page.size(), (page.page() - 1) * page.size()
+            query_str,
+            T::singular_name(),
+            page.size(),
+            (page.page() - 1) * page.size()
         );
 
-        let mut query = self.connection
+        let mut query = self
+            .connection
             .query(&query_str)
             .bind(("table", T::singular_name()));
         for (field, value) in fields.into_iter() {
@@ -188,11 +204,12 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
         Ok(PageResponse::from(entities, page.page()))
     }
 
-    async fn exists_by_fields(
-        &self,
-        fields: Vec<(&'static str, String)>,
-    ) -> Result<bool> {
-        debug!("Checking existence of {} by fields: {:?}", T::singular_name(), fields);
+    async fn exists_by_fields(&self, fields: Vec<(&'static str, String)>) -> Result<bool> {
+        debug!(
+            "Checking existence of {} by fields: {:?}",
+            T::singular_name(),
+            fields
+        );
 
         let mut query_str = "SELECT * FROM type::table($table) WHERE ".to_string();
         for (field, _) in fields.iter() {
@@ -200,9 +217,14 @@ impl<T: FieldFindableStruct> FieldFindableRepository<T> for SurrealDB {
         }
         query_str = query_str.trim_end_matches(" OR ").to_string();
 
-        debug!("Executing query: {} with binds: table={}", query_str, T::singular_name());
+        debug!(
+            "Executing query: {} with binds: table={}",
+            query_str,
+            T::singular_name()
+        );
 
-        let mut query = self.connection
+        let mut query = self
+            .connection
             .query(&query_str)
             .bind(("table", T::singular_name()));
         for (field, value) in fields.into_iter() {

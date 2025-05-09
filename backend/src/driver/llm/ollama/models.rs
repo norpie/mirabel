@@ -6,7 +6,6 @@ use serde_json::Value;
 use serde_with::serde_as;
 use std::collections::HashMap;
 
-
 #[derive(Debug, Display, Serialize)]
 #[display("{}:{}", model, tag)]
 pub struct OllamaModel {

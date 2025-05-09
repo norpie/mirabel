@@ -4,7 +4,6 @@ use surrealdb::sql::Thing;
 
 use crate::repository::traits::Entity;
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[named_struct]
 pub struct Session {

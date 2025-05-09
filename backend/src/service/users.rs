@@ -1,9 +1,6 @@
 use crate::{
     prelude::*,
-    repository::{
-        traits::Entity,
-        RepositoryProvider,
-    },
+    repository::{traits::Entity, RepositoryProvider},
 };
 
 use actix_web::web::Data;

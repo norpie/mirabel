@@ -1,9 +1,6 @@
 use crate::{
     dto::{api_response::ApiResponse, page::PageRequest},
-    model::{
-        user::User,
-        workspace::{NewWorkspace},
-    },
+    model::{user::User, workspace::NewWorkspace},
     prelude::*,
     repository::traits::Entity,
     service::workspaces,

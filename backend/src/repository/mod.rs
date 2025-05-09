@@ -18,13 +18,14 @@ pub struct RepositoryProvider {
 impl RepositoryProvider {
     pub fn new<DB>(db: Arc<DB>) -> Self
     where
-        DB:
-        FieldFindableRepository<User> +
-        Repository<Workspace> +
-        Repository<Session> +
-        AssociatedEntityRepository<User, Workspace> +
-        AssociatedEntityRepository<Workspace, Session> +
-        Send + Sync + 'static,
+        DB: FieldFindableRepository<User>
+            + Repository<Workspace>
+            + Repository<Session>
+            + AssociatedEntityRepository<User, Workspace>
+            + AssociatedEntityRepository<Workspace, Session>
+            + Send
+            + Sync
+            + 'static,
     {
         Self {
             user_repo: db.clone(),
@@ -39,21 +40,15 @@ impl RepositoryProvider {
         self.user_repo.clone()
     }
 
-    pub fn workspace_repo(
-        &self,
-    ) -> Arc<dyn Repository<Workspace>> {
+    pub fn workspace_repo(&self) -> Arc<dyn Repository<Workspace>> {
         self.workspace_repo.clone()
     }
 
-    pub fn session_repo(
-        &self,
-    ) -> Arc<dyn Repository<Session>> {
+    pub fn session_repo(&self) -> Arc<dyn Repository<Session>> {
         self.session_repo.clone()
     }
 
-    pub fn user_workspace_repo(
-        &self,
-    ) -> Arc<dyn AssociatedEntityRepository<User, Workspace>> {
+    pub fn user_workspace_repo(&self) -> Arc<dyn AssociatedEntityRepository<User, Workspace>> {
         self.user_workspace_repo.clone()
     }
 
@@ -75,8 +70,7 @@ pub mod tests {
     use crate::dto::page::PageRequest;
     use crate::repository::traits::{
         AssociatedEntityRepository, Entity, FieldFindableRepository, FieldFindableStruct,
-        FieldSearchableRepository, FieldSearchableStruct, PublicEntityRepository,
-        Repository,
+        FieldSearchableRepository, FieldSearchableStruct, PublicEntityRepository, Repository,
     };
 
     #[derive(Debug, Clone, Serialize, Deserialize)]

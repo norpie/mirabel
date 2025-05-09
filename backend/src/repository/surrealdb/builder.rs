@@ -159,7 +159,10 @@ impl<'a> RootWithNsBuilder<'a> {
 // Root with namespace and database implementation
 impl RootWithNsDbBuilder<'_> {
     pub async fn build(self) -> Result<SurrealDB> {
-        debug!("Connecting to SurrealDB at {} with root authentication", self.url);
+        debug!(
+            "Connecting to SurrealDB at {} with root authentication",
+            self.url
+        );
         let connection = Surreal::new::<Ws>(self.url).await?;
         debug!("Authenticating with root user");
         connection

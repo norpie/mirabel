@@ -1,4 +1,3 @@
-
 use actix_web::web::Data;
 use argon2::password_hash::{rand_core::OsRng, PasswordHasher, PasswordVerifier, SaltString};
 use argon2::{Argon2, PasswordHash};
@@ -64,11 +63,7 @@ impl AuthService {
         let user = self
             .repository
             .user_repo()
-            .save(User::new(
-                username,
-                email,
-                password_hash,
-            ))
+            .save(User::new(username, email, password_hash))
             .await?;
         self.token_factory
             .generate_token(user.id().unwrap().to_string())

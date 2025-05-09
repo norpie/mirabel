@@ -1,15 +1,18 @@
-
 use crate::{
-    dto::{api_response::ApiResponse, login_user::LoginUser, register_user::RegisterUser, token::AccessToken},
+    dto::{
+        api_response::ApiResponse, login_user::LoginUser, register_user::RegisterUser,
+        token::AccessToken,
+    },
     prelude::*,
-    service::auth::{AuthService},
+    service::auth::AuthService,
 };
 
 use actix_web::{
     delete,
     http::header,
     post,
-    web::{self, Data, Json}, HttpRequest, Responder, Scope,
+    web::{self, Data, Json},
+    HttpRequest, Responder, Scope,
 };
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
@@ -23,10 +26,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 }
 
 #[post("/register")]
-pub async fn register(
-    auth: Data<AuthService>,
-    user: Json<RegisterUser>,
-) -> Result<impl Responder> {
+pub async fn register(auth: Data<AuthService>, user: Json<RegisterUser>) -> Result<impl Responder> {
     let token_pair = auth.register(user.into_inner()).await?;
     Ok(ApiResponse::ok(AccessToken::from(token_pair.access()))
         .as_response()

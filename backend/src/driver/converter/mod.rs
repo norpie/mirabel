@@ -1,4 +1,3 @@
-
 use html::Html;
 use markdown::Markdown;
 use pdf::Pdf;

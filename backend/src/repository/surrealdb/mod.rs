@@ -3,10 +3,7 @@ use crate::prelude::*;
 use async_trait::async_trait;
 use builder::SurrealDBBuilder;
 use log::{debug, info};
-use surrealdb::{
-    engine::remote::ws::Client,
-    Surreal,
-};
+use surrealdb::{engine::remote::ws::Client, Surreal};
 
 use crate::{repository::traits::Database, Error};
 
@@ -27,11 +24,16 @@ impl SurrealDB {
         let auth_type = std::env::var("SURREALDB_TYPE").unwrap_or_else(|_| "root".to_string());
         let username = std::env::var("SURREALDB_USERNAME").unwrap_or_else(|_| "root".to_string());
         let password = std::env::var("SURREALDB_PASSWORD").unwrap_or_else(|_| "root".to_string());
-        let namespace = std::env::var("SURREALDB_NAMESPACE").unwrap_or_else(|_| "mirabel".to_string());
-        let database = std::env::var("SURREALDB_DATABASE").unwrap_or_else(|_| "mirabel".to_string());
+        let namespace =
+            std::env::var("SURREALDB_NAMESPACE").unwrap_or_else(|_| "mirabel".to_string());
+        let database =
+            std::env::var("SURREALDB_DATABASE").unwrap_or_else(|_| "mirabel".to_string());
 
         debug!("Connecting to SurrealDB at {url} with {auth_type} authentication");
-        let db = Self::from_vars(&url, &auth_type, &username, &password, &namespace, &database).await?;
+        let db = Self::from_vars(
+            &url, &auth_type, &username, &password, &namespace, &database,
+        )
+        .await?;
         info!("Successfully connected to SurrealDB at {url}");
         Ok(db)
     }
@@ -100,10 +102,8 @@ mod tests {
     use super::*;
     use crate::repository::surrealdb::builder::SurrealDBBuilder;
     use crate::repository::{self};
-    
+
     use dotenvy::EnvLoader;
-    
-    
 
     async fn get_test_db() -> SurrealDB {
         SurrealDBBuilder::new("localhost:8000")

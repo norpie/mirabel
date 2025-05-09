@@ -32,7 +32,11 @@ impl Entity for Workspace {
 
 impl Workspace {
     pub fn new(name: String) -> Self {
-        Self { id: None, name, avatar: None }
+        Self {
+            id: None,
+            name,
+            avatar: None,
+        }
     }
 
     pub fn name(&self) -> &str {

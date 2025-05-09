@@ -1,6 +1,7 @@
 use crate::{
     prelude::*,
-    repository::RepositoryProvider, service::{auth::AuthService, users::UserService, workspaces::WorkspaceService},
+    repository::RepositoryProvider,
+    service::{auth::AuthService, users::UserService, workspaces::WorkspaceService},
 };
 
 use std::env;

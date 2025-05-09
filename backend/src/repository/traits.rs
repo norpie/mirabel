@@ -60,10 +60,8 @@ pub trait FieldSearchableRepository<T: Entity + FieldSearchableStruct>: Reposito
 
 #[async_trait]
 pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T> {
-    async fn find_single_by_fields(
-        &self,
-        fields: Vec<(&'static str, String)>,
-    ) -> Result<Option<T>>;
+    async fn find_single_by_fields(&self, fields: Vec<(&'static str, String)>)
+        -> Result<Option<T>>;
 
     async fn find_by_fields(
         &self,
@@ -71,10 +69,7 @@ pub trait FieldFindableRepository<T: Entity + FieldFindableStruct>: Repository<T
         page: PageRequest,
     ) -> Result<PageResponse<T>>;
 
-    async fn exists_by_fields(
-        &self,
-        fields: Vec<(&'static str, String)>,
-    ) -> Result<bool>;
+    async fn exists_by_fields(&self, fields: Vec<(&'static str, String)>) -> Result<bool>;
 }
 
 #[async_trait]
@@ -91,18 +86,10 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     async fn relate(&self, subject_id: &R::ID, owner_id: &T::ID) -> Result<()>;
 
     // One-to-Many relationship methods
-    async fn find_children(
-        &self,
-        parent_id: &T::ID,
-        page: PageRequest,
-    ) -> Result<PageResponse<R>>;
+    async fn find_children(&self, parent_id: &T::ID, page: PageRequest) -> Result<PageResponse<R>>;
     async fn count_children(&self, parent_id: &T::ID) -> Result<u64>;
     async fn create_child(&self, entity: R, parent_id: &T::ID) -> Result<R>;
-    async fn create_children(
-        &self,
-        entities: Vec<R>,
-        parent_id: &T::ID,
-    ) -> Result<Vec<R>>;
+    async fn create_children(&self, entities: Vec<R>, parent_id: &T::ID) -> Result<Vec<R>>;
     async fn delete_children(&self, parent_id: &T::ID) -> Result<()>;
 
     // Many-to-Many relationship methods
@@ -120,11 +107,7 @@ pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()>;
     async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()>;
     async fn create_associated(&self, entity_id: &T::ID, related: R) -> Result<R>;
-    async fn is_associated(
-        &self,
-        entity_id: &T::ID,
-        related_id: &R::ID,
-    ) -> Result<bool>;
+    async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool>;
     async fn dissociate_all(&self, entity_id: &T::ID) -> Result<()>;
     async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<()>;
 }
@@ -136,10 +119,7 @@ pub trait ThroughputRepository<T: Entity>: Repository<T> {
 
 #[async_trait]
 pub trait LiveRepository<T: Entity>: Repository<T> {
-    async fn live_single(
-        &self,
-        entity_id: &T::ID,
-    ) -> Result<impl Stream<Item = Result<T>>>;
+    async fn live_single(&self, entity_id: &T::ID) -> Result<impl Stream<Item = Result<T>>>;
     async fn live_table(&self) -> Result<impl Stream<Item = Result<T>>>;
 }
 
