@@ -11,6 +11,8 @@
 	import Spinner from './spinner.svelte';
 	import { goto } from '$app/navigation';
 
+    import { selectedWorkspace } from '$lib/store';
+
 	const sidebar = useSidebar();
 </script>
 
@@ -28,7 +30,7 @@
 									href="##"
 									class="w-full block truncate"
 									onclick={() => {
-										goto(`/session/${session.id}`);
+										goto(`/workspace/${selectedWorkspace.id}/session/${session.id}`);
 									}}>
 									<span class="truncate">{session.title}</span>
 								</a>
