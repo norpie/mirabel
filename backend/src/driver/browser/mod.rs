@@ -37,9 +37,9 @@ impl Browsers {
             }
         }
         let size = clients.len();
-        let mut pool = Pool::new(size);
+        let pool = Pool::new(size);
         for client in clients {
-            pool.add(client).await;
+            pool.add(client).await.map_err(|(_, e)| e)?;
         }
         Ok(Self { size, pool })
     }
