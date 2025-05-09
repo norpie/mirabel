@@ -59,7 +59,7 @@ where
 {
     type Body = BoxBody;
 
-    fn respond_to(self, req: &actix_web::HttpRequest) -> actix_web::HttpResponse<Self::Body> {
+    fn respond_to(self, _req: &actix_web::HttpRequest) -> actix_web::HttpResponse<Self::Body> {
         let response_res = self.as_response();
         match response_res {
             Ok(response) => response,

@@ -1,11 +1,9 @@
-use actix_web::http::header::EntityTag;
 use backend_derive::named_struct;
 use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 
 use crate::repository::traits::Entity;
 
-use super::{chat::Chat, plan::Plan};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[named_struct]

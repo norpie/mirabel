@@ -2,7 +2,7 @@ use crate::{
     dto::{api_response::ApiResponse, page::PageRequest},
     model::{
         user::User,
-        workspace::{self, NewWorkspace},
+        workspace::{NewWorkspace},
     },
     prelude::*,
     repository::traits::Entity,

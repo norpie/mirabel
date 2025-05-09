@@ -6,7 +6,6 @@ use serde_json::Value;
 use serde_with::serde_as;
 use std::collections::HashMap;
 
-use super::Ollama;
 
 #[derive(Debug, Display, Serialize)]
 #[display("{}:{}", model, tag)]

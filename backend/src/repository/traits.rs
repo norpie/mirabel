@@ -1,9 +1,9 @@
 use crate::prelude::*;
-use std::{fmt::Display, marker::PhantomData};
+use std::fmt::Display;
 
 use async_trait::async_trait;
 use futures::Stream;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Serialize};
 
 use crate::dto::page::{PageRequest, PageResponse};
 

@@ -5,7 +5,7 @@ use crate::{
     },
     model::user::User,
     prelude::*,
-    repository::{traits::Entity, RepositoryProvider},
+    repository::traits::Entity,
     service::workspaces,
 };
 

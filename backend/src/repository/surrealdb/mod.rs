@@ -4,10 +4,9 @@ use async_trait::async_trait;
 use builder::SurrealDBBuilder;
 use log::{debug, info};
 use surrealdb::{
-    engine::remote::ws::{Client, Ws},
+    engine::remote::ws::Client,
     Surreal,
 };
-use thiserror::Error;
 
 use crate::{repository::traits::Database, Error};
 
@@ -100,11 +99,11 @@ impl Database for SurrealDB {
 mod tests {
     use super::*;
     use crate::repository::surrealdb::builder::SurrealDBBuilder;
-    use crate::repository::{self, Repository};
-    use actix_web::web::Data;
+    use crate::repository::{self};
+    
     use dotenvy::EnvLoader;
-    use surrealdb::engine::remote::ws::{Client, Ws};
-    use surrealdb::Surreal;
+    
+    
 
     async fn get_test_db() -> SurrealDB {
         SurrealDBBuilder::new("localhost:8000")

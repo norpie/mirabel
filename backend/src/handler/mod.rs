@@ -1,15 +1,15 @@
 use crate::{
     prelude::*,
-    repository::{surrealdb::SurrealDB, RepositoryProvider}, service::{auth::AuthService, users::UserService, workspaces::WorkspaceService},
+    repository::RepositoryProvider, service::{auth::AuthService, users::UserService, workspaces::WorkspaceService},
 };
 
-use std::{env, sync::Arc};
+use std::env;
 
 use actix_cors::Cors;
 use actix_web::{
     middleware::Logger,
     web::{self, Data},
-    App, HttpResponse, HttpServer, Scope,
+    App, HttpResponse, HttpServer,
 };
 use log::info;
 

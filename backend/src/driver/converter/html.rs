@@ -2,9 +2,6 @@ use crate::prelude::*;
 
 use std::fmt::Display;
 
-use markup5ever::interface::tree_builder::TreeSink;
-use regex::Regex;
-use scraper::{HtmlTreeSink, Selector};
 
 use super::{markdown::Markdown, Converter};
 

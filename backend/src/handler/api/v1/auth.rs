@@ -1,20 +1,15 @@
-use std::sync::Arc;
 
 use crate::{
     dto::{api_response::ApiResponse, login_user::LoginUser, register_user::RegisterUser, token::AccessToken},
-    model::user::User,
     prelude::*,
-    repository::{surrealdb::SurrealDB},
-    security::jwt_util::TokenFactory,
-    service::{auth::{self, AuthService}},
+    service::auth::{AuthService},
 };
 
 use actix_web::{
     delete,
     http::header,
     post,
-    web::{self, Data, Json},
-    HttpMessage, HttpRequest, Responder, Scope,
+    web::{self, Data, Json}, HttpRequest, Responder, Scope,
 };
 
 pub fn scope(cfg: &mut web::ServiceConfig) {

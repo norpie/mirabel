@@ -3,19 +3,15 @@ use crate::{
     dto::page::{PageRequest, PageResponse},
     repository::traits::{
         AssociatedEntityRepository, FieldFindableRepository, FieldFindableStruct,
-        FieldSearchableRepository, FieldSearchableStruct, FieldSortableStruct, NamedStruct,
-        PublicEntityRepository,
+        FieldSearchableRepository, FieldSearchableStruct, PublicEntityRepository,
     },
 };
 use async_trait::async_trait;
-use backend_derive::named_struct;
 use log::debug;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
 use surrealdb::sql::Thing;
 
 use crate::{
-    model::user::User,
     repository::traits::{Entity, Repository},
     Error,
 };
@@ -60,7 +56,7 @@ impl<T: Entity> Repository<T> for SurrealDB {
             .delete((T::singular_name(), id.to_string()))
             .await?;
         debug!("Query result: {:?}", result);
-        result.map(|e: T| ()).ok_or(Error::NotFound)
+        result.map(|_: T| ()).ok_or(Error::NotFound)
     }
 
     async fn exists(&self, id: &T::ID) -> Result<bool> {
@@ -116,9 +112,9 @@ impl<T: Entity> Repository<T> for SurrealDB {
 impl<T: FieldSearchableStruct> FieldSearchableRepository<T> for SurrealDB {
     async fn search(
         &self,
-        fields: &[&str],
-        query: &str,
-        page: PageRequest,
+        _fields: &[&str],
+        _query: &str,
+        _page: PageRequest,
     ) -> Result<PageResponse<T>> {
         todo!()
     }

@@ -3,7 +3,6 @@ use crate::{prelude::*, service::users::UserService};
 use std::{future::Future, pin::Pin};
 
 use actix_web::{web::Data, FromRequest, HttpMessage, HttpRequest};
-use log::info;
 
 use crate::model::user::User;
 

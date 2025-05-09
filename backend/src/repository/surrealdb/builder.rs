@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 use log::debug;
 use surrealdb::{
-    engine::remote::ws::{Client, Ws},
+    engine::remote::ws::Ws,
     opt::auth::{Database, Namespace, Root},
     Surreal,
 };

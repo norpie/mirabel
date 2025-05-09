@@ -1,6 +1,5 @@
-use crate::{dto::api_response::ApiResponse, prelude::*};
 
-use actix_web::{get, web, Responder, Scope};
+use actix_web::{web, Scope};
 
 pub mod auth;
 pub mod me;

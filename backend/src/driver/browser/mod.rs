@@ -1,11 +1,7 @@
 use std::env;
 
-use chrono::Duration;
-use deadpool::{
-    managed,
-    unmanaged::{Object, Pool},
-};
-use fantoccini::{wait::Wait, Client, ClientBuilder};
+use deadpool::unmanaged::{Object, Pool};
+use fantoccini::{Client, ClientBuilder};
 use log::{debug, error};
 
 use crate::prelude::*;

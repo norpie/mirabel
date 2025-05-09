@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 
 use crate::prelude::*;
 
@@ -6,7 +5,6 @@ use async_trait::async_trait;
 use log::debug;
 use models::SearchPage;
 use searxng::SearxNG;
-use serde::{Deserialize, Serialize};
 use traits::SearchEngine;
 
 pub mod models;

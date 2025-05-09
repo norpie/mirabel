@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use log::{debug, info};
 use reqwest::Client;
 use serde::Deserialize;
-use serde_json::Value;
 
 use super::{models::SearchResult, SearchEngine, SearchPage};
 

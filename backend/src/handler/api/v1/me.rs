@@ -1,7 +1,7 @@
 use crate::{
     dto::{frontend_user::FrontendUser, updated_user::UpdatedUser},
     prelude::*,
-    service::users::{self, UserService},
+    service::users::{UserService},
 };
 
 use actix_web::{

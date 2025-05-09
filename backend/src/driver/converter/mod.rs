@@ -1,4 +1,3 @@
-use std::fmt::Display;
 
 use html::Html;
 use markdown::Markdown;

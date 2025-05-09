@@ -1,11 +1,8 @@
 use crate::{
     dto::page::{PageRequest, PageResponse},
-    model::{session::Session, user::User, workspace::NewWorkspace},
+    model::{session::Session, workspace::NewWorkspace},
     prelude::*,
-    repository::{
-        traits::{AssociatedEntityRepository, Repository},
-        RepositoryProvider,
-    },
+    repository::RepositoryProvider,
 };
 
 use actix_web::web::Data;
@@ -47,7 +44,7 @@ impl WorkspaceService {
 
     pub async fn set_workspace_avatar(
         &self,
-        user_id: String,
+        _user_id: String,
         workspace_id: String,
         path: String,
     ) -> Result<Workspace> {
@@ -63,7 +60,7 @@ impl WorkspaceService {
 
     pub async fn create_workspace_session(
         &self,
-        user_id: String,
+        _user_id: String,
         workspace_id: String,
     ) -> Result<Session> {
         self.repository
@@ -77,8 +74,8 @@ impl WorkspaceService {
 
     pub async fn get_user_session_by_id(
         &self,
-        user_id: String,
-        workspace_id: String,
+        _user_id: String,
+        _workspace_id: String,
         id: String,
     ) -> Result<Option<Session>> {
         self.repository.session_repo().find(&id).await
@@ -97,8 +94,8 @@ impl WorkspaceService {
 
     pub async fn delete_user_session(
         &self,
-        user_id: String,
-        workspace_id: String,
+        _user_id: String,
+        _workspace_id: String,
         id: String,
     ) -> Result<()> {
         self.repository.session_repo().delete(&id).await
@@ -107,7 +104,7 @@ impl WorkspaceService {
     pub async fn get_user_workspace_sessions(
         &self,
         workspace_id: String,
-        user_id: String,
+        _user_id: String,
         page: PageRequest,
     ) -> Result<PageResponse<Session>> {
         self.repository
@@ -118,8 +115,8 @@ impl WorkspaceService {
 
     pub async fn get_workspace_session_by_id(
         &self,
-        user_id: String,
-        workspace_id: String,
+        _user_id: String,
+        _workspace_id: String,
         session_id: String,
     ) -> Result<Option<Session>> {
         self.repository.session_repo().find(&session_id).await

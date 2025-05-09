@@ -2,8 +2,7 @@ use futures::{Stream, TryStreamExt};
 use models::{GenerateRequest, GenerateRequestInternal, GenerateResponse, StreamGenerateResponse};
 use reqwest::{Client, Method};
 use reqwest_streams::JsonStreamResponse;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use serde::{de::DeserializeOwned, Serialize};
 
 use crate::prelude::*;
 

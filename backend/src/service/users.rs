@@ -1,8 +1,7 @@
 use crate::{
-    dto::avatar::Avatar,
     prelude::*,
     repository::{
-        traits::{Entity, FieldFindableRepository},
+        traits::Entity,
         RepositoryProvider,
     },
 };

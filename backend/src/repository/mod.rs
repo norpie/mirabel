@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use traits::{AssociatedEntityRepository, FieldFindableRepository, Repository};
 
-use crate::{model::{session::Session, user::User, workspace::Workspace}, Error};
+use crate::model::{session::Session, user::User, workspace::Workspace};
 
 pub(crate) mod surrealdb;
 pub(crate) mod traits;
@@ -72,11 +72,11 @@ pub mod tests {
     use serde::{Deserialize, Serialize};
     use surrealdb::sql::Thing;
 
-    use crate::dto::page::{PageRequest, PageResponse};
+    use crate::dto::page::PageRequest;
     use crate::repository::traits::{
         AssociatedEntityRepository, Entity, FieldFindableRepository, FieldFindableStruct,
-        FieldSearchableRepository, FieldSearchableStruct, LiveRepository, PublicEntityRepository,
-        Repository, ThroughputRepository,
+        FieldSearchableRepository, FieldSearchableStruct, PublicEntityRepository,
+        Repository,
     };
 
     #[derive(Debug, Clone, Serialize, Deserialize)]
