@@ -370,6 +370,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
         debug!("Query executed, errors: {:?}", errors);
         if let Some((index, err)) = errors.into_iter().next() {
+            debug!("Error detected in query {}: {:?}", index, err);
             return Err(err.into());
         }
         Ok(())
@@ -517,7 +518,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         debug!("Transaction completed, checking for errors");
         let mut errored = false;
         while let Some((index, err)) = result.take_errors().into_iter().next() {
-            debug!("Error detected: {:?}", err);
+            debug!("Error detected in query {}: {:?}", index, err);
             errored = true;
         }
         if errored {
@@ -558,7 +559,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         debug!("Query executed, checking for errors");
         // Check for errors
         if let Some((index, err)) = result.take_errors().into_iter().next() {
-            debug!("Error detected: {:?}", err);
+            debug!("Error detected in query {}: {:?}", index, err);
             return Err(err.into());
         }
 
@@ -691,6 +692,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
 
         debug!("Query executed, errors: {:?}", errors);
         if let Some((index, err)) = errors.into_iter().next() {
+            debug!("Error detected in query {}: {:?}", index, err);
             return Err(err.into());
         }
         Ok(())
@@ -719,7 +721,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         debug!("Query executed, checking for errors");
         // Check for errors
         if let Some((index, err)) = result.take_errors().into_iter().next() {
-            debug!("Error detected: {:?}", err);
+            debug!("Error detected in query {}: {:?}", index, err);
             return Err(err.into());
         }
 
@@ -786,7 +788,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         debug!("Query executed, checking for errors");
         // Check for errors
         if let Some((index, err)) = result.take_errors().into_iter().next() {
-            debug!("Error detected: {:?}", err);
+            debug!("Error detected in query {}: {:?}", index, err);
             return Err(err.into());
         }
 
@@ -816,7 +818,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         debug!("Query executed, checking for errors");
         // Check for errors
         if let Some((index, err)) = result.take_errors().into_iter().next() {
-            debug!("Error detected: {:?}", err);
+            debug!("Error detected in query {}: {:?}", index, err);
             return Err(err.into());
         }
 
@@ -845,7 +847,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         debug!("Query executed, checking for errors");
         // Check for errors
         if let Some((index, err)) = result.take_errors().into_iter().next() {
-            debug!("Error detected: {:?}", err);
+            debug!("Error detected in query {}: {:?}", index, err);
             return Err(err.into());
         }
 
