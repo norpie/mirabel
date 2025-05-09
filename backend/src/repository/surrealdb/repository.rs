@@ -536,7 +536,6 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     }
 
     async fn delete_children(&self, parent_id: &T::ID) -> Result<()> {
-        //DELETE test_entity_child WHERE <-has_child_test_entity<-(test_entity WHERE id = type::thing($parent_table, $parent_id))
         let query = format!(
             "DELETE type::table($child_table) WHERE <-{}<-({} WHERE id = type::thing($parent_table, $parent_id))",
             has_child_rel_name(R::singular_name()),
