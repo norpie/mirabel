@@ -9,14 +9,13 @@
 
 	import { sessions } from '$lib/store';
 	import Spinner from './spinner.svelte';
-	import { goto } from '$app/navigation';
 
     import { selectedWorkspace } from '$lib/store';
 
 	const sidebar = useSidebar();
 </script>
 
-{#if $sessions !== null}
+{#if $selectedWorkspace !== null && $sessions !== null}
 <Sidebar.Group class="group-data-[collapsible=icon]:hidden">
 	<Sidebar.GroupLabel>Sessions</Sidebar.GroupLabel>
 	<Sidebar.Menu>
@@ -27,11 +26,9 @@
 						{#snippet child({ props })}
 							<button {...props}>
 								<a
-									href="##"
+									href={`/workspace/${$selectedWorkspace.id}/session/${session.id}`}
 									class="w-full block truncate"
-									onclick={() => {
-										goto(`/workspace/${selectedWorkspace.id}/session/${session.id}`);
-									}}>
+									>
 									<span class="truncate">{session.title}</span>
 								</a>
 							</button>
