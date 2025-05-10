@@ -147,14 +147,14 @@
 				{:else}
 					<ScrollArea
 						id="chat-messages"
-						class="m-4 mb-2 flex h-[1px] flex-grow flex-col rounded-lg p-2"
+						class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2"
 					>
 						{#each $selectedSession.chat.messages as msg}
 							{@render message(msg)}
 						{/each}
 					</ScrollArea>
 
-					<div id="chat-input" class="m-4 mt-2 flex flex-row rounded-lg bg-muted/50 p-2">
+					<div id="chat-input" class="m-2 mt-2 flex flex-row rounded-lg bg-muted/50 p-2">
 						<Textarea
 							class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 							placeholder="Type your message here..."
@@ -180,7 +180,7 @@
 				{#if workPane?.getSize() < hideSize}
 					{@render chevron(false)}
 				{:else}
-					<Tabs.Root value="spec" class="m-4 flex h-full flex-col">
+					<Tabs.Root value="spec" class="m-2 flex h-full flex-col">
 						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
 								<Toggle>Auto</Toggle>
