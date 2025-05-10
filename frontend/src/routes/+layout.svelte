@@ -37,7 +37,7 @@
 		breadcrumbs
 	} from '$lib/store';
 	import { toast } from 'svelte-sonner';
-	import type { Page } from '$lib/models/page';
+	import type { Page, PageResponse } from '$lib/models/page';
 	import { get } from '$lib/request';
 	import type Result from '$lib/models/result';
 	import type { Workspace } from '$lib/models/workspace';
@@ -54,7 +54,7 @@
 			}
 		}
 		// Workspaces
-		let result = await get<Result<Workspace[]>>(`v1/me/workspaces`, {
+		let result = await get<Result<PageResponse<Workspace[]>>>(`v1/me/workspaces`, {
 			page: 1,
 			size: 10
 		});
