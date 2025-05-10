@@ -3,9 +3,6 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 
-	import { breadcrumbs } from '$lib/store';
-	import { goto } from '$app/navigation';
-
 	let {
 		items = $bindable()
 	}: {
@@ -22,6 +19,10 @@
 			}[];
 		}[];
 	} = $props();
+
+    function openSettings() {
+        console.log('openSettings');
+    }
 </script>
 
 <Sidebar.Group>
@@ -57,10 +58,7 @@
 													<a
 														{...props}
 														href="##"
-														onclick={() => {
-															breadcrumbs.set([mainItem.title, subItem.title]);
-															goto(subItem.url);
-														}}
+														onclick={openSettings}
 													>
 														<span>{subItem.title}</span>
 													</a>

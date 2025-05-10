@@ -28,14 +28,7 @@
 		hideSidebar = ['/login', '/register'].includes(page.url.pathname);
 	});
 
-	import {
-		user,
-		workspaces,
-		selectedWorkspace,
-		sessions,
-		selectedSession,
-		breadcrumbs
-	} from '$lib/store';
+	import { user, workspaces, selectedWorkspace, sessions, selectedSession } from '$lib/store';
 	import { toast } from 'svelte-sonner';
 	import type { Page, PageResponse } from '$lib/models/page';
 	import { get } from '$lib/request';
@@ -67,7 +60,7 @@
 		// Selected workspace
 		// TODO: Implement proper recent workspace logic
 		if (!$workspaces || $workspaces.length == 0) {
-            selectedWorkspace.set(null);
+			selectedWorkspace.set(null);
 			return;
 		}
 		selectedWorkspace.set($workspaces[0]);
@@ -88,7 +81,7 @@
 	}
 
 	onMount(hydrate);
-    beforeNavigate(hydrate);
+	beforeNavigate(hydrate);
 
 	$inspect({ $user, $workspaces, $selectedWorkspace, $sessions, $selectedSession });
 
@@ -137,9 +130,7 @@
 	<Sidebar.Provider>
 		<AppSidebar bind:items />
 		<Sidebar.Inset>
-			<header
-				class="flex shrink-0 items-center gap-2 transition-[width,height] ease-linear h-12"
-			>
+			<header class="flex h-12 shrink-0 items-center gap-2 transition-[width,height] ease-linear">
 				<div class="flex items-center gap-2 px-4">
 					<Sidebar.Trigger class="-ml-1" />
 					<Separator orientation="vertical" class="mr-2 h-4" />
@@ -147,15 +138,19 @@
 						<Breadcrumb.Root>
 							<Breadcrumb.List>
 								<Breadcrumb.Item class="hidden md:block">
-									<Breadcrumb.Link>{$selectedWorkspace.name}</Breadcrumb.Link>
+									<Breadcrumb.Link href={`/workspace/${$selectedWorkspace.id}`}
+										>{$selectedWorkspace.name}</Breadcrumb.Link
+									>
 								</Breadcrumb.Item>
-								{#if $breadcrumbs}
-									{#each $breadcrumbs as breadcrumb}
-										<Breadcrumb.Separator class="hidden md:block" />
-										<Breadcrumb.Item>
-											<Breadcrumb.Link>{breadcrumb}</Breadcrumb.Link>
-										</Breadcrumb.Item>
-									{/each}
+								{#if $selectedSession}
+								    <Breadcrumb.Separator class="hidden md:block" />
+									<Breadcrumb.Item>
+										<Breadcrumb.Link
+											href={`/workspace/${$selectedWorkspace.id}/session/${$selectedSession.id}`}
+										>
+											{$selectedSession.title}
+										</Breadcrumb.Link>
+									</Breadcrumb.Item>
 								{/if}
 							</Breadcrumb.List>
 						</Breadcrumb.Root>

@@ -9,4 +9,3 @@ export const workspaces: Writable<Workspace[]> = writable([]);
 export const selectedWorkspace: Writable<Workspace | null> = writable(null);
 export const sessions: Writable<ShallowSession[] | null> = writable(null);
 export const selectedSession: Writable<Session | null> = writable(null);
-export const breadcrumbs: Writable<string[]> = writable([]);

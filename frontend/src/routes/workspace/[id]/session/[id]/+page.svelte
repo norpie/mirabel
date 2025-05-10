@@ -19,7 +19,7 @@
 
 	import type { PaneAPI } from 'paneforge';
 
-	import { selectedSession, breadcrumbs } from '$lib/store';
+	import { selectedSession } from '$lib/store';
 
 	import ChevronsLeft from 'lucide-svelte/icons/chevrons-left';
 	import ChevronsRight from 'lucide-svelte/icons/chevrons-right';
@@ -89,7 +89,6 @@
 
 	$effect(() => {
 		if (!$selectedSession) return;
-		breadcrumbs.set(['Sessions', $selectedSession.title]);
 	});
 </script>
 
