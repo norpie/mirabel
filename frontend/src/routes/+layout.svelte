@@ -93,7 +93,7 @@
 						<Breadcrumb.List>
                             <Breadcrumb.Item class="hidden md:block">
                                 <Breadcrumb.Link href="/">
-                                    <House />
+                                    Home
                                 </Breadcrumb.Link>
                             </Breadcrumb.Item>
 					        {#if $selectedWorkspace}
