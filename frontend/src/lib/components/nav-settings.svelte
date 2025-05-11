@@ -3,6 +3,8 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 
+    import { selectedWorkspace } from '$lib/store';
+
 	let {
 		items = $bindable()
 	}: {
@@ -25,6 +27,7 @@
     }
 </script>
 
+{#if $selectedWorkspace}
 <Sidebar.Group>
 	<Sidebar.GroupLabel>Mirabel</Sidebar.GroupLabel>
 	<Sidebar.Menu>
@@ -75,3 +78,4 @@
 		{/each}
 	</Sidebar.Menu>
 </Sidebar.Group>
+{/if}
