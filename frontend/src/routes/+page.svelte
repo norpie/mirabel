@@ -1,4 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
+    import { selectedSession, selectedWorkspace } from '$lib/store';
+
+	onMount(() => {
+        selectedSession.set(null);
+        selectedWorkspace.set(null);
+    });
 </script>
 
 <div class="grid auto-rows-min gap-4 md:grid-cols-3">

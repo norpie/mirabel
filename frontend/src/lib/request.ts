@@ -1,6 +1,5 @@
 import { goto } from "$app/navigation";
 import type Result from "../models/result";
-import { browser } from "$app/environment";
 
 // TODO: Get the URL from the environment
 const url = "http://localhost:8080/api";
@@ -25,21 +24,23 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
     };
-    
-    if (!isPublicPath(endpoint) && browser && localStorage.getItem("accessToken")) {
+
+    if (!isPublicPath(endpoint) && localStorage.getItem("accessToken")) {
         headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
     }
-    
+
+    console.log("Requesting:", method, endpoint, body);
     const response = await fetch(endpoint, {
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined
     });
+    console.log("Response:", response);
 
     // Only handle 401 for authenticated paths and if we're in a browser
-    if (response.status === 401 && !isPublicPath(endpoint) && browser) {
+    if (response.status === 401 && !isPublicPath(endpoint)) {
         const currentPath = window.location.pathname;
-        
+
         // Don't try to refresh if we're already on login or register pages
         if (currentPath === "/login" || currentPath === "/register") {
             return {
@@ -47,7 +48,7 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
                 error: "Authentication required",
             };
         }
-        
+
         const tokenResult = await refresh();
 
         if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
@@ -68,6 +69,7 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
 async function get<T>(path: string, body?: any): Promise<Result<T>> {
     let query = "";
     if (body) {
+        query += "?";
         for (const key in body) {
             query += `${key}=${body[key]}&`;
         }
@@ -76,7 +78,7 @@ async function get<T>(path: string, body?: any): Promise<Result<T>> {
             query = query.slice(0, -1);
         }
     }
-    return request("GET", formatEndpoint(`${path}?${query}`));
+    return request("GET", formatEndpoint(`${path}${query}`));
 }
 
 async function post<T>(path: string, body: any): Promise<Result<T>> {

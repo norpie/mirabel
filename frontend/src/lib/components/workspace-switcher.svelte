@@ -16,6 +16,7 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { toast } from 'svelte-sonner';
 	import { post } from '$lib/request';
+	import { goto } from '$app/navigation';
 
 	let localSelectedWorkspace = $derived($selectedWorkspace);
 
@@ -43,7 +44,6 @@
 		if ($workspaces) {
 			$workspaces.push(result.data);
 		}
-        selectedWorkspace.set(result.data);
 		workspaceDialogOpen = false;
 	}
 
@@ -115,7 +115,7 @@
 				>
 					<DropdownMenu.Label class="text-xs text-muted-foreground">Workspaces</DropdownMenu.Label>
 					{#each $workspaces as workspace (workspace.name)}
-						<DropdownMenu.Item onSelect={() => selectedWorkspace.set(workspace)} class="gap-2 p-2">
+						<DropdownMenu.Item onSelect={() => goto(`/workspace/${workspace.id}`)} class="gap-2 p-2">
 							<Avatar.Root class="h-8 w-8 rounded-lg">
 								<Avatar.Image src={workspace.logo} alt={workspace.name} />
 								<Avatar.Fallback class="rounded-lg">{workspace.name[0]}</Avatar.Fallback>
@@ -133,7 +133,7 @@
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		{:else if $workspaces && $workspaces.length > 0}
-			<Button variant="ghost" onclick={() => selectedWorkspace.set($workspaces[0])} class="w-full justify-start">
+			<Button variant="ghost" onclick={() => {goto(`/workspace/${$workspaces[0].id}`)}} class="w-full justify-start">
 				<div class="grid flex-1 text-left text-sm leading-tight">
 					<span class="truncate font-semibold">Select a workspace</span>
 				</div>

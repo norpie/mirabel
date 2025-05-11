@@ -14,12 +14,9 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
 	import BrainCircuit from 'lucide-svelte/icons/brain-circuit';
+    import House from 'lucide-svelte/icons/house';
 
 	import Spinner from '$lib/components/spinner.svelte';
-
-	import { fetchUser } from '$lib/api/user';
-	import { fetchAllWorkspaces, fetchRecentWorkspace } from '$lib/api/workspace';
-	import { fetchAllSessions } from '$lib/api/session';
 
 	import { page } from '$app/state';
 
@@ -36,52 +33,10 @@
 	import type { Workspace } from '$lib/models/workspace';
 	import { beforeNavigate, goto } from '$app/navigation';
 
-	async function hydrate() {
-		// User
-		if (!$user) {
-			let result = await fetchUser();
-			user.set(result.data);
-			if (result.error) {
-				toast.error(result.error);
-				return;
-			}
-		}
-		// Workspaces
-		let result = await get<Result<PageResponse<Workspace[]>>>(`v1/me/workspaces`, {
-			page: 1,
-			size: 10
-		});
-		if (result.error) {
-			toast.error(result.error);
-			workspaces.set([]);
-		} else {
-			workspaces.set(result.data.data);
-		}
-		// Selected workspace
-		// TODO: Implement proper recent workspace logic
-		if (!$workspaces || $workspaces.length == 0) {
-			selectedWorkspace.set(null);
-			return;
-		}
-		selectedWorkspace.set($workspaces[0]);
-		if (!$selectedWorkspace) {
-			toast.error('Failed to fetch selected workspace');
-			return;
-		}
-		// Sessions
-		let page: Page = {
-			page: 1,
-			size: 10
-		};
-		sessions.set((await fetchAllSessions($selectedWorkspace.id, page)).data);
-		if (!$sessions) {
-			toast.error('Failed to fetch sessions');
-			return;
-		}
-	}
-
-	onMount(hydrate);
-	beforeNavigate(hydrate);
+	onMount(() => {
+		// Hydrate user, workspaces, and sessions on mount
+        console.log('Mounting layout');
+	});
 
 	$inspect({ $user, $workspaces, $selectedWorkspace, $sessions, $selectedSession });
 
@@ -134,27 +89,33 @@
 				<div class="flex items-center gap-2 px-4">
 					<Sidebar.Trigger class="-ml-1" />
 					<Separator orientation="vertical" class="mr-2 h-4" />
-					{#if $selectedWorkspace}
-						<Breadcrumb.Root>
-							<Breadcrumb.List>
-								<Breadcrumb.Item class="hidden md:block">
-									<Breadcrumb.Link href={`/workspace/${$selectedWorkspace.id}`}
-										>{$selectedWorkspace.name}</Breadcrumb.Link
-									>
-								</Breadcrumb.Item>
-								{#if $selectedSession}
-								    <Breadcrumb.Separator class="hidden md:block" />
-									<Breadcrumb.Item>
-										<Breadcrumb.Link
-											href={`/workspace/${$selectedWorkspace.id}/session/${$selectedSession.id}`}
-										>
-											{$selectedSession.title}
-										</Breadcrumb.Link>
-									</Breadcrumb.Item>
-								{/if}
-							</Breadcrumb.List>
-						</Breadcrumb.Root>
-					{/if}
+					<Breadcrumb.Root>
+						<Breadcrumb.List>
+                            <Breadcrumb.Item class="hidden md:block">
+                                <Breadcrumb.Link href="/">
+                                    <House />
+                                </Breadcrumb.Link>
+                            </Breadcrumb.Item>
+					        {#if $selectedWorkspace}
+                                <Breadcrumb.Separator class="hidden md:block" />
+							    <Breadcrumb.Item class="hidden md:block">
+							    	<Breadcrumb.Link href={`/workspace/${$selectedWorkspace.id}`}
+							    		>{$selectedWorkspace.name}</Breadcrumb.Link
+							    	>
+							    </Breadcrumb.Item>
+							    {#if $selectedSession}
+							        <Breadcrumb.Separator class="hidden md:block" />
+							        <Breadcrumb.Item>
+							        	<Breadcrumb.Link
+							        		href={`/workspace/${$selectedWorkspace.id}/session/${$selectedSession.id}`}
+							        	>
+							        		{$selectedSession.title}
+							        	</Breadcrumb.Link>
+							        </Breadcrumb.Item>
+							    {/if}
+					        {/if}
+					    </Breadcrumb.List>
+					</Breadcrumb.Root>
 				</div>
 			</header>
 			<div class="flex flex-1 flex-col gap-4 p-2 pt-0">

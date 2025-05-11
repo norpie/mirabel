@@ -19,7 +19,8 @@
 
 	import type { PaneAPI } from 'paneforge';
 
-	import { selectedSession } from '$lib/store';
+	import type { PageProps } from './$types';
+	import { sessions, selectedSession, selectedWorkspace } from '$lib/store';
 
 	import ChevronsLeft from 'lucide-svelte/icons/chevrons-left';
 	import ChevronsRight from 'lucide-svelte/icons/chevrons-right';
@@ -71,9 +72,11 @@
 
 	import { onMount } from 'svelte';
 	import type { Message, Participant, Session } from '$lib/models/session';
-	let { data }: { data: { session: Session } } = $props();
+	let { data }: PageProps = $props();
 
 	onMount(() => {
+        sessions.set(data.sessions);
+        selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
 	});
 

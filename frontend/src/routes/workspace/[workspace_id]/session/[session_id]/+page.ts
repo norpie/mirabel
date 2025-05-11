@@ -1,7 +1,16 @@
 import type { PageLoad } from './$types';
 import { fetchSession } from '$lib/api/session';
 
-export const load: PageLoad = async ({ params }) => {
+import { load as loadWorkspace } from "../../+page";
+
+export async function load({params}: PageLoad) {
+    let workspaceLoad = await loadWorkspace({params});
+    console.log('load session page');
     const session = await fetchSession(params.session_id)
-    return { session };
+    return {
+        id: params.session_id,
+        session,
+        sessions: workspaceLoad.sessions,
+        workspace: workspaceLoad.workspace,
+    };
 };
