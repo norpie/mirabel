@@ -83,71 +83,66 @@
 	</Dialog.Content>
 </Dialog.Root>
 
-<Sidebar.Menu>
-	<Sidebar.MenuItem>
-		{#if $workspaces && $selectedWorkspace && localSelectedWorkspace}
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					{#snippet child({ props })}
-						<Sidebar.MenuButton
-							{...props}
-							size="lg"
-							class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-						>
-							<Avatar.Root class="h-8 w-8 rounded-lg">
-								<Avatar.Image src={$selectedWorkspace.logo} alt={$selectedWorkspace.name} />
-								<Avatar.Fallback class="rounded-lg">{$selectedWorkspace.name[0]}</Avatar.Fallback>
-							</Avatar.Root>
-							<div class="grid flex-1 text-left text-sm leading-tight">
-								<span class="truncate font-semibold">
-									{$selectedWorkspace.name}
-								</span>
-							</div>
-							<ChevronsUpDown class="ml-auto" />
-						</Sidebar.MenuButton>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content
-					class="w-[--bits-dropdown-menu-anchor-width] min-w-56 rounded-lg"
-					align="start"
-					side={sidebar.isMobile ? 'bottom' : 'right'}
-					sideOffset={4}
+<Sidebar.MenuItem>
+	{#if $workspaces && $workspaces.length > 0}
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger class="w-full">
+				<Sidebar.MenuButton
+					size="lg"
+					class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 				>
-					<DropdownMenu.Label class="text-xs text-muted-foreground">Workspaces</DropdownMenu.Label>
-					{#each $workspaces as workspace (workspace.name)}
-						<DropdownMenu.Item onSelect={() => goto(`/workspace/${workspace.id}`)} class="gap-2 p-2">
-							<Avatar.Root class="h-8 w-8 rounded-lg">
-								<Avatar.Image src={workspace.logo} alt={workspace.name} />
-								<Avatar.Fallback class="rounded-lg">{workspace.name[0]}</Avatar.Fallback>
-							</Avatar.Root>
-							{workspace.name}
-						</DropdownMenu.Item>
-					{/each}
-					<DropdownMenu.Separator />
-					<DropdownMenu.Item class="gap-2 p-2" onclick={() => (workspaceDialogOpen = true)}>
-						<div class="flex size-6 items-center justify-center rounded-md border bg-background">
-							<Plus class="size-4" />
-						</div>
-						<div class="font-medium text-muted-foreground">Add Workspace</div>
+					{#if $selectedWorkspace}
+						<Avatar.Root class="h-8 w-8 rounded-lg">
+							<Avatar.Image src={$selectedWorkspace.logo} alt={$selectedWorkspace.name} />
+							<Avatar.Fallback class="rounded-lg">{$selectedWorkspace.name[0]}</Avatar.Fallback>
+						</Avatar.Root>
+					{/if}
+					<div class="grid flex-1 text-left text-sm leading-tight">
+						<span class="truncate font-semibold">
+							{#if $selectedWorkspace}
+								{$selectedWorkspace.name}
+							{:else}
+								No workspace selected
+							{/if}
+						</span>
+					</div>
+					<ChevronsUpDown class="ml-auto" />
+				</Sidebar.MenuButton>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content
+				class="w-[--bits-dropdown-menu-anchor-width] min-w-56 rounded-lg"
+				align="start"
+				side={sidebar.isMobile ? 'bottom' : 'right'}
+				sideOffset={4}
+			>
+				<DropdownMenu.Label class="text-xs text-muted-foreground">Workspaces</DropdownMenu.Label>
+				{#each $workspaces as workspace (workspace.name)}
+					<DropdownMenu.Item onSelect={() => goto(`/workspace/${workspace.id}`)} class="gap-2 p-2">
+						<Avatar.Root class="h-8 w-8 rounded-lg">
+							<Avatar.Image src={workspace.logo} alt={workspace.name} />
+							<Avatar.Fallback class="rounded-lg">{workspace.name[0]}</Avatar.Fallback>
+						</Avatar.Root>
+						{workspace.name}
 					</DropdownMenu.Item>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-		{:else if $workspaces && $workspaces.length > 0}
-			<Button variant="ghost" onclick={() => {goto(`/workspace/${$workspaces[0].id}`)}} class="w-full justify-start">
-				<div class="grid flex-1 text-left text-sm leading-tight">
-					<span class="truncate font-semibold">Select a workspace</span>
-				</div>
-			</Button>
-		{:else if $workspaces && $workspaces.length === 0}
-			<Button variant="ghost" onclick={() => (workspaceDialogOpen = true)} class="w-full justify-start">
-				<div class="grid flex-1 text-left text-sm leading-tight">
-					<span class="truncate font-semibold">Create a workspace</span>
-				</div>
-			</Button>
-		{:else}
-			<div>
-				<Spinner />
+				{/each}
+				<DropdownMenu.Separator />
+				<DropdownMenu.Item class="gap-2 p-2" onclick={() => (workspaceDialogOpen = true)}>
+					<div class="flex size-6 items-center justify-center rounded-md border bg-background">
+						<Plus class="size-4" />
+					</div>
+					<div class="font-medium text-muted-foreground">Add Workspace</div>
+				</DropdownMenu.Item>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+	{:else if $workspaces && $workspaces.length === 0}
+		<Button variant="ghost" onclick={() => (workspaceDialogOpen = true)} class="w-full justify-start">
+			<div class="grid flex-1 text-left text-sm leading-tight">
+				<span class="truncate font-semibold">Create a workspace</span>
 			</div>
-		{/if}
-	</Sidebar.MenuItem>
-</Sidebar.Menu>
+		</Button>
+	{:else}
+		<div>
+			<Spinner />
+		</div>
+	{/if}
+</Sidebar.MenuItem>
