@@ -87,6 +87,19 @@
 	});
 </script>
 
-<div class="break-words leading-normal text-gray-900">
+<div class="markdown-holder break-words leading-normal text-gray-900">
 	{@html converted}
 </div>
+
+<style>
+/* Remove the top padding of the first h1-h6 children */
+:global(.markdown-holder > h1:first-child),
+:global(.markdown-holder > h2:first-child),
+:global(.markdown-holder > h3:first-child),
+:global(.markdown-holder > h4:first-child),
+:global(.markdown-holder > h5:first-child),
+:global(.markdown-holder > h6:first-child) {
+    margin-top: 0;
+}
+
+</style>
