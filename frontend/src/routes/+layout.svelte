@@ -85,8 +85,8 @@
 	<Sidebar.Provider>
 		<AppSidebar bind:items />
 		<Sidebar.Inset>
-			<header class="flex h-12 shrink-0 items-center gap-2 transition-[width,height] ease-linear">
-				<div class="flex items-center gap-2 px-4">
+			<header class="flex h-10 shrink-0 items-center gap-2 transition-[width,height] ease-linear">
+				<div class="flex items-center gap-2 px-3">
 					<Sidebar.Trigger class="-ml-1" />
 					<Separator orientation="vertical" class="mr-2 h-4" />
 					<Breadcrumb.Root>
