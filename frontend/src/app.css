@@ -73,6 +73,16 @@
         --sidebar-border: 240 3.7% 15.9%;
         --sidebar-ring: 217.2 91.2% 59.8%;
     }
+
+    ::selection {
+        background-color: hsl(var(--primary) / 0.2);
+        color: hsl(var(--primary));
+    }
+
+    .dark ::selection {
+        background-color: hsl(var(--primary) / 0.3);
+        color: hsl(var(--primary-foreground));
+    }
 }
 
 @layer base {
