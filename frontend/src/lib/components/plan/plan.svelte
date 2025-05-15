@@ -91,6 +91,12 @@
 	onMount(layout);
 </script>
 
-<SvelteFlow class="rounded-xl font-mono" {nodes} {edges} colorMode={$mode} fitView {proOptions}>
+<SvelteFlow class="svelte-flow-clipping font-mono" {nodes} {edges} colorMode={$mode} fitView {proOptions}>
 	<Background variant={BackgroundVariant.Dots} />
 </SvelteFlow>
+
+<style>
+:global(.svelte-flow-clipping) {
+    clip-path: inset(0 round 1rem);
+}
+</style>

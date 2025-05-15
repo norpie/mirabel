@@ -217,7 +217,7 @@
 						</div>
 						<Tabs.Content
 							value="spec"
-							class="h-full flex-1 flex-col rounded-lg bg-muted/50 md:min-h-min"
+							class="h-full flex-1 flex-col rounded-xl bg-muted/50 md:min-h-min"
 						>
 							<div class="flex h-full flex-col">
 								<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
@@ -225,7 +225,7 @@
 								</ScrollArea>
 							</div>
 						</Tabs.Content>
-						<Tabs.Content value="plan" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min">
+						<Tabs.Content value="plan" class="h-full flex-1 md:min-h-min rounded-xl overflow-hidden">
 							<Plan bind:plan={$selectedSession.plan} />
 						</Tabs.Content>
 						<Tabs.Content value="shell" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
