@@ -37,7 +37,9 @@
 	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
 
-    let auto = $state(false);
+	let tab: string = $state('shell');
+
+	let auto = $state(false);
 
 	const minSize = 5;
 	const hideSize = 10;
@@ -77,8 +79,8 @@
 	let { data }: PageProps = $props();
 
 	onMount(() => {
-        sessions.set(data.sessions);
-        selectedWorkspace.set(data.workspace);
+		sessions.set(data.sessions);
+		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
 	});
 
@@ -149,10 +151,7 @@
 				{#if sessionPane?.getSize() < hideSize}
 					{@render chevron(true)}
 				{:else}
-					<ScrollArea
-						id="chat-messages"
-						class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2"
-					>
+					<ScrollArea id="chat-messages" class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2">
 						{#each $selectedSession.chat.messages as msg}
 							{@render message(msg)}
 						{/each}
@@ -184,7 +183,7 @@
 				{#if workPane?.getSize() < hideSize}
 					{@render chevron(false)}
 				{:else}
-					<Tabs.Root value="spec" class="m-2 flex h-full flex-col">
+					<Tabs.Root bind:value={tab} class="m-2 flex h-full flex-col">
 						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
 								<Toggle bind:pressed={auto}>Auto</Toggle>
@@ -217,32 +216,58 @@
 								</Tabs.List>
 							</div>
 						</div>
-						<Tabs.Content
-							value="spec"
-							class="h-full flex-1 flex-col rounded-xl bg-muted/50 md:min-h-min"
-						>
-							<div class="flex h-full flex-col">
-								<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
-									<Markdown bind:markdown={$selectedSession.plan.spec} />
-								</ScrollArea>
-							</div>
-						</Tabs.Content>
-						<Tabs.Content value="plan" class="h-full flex-1 md:min-h-min rounded-xl overflow-hidden">
-							<Plan bind:plan={$selectedSession.plan} />
-						</Tabs.Content>
-						<Tabs.Content value="shell" class="h-full flex-1 md:min-h-min rounded-xl overflow-hidden">
-							><Shell />
-						</Tabs.Content>
-						<Tabs.Content value="file" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
-							><File /></Tabs.Content
-						>
-						<Tabs.Content value="browser" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
-							><Browser /></Tabs.Content
-						>
-						<Tabs.Content
-							value="actions"
-							class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
-						></Tabs.Content>
+						{#if tab === 'spec'}
+							<Tabs.Content
+								value="spec"
+								class="h-full flex-1 flex-col rounded-xl bg-muted/50 md:min-h-min"
+							>
+								<div class="flex h-full flex-col">
+									<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
+										<Markdown bind:markdown={$selectedSession.plan.spec} />
+									</ScrollArea>
+								</div>
+							</Tabs.Content>
+						{/if}
+
+						{#if tab === 'plan'}
+							<Tabs.Content
+								value="plan"
+								class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
+							>
+								<Plan bind:plan={$selectedSession.plan} />
+							</Tabs.Content>
+						{/if}
+
+						{#if tab === 'shell'}
+							<Tabs.Content
+								value="shell"
+								class="h-full flex-1 overflow-hidden rounded-xl bg-muted/50 md:min-h-min"
+							>
+								<Shell />
+							</Tabs.Content>
+						{/if}
+
+						{#if tab === 'file'}
+							<Tabs.Content value="file" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min">
+								<File />
+							</Tabs.Content>
+						{/if}
+
+						{#if tab === 'browser'}
+							<Tabs.Content
+								value="browser"
+								class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
+							>
+								<Browser />
+							</Tabs.Content>
+						{/if}
+
+						{#if tab === 'actions'}
+							<Tabs.Content
+								value="actions"
+								class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
+							></Tabs.Content>
+						{/if}
 					</Tabs.Root>
 				{/if}
 			</Resizable.Pane>
