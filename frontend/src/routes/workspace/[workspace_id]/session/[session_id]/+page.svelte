@@ -37,6 +37,8 @@
 	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
 
+    let auto = $state(false);
+
 	const minSize = 5;
 	const hideSize = 10;
 	const chatSize = 40;
@@ -185,7 +187,7 @@
 					<Tabs.Root value="spec" class="m-2 flex h-full flex-col">
 						<div class="flex flex-row justify-end">
 							<div class="flex flex-row gap-3">
-								<Toggle>Auto</Toggle>
+								<Toggle bind:pressed={auto}>Auto</Toggle>
 								<Separator orientation="vertical" />
 								<Tabs.List class="justify-evenly bg-transparent">
 									<Tabs.Trigger value="spec" class="gap-2">
@@ -228,7 +230,7 @@
 						<Tabs.Content value="plan" class="h-full flex-1 md:min-h-min rounded-xl overflow-hidden">
 							<Plan bind:plan={$selectedSession.plan} />
 						</Tabs.Content>
-						<Tabs.Content value="shell" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
+						<Tabs.Content value="shell" class="h-full flex-1 md:min-h-min rounded-xl overflow-hidden">
 							><Shell />
 						</Tabs.Content>
 						<Tabs.Content value="file" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
