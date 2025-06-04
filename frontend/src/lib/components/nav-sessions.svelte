@@ -10,65 +10,60 @@
 	import { sessions } from '$lib/store';
 	import Spinner from './spinner.svelte';
 
-    import { selectedWorkspace } from '$lib/store';
+	import { selectedWorkspace } from '$lib/store';
 
 	const sidebar = useSidebar();
 </script>
 
 {#if $selectedWorkspace !== null && $sessions !== null}
-<Sidebar.Group class="group-data-[collapsible=icon]:hidden">
-	<Sidebar.GroupLabel>Sessions</Sidebar.GroupLabel>
-	<Sidebar.Menu>
-		{#if $sessions}
-			{#each $sessions as session (session.title)}
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton>
-						{#snippet child({ props })}
-							<button {...props}>
-								<a
-									href={`/workspace/${$selectedWorkspace.id}/session/${session.id}`}
-									class="w-full block truncate"
-									>
-									<span class="truncate">{session.title}</span>
-								</a>
-							</button>
-						{/snippet}
-					</Sidebar.MenuButton>
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger>
+	<Sidebar.Group class="group-data-[collapsible=icon]:hidden">
+		<Sidebar.GroupLabel>Sessions</Sidebar.GroupLabel>
+		<Sidebar.Menu>
+			{#if $sessions}
+				{#each $sessions as session (session.title)}
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton>
 							{#snippet child({ props })}
-								<Sidebar.MenuAction showOnHover {...props}>
-									<Ellipsis />
-								</Sidebar.MenuAction>
+								<a {...props} href={`/workspace/${$selectedWorkspace.id}/session/${session.id}`}>
+									<span class="block w-full truncate">{session.title}</span>
+								</a>
 							{/snippet}
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content
-							class="w-48 rounded-lg"
-							side={sidebar.isMobile ? 'bottom' : 'right'}
-							align={sidebar.isMobile ? 'end' : 'start'}
-						>
-							<DropdownMenu.Item>
-								<Eye class="text-muted-foreground" />
-								<span>View Session</span>
-							</DropdownMenu.Item>
-							<DropdownMenu.Item>
-								<Star class="text-muted-foreground" />
-								<span>Favourite Session</span>
-							</DropdownMenu.Item>
-							<DropdownMenu.Separator />
-							<DropdownMenu.Item>
-								<Archive class="text-muted-foreground" />
-								<span>Archive Session</span>
-							</DropdownMenu.Item>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
+						</Sidebar.MenuButton>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Sidebar.MenuAction showOnHover {...props}>
+										<Ellipsis />
+									</Sidebar.MenuAction>
+								{/snippet}
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content
+								class="w-48 rounded-lg"
+								side={sidebar.isMobile ? 'bottom' : 'right'}
+								align={sidebar.isMobile ? 'end' : 'start'}
+							>
+								<DropdownMenu.Item>
+									<Eye class="text-muted-foreground" />
+									<span>View Session</span>
+								</DropdownMenu.Item>
+								<DropdownMenu.Item>
+									<Star class="text-muted-foreground" />
+									<span>Favourite Session</span>
+								</DropdownMenu.Item>
+								<DropdownMenu.Separator />
+								<DropdownMenu.Item>
+									<Archive class="text-muted-foreground" />
+									<span>Archive Session</span>
+								</DropdownMenu.Item>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+					</Sidebar.MenuItem>
+				{/each}
+			{:else}
+				<Sidebar.MenuItem>
+					<Spinner />
 				</Sidebar.MenuItem>
-			{/each}
-		{:else}
-			<Sidebar.MenuItem>
-				<Spinner />
-			</Sidebar.MenuItem>
-		{/if}
-	</Sidebar.Menu>
-</Sidebar.Group>
+			{/if}
+		</Sidebar.Menu>
+	</Sidebar.Group>
 {/if}
