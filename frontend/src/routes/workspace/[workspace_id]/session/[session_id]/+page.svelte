@@ -37,7 +37,7 @@
 	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
 
-	let tab: string = $state('shell');
+	let tab: string = $state('spec');
 
 	let auto = $state(false);
 
@@ -138,7 +138,7 @@
 	</div>
 {/snippet}
 
-<div class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min">
+<div class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min">
 	{#if $selectedSession}
 		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane
@@ -157,7 +157,7 @@
 						{/each}
 					</ScrollArea>
 
-					<div id="chat-input" class="m-2 mt-2 flex flex-row rounded-lg bg-muted/50 p-2">
+					<div id="chat-input" class="m-2 mt-2 flex flex-row rounded-lg bg-secondary p-2">
 						<Textarea
 							class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 							placeholder="Type your message here..."
@@ -219,7 +219,7 @@
 						{#if tab === 'spec'}
 							<Tabs.Content
 								value="spec"
-								class="h-full flex-1 flex-col rounded-xl bg-muted/50 md:min-h-min"
+								class="h-full flex-1 flex-col rounded-xl bg-secondary md:min-h-min"
 							>
 								<div class="flex h-full flex-col">
 									<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
@@ -241,14 +241,14 @@
 						{#if tab === 'shell'}
 							<Tabs.Content
 								value="shell"
-								class="h-full flex-1 overflow-hidden rounded-xl bg-muted/50 md:min-h-min"
+								class="h-full flex-1 overflow-hidden rounded-xl bg-primary-foreground md:min-h-min"
 							>
 								<Shell />
 							</Tabs.Content>
 						{/if}
 
 						{#if tab === 'file'}
-							<Tabs.Content value="file" class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min">
+							<Tabs.Content value="file" class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min">
 								<File />
 							</Tabs.Content>
 						{/if}
@@ -256,7 +256,7 @@
 						{#if tab === 'browser'}
 							<Tabs.Content
 								value="browser"
-								class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
+								class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min"
 							>
 								<Browser />
 							</Tabs.Content>
@@ -265,7 +265,7 @@
 						{#if tab === 'actions'}
 							<Tabs.Content
 								value="actions"
-								class="h-full flex-1 rounded-xl bg-muted/50 md:min-h-min"
+								class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min"
 							></Tabs.Content>
 						{/if}
 					</Tabs.Root>
