@@ -138,7 +138,7 @@
 	</div>
 {/snippet}
 
-<div class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min">
+<div class="h-full flex-1 rounded-xl bg-primary md:min-h-min">
 	{#if $selectedSession}
 		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane
