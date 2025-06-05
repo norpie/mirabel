@@ -3,7 +3,7 @@
 
 	import { Terminal } from "@xterm/xterm";
     import { FitAddon } from '@xterm/addon-fit';
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 
     let lines = $state([
         "\u001b[1;34m# Mirabel Terminal v1.0.0\u001b[0m",
@@ -69,8 +69,15 @@
 
     let terminal: Terminal = $state(newTerminal());
     let fitAddon: FitAddon = $state(new FitAddon());
+    let resizeObserver: ResizeObserver;
+    let resizeTimeout: number | null = null;
 
     $effect(() => {
+        redraw()
+    });
+
+    function redraw() {
+        console.log("Terminal redraw");
         terminal.clear();
         const size = lines.length;
         // Write all lines with writeln except the last one
@@ -80,7 +87,7 @@
         // Write the last line without writeln
         terminal.write(lines[size - 1]);
         fitAddon.fit();
-    });
+    }
 
     function newTerminal() {
         return new Terminal({
@@ -100,10 +107,35 @@
         }
         terminal.open(terminalElement);
         fitAddon.fit();
+        
+        // Add resize observer with debouncing to prevent flickering
+        resizeObserver = new ResizeObserver(() => {
+            // Clear any existing timeout to debounce the resize event
+            if (resizeTimeout) {
+                clearTimeout(resizeTimeout);
+            }
+            
+            // Set a new timeout to redraw after 100ms of inactivity
+            resizeTimeout = setTimeout(() => {
+                redraw();
+                resizeTimeout = null;
+            }, 100) as unknown as number;
+        });
+        resizeObserver.observe(terminalElement);
+    });
+    
+    onDestroy(() => {
+        // Clean up observer and timeout when component is unmounted
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+        }
+        if (resizeTimeout) {
+            clearTimeout(resizeTimeout);
+        }
     });
 </script>
 
-<div id="terminal" class="h-full w-full"></div>
+<div id="terminal" class="h-full w-full overflow-hidden"></div>
 
 <style>
     /* Ensure the terminal container and xterm elements take full space */
