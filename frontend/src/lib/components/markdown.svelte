@@ -45,7 +45,7 @@
 		['h5', 'leading-tight text-sm font-semibold mb-4 mt-6 text-gray-300'],
 		['h6', 'leading-tight text-sm font-semibold text-gray-400 mb-4 mt-6'],
 		['blockquote', 'text-base border-l-4 border-gray-600 pl-4 pr-4 text-gray-400'],
-		['code', 'font-mono text-sm inline bg-gray-800 text-gray-200 rounded px-1 py-05'],
+		['code', 'font-mono text-sm inline bg-zinc-700 text-gray-200 rounded px-1 py-05'],
 		['pre', 'bg-gray-800 rounded p-4 text-gray-200'],
 		['pre code', 'block bg-transparent p-0 overflow-visible rounded-none text-gray-200'],
 		['ul', 'text-base pl-8 list-disc text-gray-200'],
