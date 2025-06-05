@@ -96,6 +96,10 @@
 							<Avatar.Image src={$selectedWorkspace.logo} alt={$selectedWorkspace.name} />
 							<Avatar.Fallback class="rounded-lg">{$selectedWorkspace.name[0]}</Avatar.Fallback>
 						</Avatar.Root>
+                    {:else}
+						<Avatar.Root class="h-8 w-8 rounded-lg">
+							<Avatar.Fallback class="rounded-lg">?</Avatar.Fallback>
+						</Avatar.Root>
 					{/if}
 					<div class="grid flex-1 text-left text-sm leading-tight">
 						<span class="truncate font-semibold">
