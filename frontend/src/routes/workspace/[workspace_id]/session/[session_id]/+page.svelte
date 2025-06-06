@@ -151,7 +151,7 @@
 				{#if sessionPane?.getSize() < hideSize}
 					{@render chevron(true)}
 				{:else}
-					<ScrollArea id="chat-messages" class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2">
+					<ScrollArea id="chat-messages" class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2 pb-0">
 						{#each $selectedSession.chat.messages as msg}
 							{@render message(msg)}
 						{/each}
@@ -241,7 +241,7 @@
 						{#if tab === 'shell'}
 							<Tabs.Content
 								value="shell"
-								class="h-full flex-1 overflow-hidden rounded-xl bg-primary-foreground md:min-h-min"
+								class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min svelte-flow-clipping"
 							>
 								<Shell />
 							</Tabs.Content>
