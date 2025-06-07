@@ -11,7 +11,7 @@
 	import Markdown from '$lib/components/markdown.svelte';
 
 	import Plan from '$lib/components/plan/plan.svelte';
-	import Shell from './shell.svelte';
+	import Terminal from './terminal.svelte';
 	import File from './file.svelte';
 	import Browser from './browser.svelte';
 
@@ -197,9 +197,9 @@
 										<ListTree class="h-4 w-4" />
 										<p>Plan</p></Tabs.Trigger
 									>
-									<Tabs.Trigger value="shell" class="gap-2">
+									<Tabs.Trigger value="terminal" class="gap-2">
 										<SquareTerminal class="h-4 w-4" />
-										<p>Shell</p>
+										<p>Terminal</p>
 									</Tabs.Trigger>
 									<Tabs.Trigger value="file" class="gap-2">
 										<FileStack class="h-4 w-4" />
@@ -238,12 +238,12 @@
 							</Tabs.Content>
 						{/if}
 
-						{#if tab === 'shell'}
+						{#if tab === 'terminal'}
 							<Tabs.Content
-								value="shell"
+								value="terminal"
 								class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min svelte-flow-clipping"
 							>
-								<Shell />
+								<Terminal />
 							</Tabs.Content>
 						{/if}
 
