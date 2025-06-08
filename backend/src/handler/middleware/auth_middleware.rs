@@ -1,9 +1,9 @@
-use std::future::{ready, Ready};
+use std::future::{Ready, ready};
 
 use actix_web::{
-    body::EitherBody,
-    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     Error, HttpMessage, HttpResponse,
+    body::EitherBody,
+    dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
 };
 use futures_util::future::LocalBoxFuture;
 use log::{debug, error, info};
@@ -73,7 +73,7 @@ where
             });
         };
 
-        let Ok(sub) = token_factory.subject(token) else {
+        let Ok(sub) = token_factory.subject(&token) else {
             debug!("Invalid token in request");
             return Box::pin(async {
                 Ok(req.into_response(HttpResponse::Unauthorized().finish().map_into_right_body()))
@@ -90,11 +90,16 @@ where
     }
 }
 
-fn get_token(req: &ServiceRequest) -> Option<&str> {
-    req.headers()
-        .get("Authorization")?
-        .to_str()
-        .ok()?
-        .split_whitespace()
-        .last()
+fn get_token(req: &ServiceRequest) -> Option<String> {
+    let mut token = req
+        .headers()
+        .get("Authorization")
+        .map(|hv| hv.to_str().unwrap_or(""))
+        .and_then(|s| s.split_whitespace().last())
+        .map(|s| s.to_string());
+    if token.is_none() {
+        let qstring = qstring::QString::from(req.query_string());
+        token = qstring.get("access_token").map(|s| s.to_string());
+    }
+    token
 }

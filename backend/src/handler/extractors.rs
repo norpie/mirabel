@@ -15,10 +15,6 @@ impl FromRequest for User {
 
     fn from_request(req: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
         let mut id_opt = req.extensions().get::<String>().cloned();
-        if id_opt.is_none() {
-            let qstring = qstring::QString::from(req.query_string());
-            id_opt = qstring.get("access_token").map(|s| s.to_string());
-        }
         let db_opt = req.app_data::<Data<UserService>>().cloned();
 
         Box::pin(async move {
