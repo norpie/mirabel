@@ -3,6 +3,8 @@ import type Result from "../models/result";
 
 // TODO: Get the URL from the environment
 const url = "http://localhost:8080/api";
+// WebSocket URL derived from the HTTP URL
+const wsUrl = url.replace(/^http/, 'ws');
 
 // Add paths that don't require authentication
 const publicPaths = [
@@ -15,8 +17,40 @@ function formatEndpoint(path: string): string {
     return `${url}/${path}`;
 }
 
+function formatWebSocketEndpoint(path: string): string {
+    return `${wsUrl}/${path}`;
+}
+
 function isPublicPath(endpoint: string): boolean {
   return publicPaths.some(path => endpoint.includes(path));
+}
+
+function connectWebSocket(path: string, body?: any): WebSocket {
+    let endpoint = formatWebSocketEndpoint(path);
+    
+    // Format query parameters
+    let query = "";
+    if (body) {
+        query += "?";
+        for (const key in body) {
+            query += `${key}=${body[key]}&`;
+        }
+    }
+    
+    // Append access token as query parameter if available
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken && !isPublicPath(path)) {
+        if (query) {
+            query += `access_token=${accessToken}`;
+        } else {
+            query += "?access_token=" + accessToken;
+        }
+    } else if (query) {
+        // Remove the last '&' character if there's no token to add
+        query = query.slice(0, -1);
+    }
+    
+    return new WebSocket(endpoint + query);
 }
 
 async function request<T>(method: string, endpoint: string, body?: any): Promise<Result<T>> {
@@ -109,4 +143,4 @@ async function refresh(): Promise<Result<{ access_token: string }> | null> {
     return await response.json();
 }
 
-export { get, post, put, del };
+export { get, post, put, del, connectWebSocket };
