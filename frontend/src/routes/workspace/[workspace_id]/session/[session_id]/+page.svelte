@@ -74,15 +74,42 @@
 		workPane?.resize(workSize);
 	}
 
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { Message, Participant, Session } from '$lib/models/session';
+	import { connectWebSocket } from '$lib/request';
+	import { toast } from 'svelte-sonner';
 	let { data }: PageProps = $props();
 
-	onMount(() => {
+	let socket: WebSocket | undefined;
+
+	onMount(async () => {
+        console.log('Mounting session page with data:', data);
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
+		socket = connectWebSocket('v1/' + 'session/' + $selectedSession?.id);
+		socket.addEventListener('open', (event) => {
+            console.log('WebSocket connection established:', event);
+			const message = JSON.stringify({
+				type: 'subscribe',
+				sessionId: $selectedSession?.id
+			});
+            socket?.send(
+                message
+            );
+		});
+		socket.addEventListener('message', (event) => {
+			toast.success(event.data);
+		});
 	});
+
+    onDestroy(async () => {
+        console.log('Cleaning up WebSocket connection');
+        if (socket) {
+            socket.close();
+            socket = undefined;
+        }
+    });
 
 	function messageAuthor(participantId: string): Participant {
 		return (
@@ -151,7 +178,10 @@
 				{#if sessionPane?.getSize() < hideSize}
 					{@render chevron(true)}
 				{:else}
-					<ScrollArea id="chat-messages" class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2 pb-0">
+					<ScrollArea
+						id="chat-messages"
+						class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2 pb-0"
+					>
 						{#each $selectedSession.chat.messages as msg}
 							{@render message(msg)}
 						{/each}
@@ -241,14 +271,17 @@
 						{#if tab === 'terminal'}
 							<Tabs.Content
 								value="terminal"
-								class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min svelte-flow-clipping"
+								class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 							>
 								<Terminal />
 							</Tabs.Content>
 						{/if}
 
 						{#if tab === 'file'}
-							<Tabs.Content value="file" class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min">
+							<Tabs.Content
+								value="file"
+								class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min"
+							>
 								<File />
 							</Tabs.Content>
 						{/if}
