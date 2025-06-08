@@ -9,3 +9,4 @@ pub(crate) mod token;
 pub(crate) mod updated_session;
 pub(crate) mod updated_user;
 pub(crate) mod workspace;
+pub(crate) mod session;
