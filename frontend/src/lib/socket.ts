@@ -21,7 +21,7 @@ export class SessionSocketHandler {
     handlers: { [K in EventType]?: ((data: EventTypeMap[K]) => void)[] } = {};
     private url: string;
 
-    constructor(socket: WebSocket, stateHandler: ((status: "open" | "closed" | "error") => void) | null) {
+    constructor(socket: WebSocket, stateHandler?: (status: "open" | "closed" | "error") => void) {
         this.socket = socket;
         if (!stateHandler) {
             this.stateHandler = (status: string) => {console.log(`WebSocket state changed: ${status}`); };
