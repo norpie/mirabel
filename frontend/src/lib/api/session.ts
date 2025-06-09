@@ -442,7 +442,7 @@ const sampleResponse: PageResponse<Session[]> = {
                         message: "Also, the UI is not rendering the chat messages as expected."
                     },
                     {
-                        timestamp: '2025-02-11T12:19:00Z',
+                        timestamp: new Date().toISOString(),
                         participant: 'sadlkjrfhycnsf',
                         message: "Check the component and ensure data binding is correct."
                     }
