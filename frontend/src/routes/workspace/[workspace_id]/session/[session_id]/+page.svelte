@@ -41,6 +41,8 @@
 
 	let auto = $state(false);
 
+	let chatInput: string = $state('');
+
 	const minSize = 5;
 	const hideSize = 10;
 	const chatSize = 40;
@@ -78,38 +80,48 @@
 	import type { Message, Participant, Session } from '$lib/models/session';
 	import { connectWebSocket } from '$lib/request';
 	import { toast } from 'svelte-sonner';
+	import { SessionSocketHandler } from '$lib/socket';
+	import type { SessionEvent } from '$lib/models/event';
 	let { data }: PageProps = $props();
 
-	let socket: WebSocket | undefined;
+	let socket: SessionSocketHandler;
 
 	onMount(async () => {
-        console.log('Mounting session page with data:', data);
+		console.log('Mounting session page with data:', data);
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
-		socket = connectWebSocket('v1/' + 'session/' + $selectedSession?.id);
-		socket.addEventListener('open', (event) => {
-            console.log('WebSocket connection established:', event);
-			const message = JSON.stringify({
-				type: 'subscribe',
-				sessionId: $selectedSession?.id
-			});
-            socket?.send(
-                message
-            );
-		});
-		socket.addEventListener('message', (event) => {
-			toast.success(event.data);
-		});
+		socket = new SessionSocketHandler(connectWebSocket('v1/' + 'session/' + $selectedSession?.id));
 	});
 
-    onDestroy(async () => {
-        console.log('Cleaning up WebSocket connection');
-        if (socket) {
-            socket.close();
-            socket = undefined;
-        }
-    });
+	onDestroy(async () => {
+		console.log('Cleaning up WebSocket connection');
+        socket.close();
+	});
+
+	async function sendMessage() {
+		if (!chatInput.trim()) return;
+
+		if (!socket) {
+			toast.error('WebSocket connection is not established');
+			return;
+		}
+
+		const message: SessionEvent = {
+			id: 'laskjdhflasdhflk',
+			source: 'user',
+			timestamp: new Date().toISOString(),
+			content: {
+				type: 'MessageContent',
+				message: chatInput
+			}
+		};
+		console.log('Sending message:', message);
+
+		socket.send(message);
+
+		chatInput = '';
+	}
 
 	function messageAuthor(participantId: string): Participant {
 		return (
@@ -191,10 +203,16 @@
 						<Textarea
 							class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 							placeholder="Type your message here..."
+							bind:value={chatInput}
+							onkeydown={async (e) => {
+								if (e.key === 'Enter' && !e.shiftKey) {
+									sendMessage();
+								}
+							}}
 						/>
 						<div id="buttons" class="flex flex-col gap-1 pl-2">
-							<Button>
-								<SendHorizontal />
+							<Button onclick={async () => sendMessage()}>
+								<SendHorizontal class="pointer-events-none" />
 							</Button>
 							<Button>
 								<Paperclip />
