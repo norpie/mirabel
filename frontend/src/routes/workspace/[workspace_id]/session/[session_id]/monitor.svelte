@@ -17,9 +17,7 @@
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 
-	import { selectedSession } from '$lib/store';
-
-	let { tab }: { tab: string } = $props();
+	let { tab, plan, spec }: { tab: string; plan: any; spec: string } = $props();
 
 	let auto = $state(false);
 </script>
@@ -64,7 +62,7 @@
 		>
 			<div class="flex h-full flex-col">
 				<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
-					<Markdown bind:markdown={$selectedSession.plan.spec} />
+					<Markdown bind:markdown={spec} />
 				</ScrollArea>
 			</div>
 		</Tabs.Content>
@@ -75,7 +73,7 @@
 			value="plan"
 			class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 		>
-			<Plan bind:plan={$selectedSession.plan} />
+			<Plan bind:plan={plan} />
 		</Tabs.Content>
 	{/if}
 

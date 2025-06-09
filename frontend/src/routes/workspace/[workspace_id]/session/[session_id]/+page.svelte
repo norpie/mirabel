@@ -43,6 +43,13 @@
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
+		
+		// Update local state variables from selectedSession when it changes
+		if ($selectedSession) {
+			spec = $selectedSession.plan.spec;
+			plan = $selectedSession.plan;
+		}
+		
 		socket = new SessionSocketHandler(connectWebSocket('v1/' + 'session/' + $selectedSession?.id));
 	});
 
@@ -89,7 +96,7 @@
 						<ChevronsLeft />
 					</button>
 				{:else}
-					<Monitor {tab} />
+					<Monitor {tab} plan={plan} spec={spec} />
 				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
