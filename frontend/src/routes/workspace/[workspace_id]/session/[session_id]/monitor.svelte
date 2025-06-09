@@ -18,12 +18,14 @@
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 
-	import type { PaneAPI } from 'paneforge';
 	import { selectedSession } from '$lib/store';
 
-	let { workPane, reset } = $props();
+	let { workPane, reset, tab = $bindable("spec") }: {
+        workPane: any,
+        reset: () => void,
+        tab: string
+    } = $props();
 
-	let tab = $state('spec');
 	let auto = $state(false);
 
 	const hideSize = 10;
@@ -31,7 +33,7 @@
 
 {#if workPane?.getSize() < hideSize}
 	<button
-		class="flex h-full w-[100%] items-center justify-center rounded-r-xl transition-colors hover:bg-primary/10"
+		class="flex h-full w-[100%] items-center justify-center rounded-r-xl transition-colors hover:bg-secondary"
 		onclick={() => reset()}
 	>
 		<ChevronsLeft />

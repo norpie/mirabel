@@ -20,6 +20,8 @@
 	const chatSize = 40;
 	const workSize = 100 - chatSize;
 
+    let tab = $state('spec');
+
 	function reset() {
 		sessionPane?.resize(chatSize);
 		workPane?.resize(workSize);
@@ -66,7 +68,7 @@
 				{minSize}
 				class="flex h-full flex-col"
 			>
-				<Monitor {workPane} {reset} />
+				<Monitor {workPane} {reset} bind:tab/>
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
 	{:else}

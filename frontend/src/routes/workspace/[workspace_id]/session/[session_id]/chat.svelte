@@ -80,7 +80,7 @@
 
 {#if sessionPane?.getSize() < hideSize}
 	<button
-		class="flex h-full w-[100%] items-center justify-center rounded-l-xl transition-colors hover:bg-primary/10"
+		class="flex h-full w-[100%] items-center justify-center rounded-l-xl transition-colors hover:bg-secondary"
 		onclick={() => reset()}
 	>
 		<ChevronsRight />
