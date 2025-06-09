@@ -93,7 +93,7 @@
 			<div class="flex flex-col">
 				<div class="flex items-center gap-2">
 					<p class="font-normal leading-none">{participant.name}</p>
-					<p class="text-xs font-light leading-none text-muted-foreground">
+					<p class="text-xs font-light leading-none text-muted-foreground overflow-hidden whitespace-nowrap">
 						{formatTime(msg.timestamp)}
 					</p>
 				</div>
