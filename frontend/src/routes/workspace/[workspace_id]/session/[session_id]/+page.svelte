@@ -1,6 +1,8 @@
 <script lang="ts">
 	import * as Resizable from '$lib/components/ui/resizable/index.js';
 	import Spinner from '$lib/components/spinner.svelte';
+	import ChevronsRight from 'lucide-svelte/icons/chevrons-right';
+	import ChevronsLeft from 'lucide-svelte/icons/chevrons-left';
 
 	import Chat from './chat.svelte';
 	import Monitor from './monitor.svelte';
@@ -17,10 +19,16 @@
 	let workPane: PaneAPI | undefined = $state();
 
 	const minSize = 5;
+	const hideSize = 10;
 	const chatSize = 40;
 	const workSize = 100 - chatSize;
 
-    let tab = $state('spec');
+	let tab = $state('spec');
+
+	let chat = $state([]);
+	let spec = $state("");
+	let plan = $state();
+	let terminal = $state("");
 
 	function reset() {
 		sessionPane?.resize(chatSize);
@@ -39,13 +47,9 @@
 	});
 
 	onDestroy(async () => {
-        if (!socket) return;
+		if (!socket) return;
 		console.log('Cleaning up WebSocket connection');
 		socket.close();
-	});
-
-	$effect(() => {
-		if (!$selectedSession) return;
 	});
 </script>
 
@@ -59,7 +63,16 @@
 				defaultSize={chatSize}
 				{minSize}
 			>
-				<Chat {sessionPane} {reset} {socket} />
+				{#if sessionPane?.getSize() < hideSize}
+					<button
+						class="flex h-full w-[100%] items-center justify-center rounded-l-xl transition-colors hover:bg-secondary"
+						onclick={() => reset()}
+					>
+						<ChevronsRight />
+					</button>
+				{:else}
+					<Chat {socket} />
+				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />
 			<Resizable.Pane
@@ -68,7 +81,16 @@
 				{minSize}
 				class="flex h-full flex-col"
 			>
-				<Monitor {workPane} {reset} bind:tab/>
+				{#if workPane?.getSize() < hideSize}
+					<button
+						class="flex h-full w-[100%] items-center justify-center rounded-r-xl transition-colors hover:bg-secondary"
+						onclick={() => reset()}
+					>
+						<ChevronsLeft />
+					</button>
+				{:else}
+					<Monitor {tab} />
+				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
 	{:else}

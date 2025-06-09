@@ -5,7 +5,6 @@ import { load as loadWorkspace } from "../../+page";
 
 export async function load({params}: PageLoad) {
     let workspaceLoad = await loadWorkspace({params});
-    console.log('load session page');
     const session = await fetchSession(params.session_id)
     return {
         id: params.session_id,
