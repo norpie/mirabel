@@ -1,12 +1,14 @@
-use crate::{dto::session::SessionEvent, model::user::User, prelude::*};
+use crate::{
+    dto::session::SessionEvent, model::user::User, prelude::*, service::sessions::SessionService,
+};
 
 use actix_web::{
     HttpRequest, HttpResponse, Scope, get,
-    web::{self, Path},
+    web::{self, Data, Path},
 };
 use actix_ws::Message;
 use futures_util::StreamExt;
-use log::error;
+use log::{error, debug};
 
 use crate::handler::middleware::auth_middleware::Auth;
 
@@ -18,16 +20,24 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 pub async fn session_socket(
     req: HttpRequest,
     stream: web::Payload,
+    session_service: Data<SessionService>,
     user: User,
     session_id: Path<String>,
 ) -> Result<HttpResponse> {
+    debug!("WebSocket connection for session: {}", session_id);
     let (res, mut session, mut msg_stream) = actix_ws::handle(&req, stream)?;
 
     actix_web::rt::spawn(async move {
         while let Some(Ok(msg)) = msg_stream.next().await {
             match msg {
                 Message::Text(text) => {
-                    let result = handle_json_message(text.to_string()).await;
+                    let result = handle_json_message(
+                        session_service.clone(),
+                        &session_id,
+                        &user,
+                        text.to_string(),
+                    )
+                    .await;
                     match result {
                         Ok(response) => {
                             if let Err(e) = session.text(response).await {
@@ -37,6 +47,11 @@ pub async fn session_socket(
                         }
                         Err(e) => {
                             error!("Error handling message: {:?}", e);
+                            let json_error =
+                                serde_json::to_string_pretty(&SessionEvent::error()).unwrap();
+                            if let Err(e) = session.text(json_error).await {
+                                error!("Error sending error message: {:?}", e);
+                            }
                             break;
                         }
                     }
@@ -52,8 +67,16 @@ pub async fn session_socket(
     Ok(res)
 }
 
-pub async fn handle_json_message(json: String) -> Result<String> {
+pub async fn handle_json_message(
+    session_service: Data<SessionService>,
+    session_id: &Path<String>,
+    user: &User,
+    json: String,
+) -> Result<String> {
     let parsed = serde_json::from_str::<SessionEvent>(&json)?;
-    let value = serde_json::to_string_pretty(&parsed)?;
-    return Ok(value);
+    let response = session_service
+        .handle_event(session_id, user, parsed)
+        .await?;
+    let value = serde_json::to_string_pretty(&response)?;
+    Ok(value)
 }

@@ -1,7 +1,7 @@
 use crate::{
     prelude::*,
     repository::RepositoryProvider,
-    service::{auth::AuthService, users::UserService, workspaces::WorkspaceService},
+    service::{auth::AuthService, sessions::SessionService, users::UserService, workspaces::WorkspaceService},
 };
 
 use std::env;
@@ -24,6 +24,7 @@ pub async fn run(db: Data<RepositoryProvider>) -> Result<()> {
 
     let auth_service = Data::new(AuthService::from(db.clone())?);
     let user_service = Data::new(UserService::from(db.clone())?);
+    let session_service = Data::new(SessionService::from(db.clone())?);
     let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
 
     info!("Listening on {}:{}", host, port);
@@ -40,6 +41,7 @@ pub async fn run(db: Data<RepositoryProvider>) -> Result<()> {
         App::new()
             .app_data(auth_service.clone())
             .app_data(user_service.clone())
+            .app_data(session_service.clone())
             .app_data(workspace_service.clone())
             .wrap(cors)
             .wrap(logger)

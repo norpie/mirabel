@@ -1,18 +1,44 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use surrealdb::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionEvent {
     pub id: String,
     pub source: String,
-    #[serde(rename = "type")]
-    pub event_type: String,
     pub timestamp: DateTime<Utc>,
     pub content: SessionEventContent,
 }
 
+impl SessionEvent {
+    pub fn error() -> Self {
+        SessionEvent {
+            id: Uuid::new_v4().to_string(),
+            source: "system".to_string(),
+            timestamp: Utc::now(),
+            content: SessionEventContent::Acknowledgment {
+                ack_type: AcknowledgmentType::Error,
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AcknowledgmentType {
+    Delivered,
+    Seen,
+    Thinking,
+    Typing,
+    Error,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum SessionEventContent {
+    Acknowledgment {
+        ack_type: AcknowledgmentType,
+    },
     MessageContent {
         message: String,
     },
