@@ -56,6 +56,12 @@ pub async fn session_socket(
                         }
                     }
                 }
+                Message::Ping(bytes) => {
+                    if let Err(e) = session.pong(&bytes).await {
+                        error!("Error responding to ping: {:?}", e);
+                        break;
+                    }
+                }
                 Message::Close(_reason) => {
                     break;
                 }
