@@ -17,7 +17,7 @@
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 
-	let { tab, plan, spec }: { tab: string; plan: any; spec: string } = $props();
+	let { tab, plan, spec, terminal }: { tab: string; plan: any; spec: string, terminal: string } = $props();
 
 	let auto = $state(false);
 </script>
@@ -82,7 +82,7 @@
 			value="terminal"
 			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 		>
-			<Terminal />
+			<Terminal lines={terminal} />
 		</Tabs.Content>
 	{/if}
 

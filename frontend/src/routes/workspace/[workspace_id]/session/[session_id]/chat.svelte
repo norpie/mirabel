@@ -12,7 +12,7 @@
 	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
 
-	let { socket = $bindable() } = $props();
+	let { socket = $bindable(), chat } = $props();
 
 	let chatInput = $state('');
 

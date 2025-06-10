@@ -5,41 +5,7 @@
     import { FitAddon } from '@xterm/addon-fit';
 	import { onMount, onDestroy } from "svelte";
 
-    let lines = $state([
-        "\u001b[1;34m# Mirabel Terminal v1.0.0\u001b[0m",
-        "\u001b[1;32mmirabel@workspace:~$\u001b[0m ls -la",
-        "total 32",
-        "drwxr-xr-x  5 mirabel users 4096 May 15 14:22 \u001b[1;34m.\u001b[0m",
-        "drwxr-xr-x  3 root    root  4096 Mar 10 09:15 \u001b[1;34m..\u001b[0m",
-        "-rw-------  1 mirabel users  220 Mar 10 09:15 .bash_logout",
-        "-rw-------  1 mirabel users 3771 Mar 10 09:15 .bashrc",
-        "drwxr-xr-x  3 mirabel users 4096 May 15 14:10 \u001b[1;34m.config\u001b[0m",
-        "drwxr-xr-x  8 mirabel users 4096 May 15 14:15 \u001b[1;34mproject\u001b[0m",
-        "-rw-r--r--  1 mirabel users   21 May 15 14:05 README.md",
-        "\u001b[1;32mmirabel@workspace:~$\u001b[0m cd project",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m git status",
-        "On branch \u001b[1;36mmaster\u001b[0m",
-        "Your branch is up to date with '\u001b[1;36morigin/master\u001b[0m'.",
-        "",
-        "Changes not staged for commit:",
-        "  (use \"git add <file>...\" to update what will be committed)",
-        "  (use \"git restore <file>...\" to discard changes in working directory)",
-        "        \u001b[1;31mmodified:   src/main.rs\u001b[0m",
-        "        \u001b[1;31mmodified:   Cargo.toml\u001b[0m",
-        "",
-        "Untracked files:",
-        "  (use \"git add <file>...\" to include in what will be committed)",
-        "        \u001b[1;31msrc/utils/\u001b[0m",
-        "",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m cargo build",
-        "   \u001b[1;32mCompiling\u001b[0m project v0.1.0 (/home/mirabel/project)",
-        "    \u001b[1;32mFinished\u001b[0m dev [unoptimized + debuginfo] target(s) in 1.45s",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m ./target/debug/project",
-        "\u001b[1;33mWARNING:\u001b[0m Configuration file not found, using defaults",
-        "Project initialized successfully!",
-        "Listening on 127.0.0.1:8080",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m "
-    ]);
+    let { lines } = $props();
 
     const theme = {
         background: '#1e1e2e', // Base
@@ -107,14 +73,14 @@
         }
         terminal.open(terminalElement);
         fitAddon.fit();
-        
+
         // Add resize observer with debouncing to prevent flickering
         resizeObserver = new ResizeObserver(() => {
             // Clear any existing timeout to debounce the resize event
             if (resizeTimeout) {
                 clearTimeout(resizeTimeout);
             }
-            
+
             // Set a new timeout to redraw after 100ms of inactivity
             resizeTimeout = setTimeout(() => {
                 redraw();
@@ -123,7 +89,7 @@
         });
         resizeObserver.observe(terminalElement);
     });
-    
+
     onDestroy(() => {
         // Clean up observer and timeout when component is unmounted
         if (resizeObserver) {

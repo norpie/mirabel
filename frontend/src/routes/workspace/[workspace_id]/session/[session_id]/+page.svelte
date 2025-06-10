@@ -26,9 +26,10 @@
 	let tab = $state('spec');
 
 	let chat = $state([]);
+
 	let spec = $state("");
 	let plan = $state();
-	let terminal = $state("");
+	let terminal = $state([]);
 
 	function reset() {
 		sessionPane?.resize(chatSize);
@@ -43,13 +44,14 @@
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
-		
+
 		// Update local state variables from selectedSession when it changes
 		if ($selectedSession) {
 			spec = $selectedSession.plan.spec;
 			plan = $selectedSession.plan;
+            terminal = $selectedSession.terminal;
 		}
-		
+
 		socket = new SessionSocketHandler(connectWebSocket('v1/' + 'session/' + $selectedSession?.id));
 	});
 
@@ -78,7 +80,7 @@
 						<ChevronsRight />
 					</button>
 				{:else}
-					<Chat {socket} />
+					<Chat {socket} {chat} />
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />
@@ -96,7 +98,7 @@
 						<ChevronsLeft />
 					</button>
 				{:else}
-					<Monitor {tab} plan={plan} spec={spec} />
+					<Monitor {tab} {plan} {spec} {terminal} />
 				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>

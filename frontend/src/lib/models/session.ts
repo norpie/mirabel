@@ -9,6 +9,7 @@ export interface Session {
     participants: Participant[];
     chat: Chat;
     plan: Plan;
+    terminal: string[];
 }
 
 export interface Plan {
