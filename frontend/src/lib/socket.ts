@@ -83,9 +83,11 @@ export class SessionSocketHandler {
     close(): void {
         if (this.socket.readyState === WebSocket.OPEN) {
             this.socket.close();
+            this.stateHandler("closed");
         } else {
             console.warn("WebSocket is not open, cannot close.");
         }
+        this.handlers = {};
     }
 
     send(data: SessionEvent): void {

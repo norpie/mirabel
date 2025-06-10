@@ -59,6 +59,7 @@
 		if (!socket) return;
 		console.log('Cleaning up WebSocket connection');
 		socket.close();
+        socket = undefined;
 	});
 </script>
 
