@@ -14,6 +14,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { connectWebSocket } from '$lib/request';
 	import { SessionSocketHandler } from '$lib/socket';
+	import type { Chat as ChatModel, Plan } from '$lib/models/session';
 
 	let sessionPane: PaneAPI | undefined = $state();
 	let workPane: PaneAPI | undefined = $state();
@@ -25,11 +26,10 @@
 
 	let tab = $state('spec');
 
-	let chat = $state([]);
-
-	let spec = $state("");
-	let plan = $state();
-	let terminal = $state([]);
+	let spec: string = $state("");
+	let chat: ChatModel | undefined = $state();
+	let plan: Plan | undefined = $state();
+	let terminal: string[] = $state([]);
 
 	function reset() {
 		sessionPane?.resize(chatSize);
@@ -50,6 +50,7 @@
 			spec = $selectedSession.plan.spec;
 			plan = $selectedSession.plan;
             terminal = $selectedSession.terminal;
+            chat = $selectedSession.chat;
 		}
 
 		socket = new SessionSocketHandler(connectWebSocket('v1/' + 'session/' + $selectedSession?.id));

@@ -5,6 +5,7 @@
 
 	let {
 		ref = $bindable(null),
+        viewportRef = $bindable(null),
 		class: className,
 		orientation = "vertical",
 		scrollbarXClasses = "",
@@ -12,6 +13,7 @@
 		children,
 		...restProps
 	}: WithoutChild<ScrollAreaPrimitive.RootProps> & {
+        viewportRef?: HTMLElement | null | undefined;
 		orientation?: "vertical" | "horizontal" | "both" | undefined;
 		scrollbarXClasses?: string | undefined;
 		scrollbarYClasses?: string | undefined;
@@ -19,7 +21,7 @@
 </script>
 
 <ScrollAreaPrimitive.Root bind:ref {...restProps} class={cn("relative overflow-hidden", className)}>
-	<ScrollAreaPrimitive.Viewport class="h-full w-full rounded-[inherit]">
+	<ScrollAreaPrimitive.Viewport bind:ref={viewportRef} class="h-full w-full rounded-[inherit]">
 		{@render children?.()}
 	</ScrollAreaPrimitive.Viewport>
 	{#if orientation === "vertical" || orientation === "both"}

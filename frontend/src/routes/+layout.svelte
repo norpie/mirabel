@@ -1,8 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { onMount } from 'svelte';
-
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 
@@ -14,7 +12,6 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
 	import BrainCircuit from 'lucide-svelte/icons/brain-circuit';
-    import House from 'lucide-svelte/icons/house';
 
 	import Spinner from '$lib/components/spinner.svelte';
 
@@ -25,20 +22,7 @@
 		hideSidebar = ['/login', '/register'].includes(page.url.pathname);
 	});
 
-	import { user, workspaces, selectedWorkspace, sessions, selectedSession } from '$lib/store';
-	import { toast } from 'svelte-sonner';
-	import type { Page, PageResponse } from '$lib/models/page';
-	import { get } from '$lib/request';
-	import type Result from '$lib/models/result';
-	import type { Workspace } from '$lib/models/workspace';
-	import { beforeNavigate, goto } from '$app/navigation';
-
-	onMount(() => {
-		// Hydrate user, workspaces, and sessions on mount
-        console.log('Mounting layout');
-	});
-
-	$inspect({ $user, $workspaces, $selectedWorkspace, $sessions, $selectedSession });
+	import { user, selectedWorkspace, selectedSession } from '$lib/store';
 
 	let items = $state([
 		{

@@ -6,14 +6,31 @@
 	import Mirabel from '$lib/assets/mirabel.png';
 	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
 	import Paperclip from 'lucide-svelte/icons/paperclip';
-	import type { Participant } from '$lib/models/session';
+	import type { Chat, Participant } from '$lib/models/session';
 	import { selectedSession } from '$lib/store';
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
 
-	let { socket = $bindable(), chat } = $props();
+	let { socket = $bindable(), chat }: {
+        socket: SessionSocketHandler | undefined,
+        chat: Chat | undefined
+    } = $props();
 
+    let initialized = $state(false);
+
+    $effect(() => {
+        if (initialized) {
+            return;
+        }
+        if (!chat) {
+            return;
+        }
+        initialized = true;
+        scrollArea?.scrollTo(0, scrollArea.scrollHeight);
+    });
+
+    let scrollArea: HTMLElement | null = $state(null);
 	let chatInput = $state('');
 
 	function formatTime(iso8601: string): string {
@@ -77,8 +94,10 @@
 <ScrollArea
 	id="chat-messages"
 	class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2 pb-0"
+    bind:viewportRef={scrollArea}
 >
-	{#each $selectedSession.chat.messages as msg}
+    {#if chat}
+	{#each chat.messages as msg}
 	{@const participant = messageAuthor(msg.participant)}
 		<div class="mb-4 flex space-x-4">
 			<Avatar.Root class="h-8 w-8 rounded-lg">
@@ -103,6 +122,7 @@
 			</div>
 		</div>
 	{/each}
+    {/if}
 </ScrollArea>
 
 <div id="chat-input" class="m-2 mt-2 flex flex-row rounded-lg bg-secondary p-2">
