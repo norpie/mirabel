@@ -27,7 +27,7 @@ function isPublicPath(endpoint: string): boolean {
 
 function connectWebSocket(path: string, body?: any): WebSocket {
     let endpoint = formatWebSocketEndpoint(path);
-    
+
     // Format query parameters
     let query = "";
     if (body) {
@@ -36,7 +36,7 @@ function connectWebSocket(path: string, body?: any): WebSocket {
             query += `${key}=${body[key]}&`;
         }
     }
-    
+
     // Append access token as query parameter if available
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken && !isPublicPath(path)) {
@@ -49,7 +49,7 @@ function connectWebSocket(path: string, body?: any): WebSocket {
         // Remove the last '&' character if there's no token to add
         query = query.slice(0, -1);
     }
-    
+
     return new WebSocket(endpoint + query);
 }
 
@@ -63,13 +63,11 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
         headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
     }
 
-    console.log("Requesting:", method, endpoint, body);
     const response = await fetch(endpoint, {
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined
     });
-    console.log("Response:", response);
 
     // Only handle 401 for authenticated paths and if we're in a browser
     if (response.status === 401 && !isPublicPath(endpoint)) {
