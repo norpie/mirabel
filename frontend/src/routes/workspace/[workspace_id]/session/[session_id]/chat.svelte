@@ -6,12 +6,14 @@
 	import Mirabel from '$lib/assets/mirabel.png';
 	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
 	import Paperclip from 'lucide-svelte/icons/paperclip';
+	import Pause from 'lucide-svelte/icons/pause';
 	import type { Chat, Participant } from '$lib/models/session';
 	import { selectedSession } from '$lib/store';
 	import { formatTime } from '$lib/time';
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
+	import { onMount } from 'svelte';
 
 	let {
 		socket = $bindable(),
@@ -30,9 +32,13 @@
 	let scrollArea: HTMLElement | null = $state(null);
 	let previousMessageCount = $state(0);
 	let chatInput = $state('');
-    let lastChatStatus: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing' = $state('writing');
+    let lastChatStatus: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing' | 'paused' = $state('sent');
 
-    function formatLastChatStatus(status: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing'): string {
+    // Track when the current status started
+    let statusStartTime = $state(new Date());
+    let elapsedTime = $state('');
+
+    function formatLastChatStatus(status: 'sent' | 'delivered' | 'read'): string {
         switch (status) {
             case 'sent':
                 return 'Sent';
@@ -40,10 +46,6 @@
                 return 'Delivered';
             case 'read':
                 return 'Read';
-            case 'thinking':
-                return 'Thinking...';
-            case 'writing':
-                return 'Writing...';
             default:
                 return 'Unknown';
         }
@@ -123,7 +125,7 @@
 
 	// Helper function to determine if status should be shown as a message
 	function isTypingStatus(status: string): boolean {
-		return status === 'thinking' || status === 'writing';
+		return status === 'thinking' || status === 'writing' || status === 'paused';
 	}
 
 	// Find assistant participant for typing indicators
@@ -160,6 +162,42 @@
 
 		chatInput = '';
 	}
+
+	// Format elapsed time in human-readable format
+	function formatElapsedTime(startTime: Date): string {
+		const elapsed = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+
+		const hours = Math.floor(elapsed / 3600);
+		const minutes = Math.floor((elapsed % 3600) / 60);
+		const seconds = elapsed % 60;
+
+		let result = '';
+		if (hours > 0) result += `${hours}h `;
+		if (minutes > 0 || hours > 0) result += `${minutes}m `;
+		result += `${seconds}s`;
+
+		return result;
+	}
+
+	// Update status start time when status changes
+	$effect(() => {
+		statusStartTime = new Date();
+	});
+
+	// Update elapsed time every second
+	let timer: number;
+
+	onMount(() => {
+		timer = window.setInterval(() => {
+			if (isTypingStatus(lastChatStatus)) {
+				elapsedTime = formatElapsedTime(statusStartTime);
+			}
+		}, 1000);
+
+		return () => {
+			clearInterval(timer);
+		};
+	});
 </script>
 
 <style>
@@ -210,7 +248,7 @@
 			</div>
 		{/each}
 
-		<!-- Display thinking/writing status as a chat message -->
+		<!-- Display thinking/writing/paused status as a chat message -->
 		{#if isTypingStatus(lastChatStatus)}
 			{@const assistant = getAssistantParticipant()}
 			<div class="mb-4 flex space-x-4">
@@ -232,15 +270,28 @@
 										<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 									</svg>
 								</div>
-							{:else}
+							{:else if lastChatStatus === 'writing'}
 								<!-- Bouncing dots animation for writing status -->
 								<div class="flex space-x-1">
 									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 0ms;"></div>
 									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 150ms;"></div>
 									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 300ms;"></div>
 								</div>
+							{:else if lastChatStatus === 'paused'}
+								<!-- Pause icon for paused status -->
+								<div class="flex h-5 w-5 items-center justify-center">
+									<Pause class="h-4 w-4 text-muted-foreground" />
+								</div>
 							{/if}
-							<span class="ml-3 text-sm text-muted-foreground">{formatLastChatStatus(lastChatStatus)}</span>
+							<span class="ml-3 text-sm text-muted-foreground">
+								{#if lastChatStatus === 'thinking'}
+									Thinking for {elapsedTime}...
+								{:else if lastChatStatus === 'writing'}
+									Writing for {elapsedTime}...
+								{:else if lastChatStatus === 'paused'}
+									Paused for {elapsedTime}
+								{/if}
+							</span>
 						</div>
 					</div>
 				</div>
