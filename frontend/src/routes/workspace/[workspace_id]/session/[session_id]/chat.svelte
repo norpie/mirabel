@@ -8,54 +8,82 @@
 	import Paperclip from 'lucide-svelte/icons/paperclip';
 	import type { Chat, Participant } from '$lib/models/session';
 	import { selectedSession } from '$lib/store';
-    import { formatTime } from '$lib/time';
+	import { formatTime } from '$lib/time';
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
 
-	let { socket = $bindable(), chat }: {
-        socket: SessionSocketHandler | undefined,
-        chat: Chat | undefined
-    } = $props();
+	let {
+		socket = $bindable(),
+        socketStatus = $bindable(),
+		chat
+	}: {
+		socket: SessionSocketHandler | undefined;
+        socketStatus: 'open' | 'closed' | 'error';
+		chat: Chat | undefined;
+	} = $props();
 
-    let initialLoad = $state(true);
+    $effect(() => {
+    });
 
-    let scrollArea: HTMLElement | null = $state(null);
-    let previousMessageCount = $state(0);
+	let socketStatusStyle = $derived(getSocketStatusStyle(socketStatus));
+
+    $inspect(socketStatus, socketStatusStyle);
+
+	let initialLoad = $state(true);
+
+	let scrollArea: HTMLElement | null = $state(null);
+	let previousMessageCount = $state(0);
 	let chatInput = $state('');
 
-    // Function to check if we're near the bottom of the scroll area
-    function isNearBottom(): boolean {
-        if (!scrollArea) return true;
+	// Function to check if we're near the bottom of the scroll area
+	function isNearBottom(): boolean {
+		if (!scrollArea) return true;
 
-        const { scrollTop, scrollHeight, clientHeight } = scrollArea;
-        // If we're within half a viewport of the bottom
-        return scrollTop + clientHeight >= scrollHeight - clientHeight / 2;
-    }
+		const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+		// If we're within half a viewport of the bottom
+		return scrollTop + clientHeight >= scrollHeight - clientHeight / 2;
+	}
 
-    // Effect to handle auto-scrolling when new messages arrive
-    $effect(() => {
-        if (!chat || !scrollArea) return;
+	// Effect to handle auto-scrolling when new messages arrive
+	$effect(() => {
+		if (!chat || !scrollArea) return;
 
-        const currentMessageCount = chat.messages.length;
+		const currentMessageCount = chat.messages.length;
 
-        // If we have new messages
-        if (currentMessageCount > previousMessageCount || currentMessageCount > 0) {
-            // Always scroll on initial load, otherwise check position
-            const shouldScroll = initialLoad || isNearBottom();
+		// If we have new messages
+		if (currentMessageCount > previousMessageCount || currentMessageCount > 0) {
+			// Always scroll on initial load, otherwise check position
+			const shouldScroll = initialLoad || isNearBottom();
 
-            if (shouldScroll) {
-                // Use setTimeout to ensure DOM is updated before scrolling
-                setTimeout(() => {
-                    scrollArea?.scrollTo(0, scrollArea.scrollHeight);
-                }, 0);
-            }
+			if (shouldScroll) {
+				// Use setTimeout to ensure DOM is updated before scrolling
+				setTimeout(() => {
+					scrollArea?.scrollTo(0, scrollArea.scrollHeight);
+				}, 0);
+			}
 
-            // Update the message count and mark initial load as complete
-            previousMessageCount = currentMessageCount;
-            initialLoad = false;
-        }
-    });
+			// Update the message count and mark initial load as complete
+			previousMessageCount = currentMessageCount;
+			initialLoad = false;
+		}
+	});
+
+	function getSocketStatusStyle(status: 'open' | 'closed' | 'error'): {
+		color: string;
+		title: string;
+	} {
+		switch (status) {
+			case 'open':
+				return { color: 'bg-green-500', title: 'Connection established' };
+			case 'closed':
+				return { color: 'bg-amber-500', title: 'Connection closed' };
+			case 'error':
+				return { color: 'bg-red-500', title: 'Connection error' };
+			default:
+				return { color: 'bg-gray-500', title: 'Unknown status' };
+		}
+	}
 
 	function messageAuthor(participantId: string): Participant {
 		return (
@@ -95,38 +123,47 @@
 <ScrollArea
 	id="chat-messages"
 	class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2 pb-0"
-    bind:viewportRef={scrollArea}
+	bind:viewportRef={scrollArea}
 >
-    {#if chat}
-	{#each chat.messages as msg}
-	{@const participant = messageAuthor(msg.participant)}
-		<div class="mb-4 flex space-x-4">
-			<Avatar.Root class="h-8 w-8 rounded-lg">
-				{#if participant.user}
-					<Avatar.Image src={participant.avatar} alt={`${participant.name}'s avatar`} />
-					<Avatar.Fallback class="rounded-lg"></Avatar.Fallback>
-				{:else}
-					<Avatar.Image src={Mirabel} alt={`${participant.name}'s avatar`} />
-					<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
-				{/if}
-			</Avatar.Root>
-			<div class="flex flex-col">
-				<div class="flex items-center gap-2">
-					<p class="font-normal leading-none">{participant.name}</p>
-					<p class="text-xs font-light leading-none text-muted-foreground overflow-hidden whitespace-nowrap">
-						{formatTime(msg.timestamp)}
-					</p>
-				</div>
-				<div class="pb-2 pt-2">
-					<p class="font-light">{msg.message}</p>
+	{#if chat}
+		{#each chat.messages as msg}
+			{@const participant = messageAuthor(msg.participant)}
+			<div class="mb-4 flex space-x-4">
+				<Avatar.Root class="h-8 w-8 rounded-lg">
+					{#if participant.user}
+						<Avatar.Image src={participant.avatar} alt={`${participant.name}'s avatar`} />
+						<Avatar.Fallback class="rounded-lg"></Avatar.Fallback>
+					{:else}
+						<Avatar.Image src={Mirabel} alt={`${participant.name}'s avatar`} />
+						<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
+					{/if}
+				</Avatar.Root>
+				<div class="flex flex-col">
+					<div class="flex items-center gap-2">
+						<p class="font-normal leading-none">{participant.name}</p>
+						<p
+							class="overflow-hidden whitespace-nowrap text-xs font-light leading-none text-muted-foreground"
+						>
+							{formatTime(msg.timestamp)}
+						</p>
+					</div>
+					<div class="pb-2 pt-2">
+						<p class="font-light">{msg.message}</p>
+					</div>
 				</div>
 			</div>
-		</div>
-	{/each}
-    {/if}
+		{/each}
+	{/if}
 </ScrollArea>
 
-<div id="chat-input" class="m-2 mt-2 flex flex-row rounded-lg bg-secondary p-2">
+<div id="chat-input" class="relative m-2 mt-2 flex flex-row rounded-lg bg-secondary p-2">
+	{#if socket}
+		<div
+			class="absolute left-1 top-1 h-3 w-3 rounded-full border border-secondary {socketStatusStyle.color}"
+			title={socketStatusStyle.title}
+		></div>
+	{/if}
+
 	<Textarea
 		class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
 		placeholder="Type your message here..."

@@ -38,6 +38,7 @@
 
 	let { data }: PageProps = $props();
 	let socket: SessionSocketHandler | undefined = $state();
+    let socketStatus: 'open' | 'closed' | 'error' = $state('closed');
 
 	onMount(async () => {
 		console.log('Mounting session page with data:', data);
@@ -53,8 +54,12 @@
             chat = $selectedSession.chat;
 		}
 
-		socket = new SessionSocketHandler(connectWebSocket('v1/' + 'session/' + $selectedSession?.id));
+		socket = new SessionSocketHandler(connectWebSocket('v1/' + 'session/' + $selectedSession?.id), socketStateHandler);
 	});
+
+    function socketStateHandler(status: 'open' | 'closed' | 'error') {
+        socketStatus = status;
+    }
 
 	onDestroy(async () => {
 		if (!socket) return;
@@ -82,7 +87,7 @@
 						<ChevronsRight />
 					</button>
 				{:else}
-					<Chat {socket} {chat} />
+					<Chat {socket} {socketStatus} {chat} />
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />
