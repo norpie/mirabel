@@ -17,6 +17,7 @@ type EventType = keyof EventTypeMap;
 
 export class SessionSocketHandler {
     socket: WebSocket;
+    status: "open" | "closed" | "error" = "closed";
     stateHandler: (status: "open" | "closed" | "error") => void;
     handlers: { [K in EventType]?: ((data: EventTypeMap[K]) => void)[] } = {};
     private url: string;
@@ -45,6 +46,11 @@ export class SessionSocketHandler {
         }, 3000);
     }
 
+    private setState(status: "open" | "closed" | "error"): void {
+        this.status = status;
+        this.stateHandler(status);
+    }
+
     addHandler<T extends EventType>(event: T, handler: (data: EventTypeMap[T]) => void): void {
         if (!this.handlers[event]) {
             this.handlers[event] = [];
@@ -54,13 +60,13 @@ export class SessionSocketHandler {
 
     listen(): void {
         this.socket.onopen = () => {
-            this.stateHandler("open");
+            this.setState("open");
         };
         this.socket.onclose = () => {
-            this.stateHandler("closed");
+            this.setState("closed");
         };
         this.socket.onerror = (error: Event) => {
-            this.stateHandler("error");
+            this.setState("error");
             console.error("WebSocket error:", error);
             this.reconnect();
         };
