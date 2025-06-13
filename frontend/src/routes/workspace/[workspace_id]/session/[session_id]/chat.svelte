@@ -23,18 +23,31 @@
 		chat: Chat | undefined;
 	} = $props();
 
-    $effect(() => {
-    });
-
 	let socketStatusStyle = $derived(getSocketStatusStyle(socketStatus));
-
-    $inspect(socketStatus, socketStatusStyle);
 
 	let initialLoad = $state(true);
 
 	let scrollArea: HTMLElement | null = $state(null);
 	let previousMessageCount = $state(0);
 	let chatInput = $state('');
+    let lastChatStatus: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing' = $state('writing');
+
+    function formatLastChatStatus(status: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing'): string {
+        switch (status) {
+            case 'sent':
+                return 'Sent';
+            case 'delivered':
+                return 'Delivered';
+            case 'read':
+                return 'Read';
+            case 'thinking':
+                return 'Thinking...';
+            case 'writing':
+                return 'Writing...';
+            default:
+                return 'Unknown';
+        }
+    }
 
 	// Function to check if we're near the bottom of the scroll area
 	function isNearBottom(): boolean {
@@ -95,6 +108,35 @@
 		);
 	}
 
+	// Function to find the last user message
+	function isLastUserMessage(msg: any, index: number): boolean {
+		if (!chat) return false;
+
+		// Check if this is a user message
+		const participant = messageAuthor(msg.participant);
+		if (!participant.user) return false;
+
+		// Is this the last user message in the list?
+		const userMessages = chat.messages.filter(m => messageAuthor(m.participant).user);
+		return userMessages[userMessages.length - 1] === msg;
+	}
+
+	// Helper function to determine if status should be shown as a message
+	function isTypingStatus(status: string): boolean {
+		return status === 'thinking' || status === 'writing';
+	}
+
+	// Find assistant participant for typing indicators
+	function getAssistantParticipant(): Participant {
+		return (
+			$selectedSession?.participants.find((p) => !p.user) ?? {
+				id: 'assistant',
+				name: 'Mirabel',
+				user: false
+			}
+		);
+	}
+
 	async function sendMessage() {
 		if (!chatInput.trim()) return;
 
@@ -120,13 +162,24 @@
 	}
 </script>
 
+<style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .spinner {
+        animation: spin 1.5s linear infinite;
+    }
+</style>
+
 <ScrollArea
 	id="chat-messages"
 	class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2 pb-0"
 	bind:viewportRef={scrollArea}
 >
 	{#if chat}
-		{#each chat.messages as msg}
+		{#each chat.messages as msg, index}
 			{@const participant = messageAuthor(msg.participant)}
 			<div class="mb-4 flex space-x-4">
 				<Avatar.Root class="h-8 w-8 rounded-lg">
@@ -149,10 +202,50 @@
 					</div>
 					<div class="pb-2 pt-2">
 						<p class="font-light">{msg.message}</p>
+						{#if isLastUserMessage(msg, index) && !isTypingStatus(lastChatStatus)}
+							<p class="text-xs text-muted-foreground mt-1">{formatLastChatStatus(lastChatStatus)}</p>
+						{/if}
 					</div>
 				</div>
 			</div>
 		{/each}
+
+		<!-- Display thinking/writing status as a chat message -->
+		{#if isTypingStatus(lastChatStatus)}
+			{@const assistant = getAssistantParticipant()}
+			<div class="mb-4 flex space-x-4">
+				<Avatar.Root class="h-8 w-8 rounded-lg">
+					<Avatar.Image src={Mirabel} alt={`${assistant.name}'s avatar`} />
+					<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
+				</Avatar.Root>
+				<div class="flex flex-col">
+					<div class="flex items-center gap-2">
+						<p class="font-normal leading-none">{assistant.name}</p>
+					</div>
+					<div class="pb-2 pt-2">
+						<div class="flex items-center">
+							{#if lastChatStatus === 'thinking'}
+								<!-- Spinning animation for thinking status -->
+								<div class="flex h-5 w-5 items-center justify-center">
+									<svg class="spinner h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+										<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+										<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+									</svg>
+								</div>
+							{:else}
+								<!-- Bouncing dots animation for writing status -->
+								<div class="flex space-x-1">
+									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 0ms;"></div>
+									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 150ms;"></div>
+									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 300ms;"></div>
+								</div>
+							{/if}
+							<span class="ml-3 text-sm text-muted-foreground">{formatLastChatStatus(lastChatStatus)}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </ScrollArea>
 
