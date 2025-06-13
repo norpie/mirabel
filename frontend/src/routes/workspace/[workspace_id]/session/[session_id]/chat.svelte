@@ -8,6 +8,7 @@
 	import Paperclip from 'lucide-svelte/icons/paperclip';
 	import type { Chat, Participant } from '$lib/models/session';
 	import { selectedSession } from '$lib/store';
+    import { formatTime } from '$lib/time';
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
@@ -17,67 +18,44 @@
         chat: Chat | undefined
     } = $props();
 
+    let initialLoad = $state(true);
+
     let scrollArea: HTMLElement | null = $state(null);
     let previousMessageCount = $state(0);
-    let initialLoad = $state(true);
-    
+	let chatInput = $state('');
+
     // Function to check if we're near the bottom of the scroll area
     function isNearBottom(): boolean {
         if (!scrollArea) return true;
-        
+
         const { scrollTop, scrollHeight, clientHeight } = scrollArea;
         // If we're within half a viewport of the bottom
         return scrollTop + clientHeight >= scrollHeight - clientHeight / 2;
     }
-    
+
     // Effect to handle auto-scrolling when new messages arrive
     $effect(() => {
         if (!chat || !scrollArea) return;
-        
+
         const currentMessageCount = chat.messages.length;
-        
+
         // If we have new messages
         if (currentMessageCount > previousMessageCount || currentMessageCount > 0) {
             // Always scroll on initial load, otherwise check position
             const shouldScroll = initialLoad || isNearBottom();
-            
+
             if (shouldScroll) {
                 // Use setTimeout to ensure DOM is updated before scrolling
                 setTimeout(() => {
                     scrollArea?.scrollTo(0, scrollArea.scrollHeight);
                 }, 0);
             }
-            
+
             // Update the message count and mark initial load as complete
             previousMessageCount = currentMessageCount;
             initialLoad = false;
         }
     });
-
-	let chatInput = $state('');
-
-	function formatTime(iso8601: string): string {
-		const date = new Date(iso8601);
-		const now = new Date();
-		const sameDay = date.toDateString() === now.toDateString();
-
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
-
-		if (!sameDay) {
-			const day = date.getDate();
-			const month = date.toLocaleString('default', { month: 'short' });
-			const year = date.getFullYear();
-
-			if (year !== now.getFullYear()) {
-				return `${month} ${day}, ${year}, ${hours}:${minutes}`;
-			}
-
-			return `${month} ${day}, ${hours}:${minutes}`;
-		}
-
-		return `${hours}:${minutes}`;
-	}
 
 	function messageAuthor(participantId: string): Participant {
 		return (
