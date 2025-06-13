@@ -315,6 +315,7 @@
 		onkeydown={(e) => {
 			if (e.key === 'Enter' && !e.shiftKey) {
 				sendMessage();
+                e.preventDefault();
 			}
 		}}
 	/>
