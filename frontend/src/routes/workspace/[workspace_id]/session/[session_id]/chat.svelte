@@ -17,20 +17,43 @@
         chat: Chat | undefined
     } = $props();
 
-    let initialized = $state(false);
-
+    let scrollArea: HTMLElement | null = $state(null);
+    let previousMessageCount = $state(0);
+    let initialLoad = $state(true);
+    
+    // Function to check if we're near the bottom of the scroll area
+    function isNearBottom(): boolean {
+        if (!scrollArea) return true;
+        
+        const { scrollTop, scrollHeight, clientHeight } = scrollArea;
+        // If we're within half a viewport of the bottom
+        return scrollTop + clientHeight >= scrollHeight - clientHeight / 2;
+    }
+    
+    // Effect to handle auto-scrolling when new messages arrive
     $effect(() => {
-        if (initialized) {
-            return;
+        if (!chat || !scrollArea) return;
+        
+        const currentMessageCount = chat.messages.length;
+        
+        // If we have new messages
+        if (currentMessageCount > previousMessageCount || currentMessageCount > 0) {
+            // Always scroll on initial load, otherwise check position
+            const shouldScroll = initialLoad || isNearBottom();
+            
+            if (shouldScroll) {
+                // Use setTimeout to ensure DOM is updated before scrolling
+                setTimeout(() => {
+                    scrollArea?.scrollTo(0, scrollArea.scrollHeight);
+                }, 0);
+            }
+            
+            // Update the message count and mark initial load as complete
+            previousMessageCount = currentMessageCount;
+            initialLoad = false;
         }
-        if (!chat) {
-            return;
-        }
-        initialized = true;
-        scrollArea?.scrollTo(0, scrollArea.scrollHeight);
     });
 
-    let scrollArea: HTMLElement | null = $state(null);
 	let chatInput = $state('');
 
 	function formatTime(iso8601: string): string {
