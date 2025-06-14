@@ -17,25 +17,30 @@
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 
-	let { tab, plan, spec, terminal }: { tab: string; plan: any; spec: string, terminal: string } = $props();
+	let { tab, plan, spec, terminal }: { tab: string; plan: any; spec: string; terminal: string[] } =
+		$props();
 
 	let auto = $state(false);
 </script>
 
 <Tabs.Root bind:value={tab} class="m-2 flex h-full flex-col">
-	<div class="flex flex-row justify-end">
-		<div class="flex flex-row gap-3">
-			<Toggle bind:pressed={auto}>Auto</Toggle>
-			<Separator orientation="vertical" />
-			<Tabs.List class="justify-evenly bg-transparent">
+	<div class="relative w-full" style="height: 40px; overflow: hidden;">
+		<div class="absolute inset-0 overflow-x-auto" style="overflow-y: hidden;">
+			<Tabs.List class="flex h-full w-max flex-nowrap bg-transparent">
 				<Tabs.Trigger value="spec" class="gap-2">
 					<SquareChartGantt class="h-4 w-4" />
-					<p>Spec</p></Tabs.Trigger
-				>
+					<p>Spec</p>
+				</Tabs.Trigger>
 				<Tabs.Trigger value="plan" class="gap-2">
 					<ListTree class="h-4 w-4" />
-					<p>Plan</p></Tabs.Trigger
-				>
+					<p>Plan</p>
+				</Tabs.Trigger>
+				<Tabs.Trigger value="actions" class="gap-2">
+					<History class="h-4 w-4" />
+					<p>Actions</p>
+				</Tabs.Trigger>
+				<Toggle bind:pressed={auto}>Auto</Toggle>
+				<Separator orientation="vertical" />
 				<Tabs.Trigger value="terminal" class="gap-2">
 					<SquareTerminal class="h-4 w-4" />
 					<p>Terminal</p>
@@ -48,18 +53,12 @@
 					<Globe class="h-4 w-4" />
 					<p>Browser</p>
 				</Tabs.Trigger>
-				<Tabs.Trigger value="actions" class="gap-2">
-					<History class="h-4 w-4" />
-					<p>Actions</p>
-				</Tabs.Trigger>
 			</Tabs.List>
 		</div>
 	</div>
+
 	{#if tab === 'spec'}
-		<Tabs.Content
-			value="spec"
-			class="h-full flex-1 flex-col rounded-xl bg-secondary md:min-h-min"
-		>
+		<Tabs.Content value="spec" class="h-full flex-1 flex-col rounded-xl bg-secondary md:min-h-min">
 			<div class="flex h-full flex-col">
 				<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
 					<Markdown bind:markdown={spec} />
@@ -69,11 +68,8 @@
 	{/if}
 
 	{#if tab === 'plan'}
-		<Tabs.Content
-			value="plan"
-			class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
-		>
-			<Plan bind:plan={plan} />
+		<Tabs.Content value="plan" class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min">
+			<Plan bind:plan />
 		</Tabs.Content>
 	{/if}
 
@@ -89,7 +85,7 @@
 	{#if tab === 'file'}
 		<Tabs.Content
 			value="file"
-			class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min"
+			class="svelte-flow-clipping h-full overflow-hidden rounded-xl md:min-h-min"
 		>
 			<File />
 		</Tabs.Content>
@@ -98,7 +94,7 @@
 	{#if tab === 'browser'}
 		<Tabs.Content
 			value="browser"
-			class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min"
+			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 		>
 			<Browser />
 		</Tabs.Content>
@@ -107,7 +103,7 @@
 	{#if tab === 'actions'}
 		<Tabs.Content
 			value="actions"
-			class="h-full flex-1 rounded-xl bg-primary-foreground md:min-h-min"
+			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 		></Tabs.Content>
 	{/if}
 </Tabs.Root>

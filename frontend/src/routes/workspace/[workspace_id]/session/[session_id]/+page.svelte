@@ -24,7 +24,7 @@
 	const chatSize = 40;
 	const workSize = 100 - chatSize;
 
-	let tab = $state('spec');
+	let tab = $state('file');
 
 	let spec: string = $state("");
 	let chat: ChatModel | undefined = $state();
@@ -69,7 +69,7 @@
 	});
 </script>
 
-<div class="h-full flex-1 rounded-xl bg-primary md:min-h-min">
+<div class="h-full rounded-xl bg-primary md:min-h-min">
 	{#if $selectedSession}
 		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane
@@ -81,7 +81,7 @@
 			>
 				{#if sessionPane?.getSize() < hideSize}
 					<button
-						class="flex h-full w-[100%] items-center justify-center rounded-l-xl transition-colors hover:bg-secondary"
+						class="flex h-full w-full items-center justify-center rounded-l-xl transition-colors hover:bg-secondary"
 						onclick={() => reset()}
 					>
 						<ChevronsRight />
@@ -99,7 +99,7 @@
 			>
 				{#if workPane?.getSize() < hideSize}
 					<button
-						class="flex h-full w-[100%] items-center justify-center rounded-r-xl transition-colors hover:bg-secondary"
+						class="flex h-full w-full items-center justify-center rounded-r-xl transition-colors hover:bg-secondary"
 						onclick={() => reset()}
 					>
 						<ChevronsLeft />
