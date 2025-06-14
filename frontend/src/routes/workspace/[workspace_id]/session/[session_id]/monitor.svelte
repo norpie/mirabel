@@ -17,7 +17,7 @@
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 
-	let { tab, plan, spec, terminal }: { tab: string; plan: any; spec: string; terminal: string[] } =
+	let { tab = $bindable(), plan, spec, terminal }: { tab: string; plan: any; spec: string; terminal: string[] } =
 		$props();
 
 	let auto = $state(false);
@@ -73,7 +73,7 @@
 	{#if tab === 'spec'}
 		<Tabs.Content value="spec" class="h-full flex-1 flex-col rounded-xl bg-secondary md:min-h-min">
 			<div class="flex h-full flex-col">
-				<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4">
+				<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4" thumbClass="bg-zinc-600" >
 					<Markdown bind:markdown={spec} />
 				</ScrollArea>
 			</div>

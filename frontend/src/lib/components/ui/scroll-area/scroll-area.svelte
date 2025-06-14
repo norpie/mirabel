@@ -10,6 +10,7 @@
 		orientation = "vertical",
 		scrollbarXClasses = "",
 		scrollbarYClasses = "",
+        thumbClass = "",
 		children,
 		...restProps
 	}: WithoutChild<ScrollAreaPrimitive.RootProps> & {
@@ -17,6 +18,7 @@
 		orientation?: "vertical" | "horizontal" | "both" | undefined;
 		scrollbarXClasses?: string | undefined;
 		scrollbarYClasses?: string | undefined;
+        thumbClass?: string | undefined;
 	} = $props();
 </script>
 
@@ -25,10 +27,10 @@
 		{@render children?.()}
 	</ScrollAreaPrimitive.Viewport>
 	{#if orientation === "vertical" || orientation === "both"}
-		<Scrollbar orientation="vertical" class={scrollbarYClasses} />
+		<Scrollbar orientation="vertical" {thumbClass} class={scrollbarYClasses} />
 	{/if}
 	{#if orientation === "horizontal" || orientation === "both"}
-		<Scrollbar orientation="horizontal" class={scrollbarXClasses} />
+		<Scrollbar orientation="horizontal" {thumbClass} class={scrollbarXClasses} />
 	{/if}
 	<ScrollAreaPrimitive.Corner />
 </ScrollAreaPrimitive.Root>

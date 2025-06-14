@@ -5,6 +5,7 @@
 	let {
 		ref = $bindable(null),
 		class: className,
+        thumbClass = "",
 		orientation = "vertical",
 		children,
 		...restProps
@@ -24,6 +25,6 @@
 >
 	{@render children?.()}
 	<ScrollAreaPrimitive.Thumb
-		class={cn("bg-border relative rounded-full", orientation === "vertical" && "flex-1")}
+		class={cn("bg-border relative rounded-full", thumbClass, orientation === "vertical" && "flex-1")}
 	/>
 </ScrollAreaPrimitive.Scrollbar>

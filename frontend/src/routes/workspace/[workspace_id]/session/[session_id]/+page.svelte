@@ -24,7 +24,7 @@
 	const chatSize = 40;
 	const workSize = 100 - chatSize;
 
-	let tab = $state('file');
+	let tab = $state('spec');
 
 	let spec: string = $state("");
 	let chat: ChatModel | undefined = $state();
@@ -105,7 +105,7 @@
 						<ChevronsLeft />
 					</button>
 				{:else}
-					<Monitor {tab} {plan} {spec} {terminal} />
+					<Monitor bind:tab {plan} {spec} {terminal} />
 				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
