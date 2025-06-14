@@ -64,6 +64,7 @@ export class SessionSocketHandler {
         };
         this.socket.onclose = () => {
             this.setState("closed");
+            this.reconnect();
         };
         this.socket.onerror = (error: Event) => {
             this.setState("error");
