@@ -26,33 +26,40 @@
 <Tabs.Root bind:value={tab} class="m-2 flex h-full flex-col">
 	<div class="relative w-full" style="height: 40px; overflow: hidden;">
 		<div class="absolute inset-0 overflow-x-auto" style="overflow-y: hidden;">
-			<Tabs.List class="flex h-full w-max flex-nowrap bg-transparent">
-				<Tabs.Trigger value="spec" class="gap-2">
-					<SquareChartGantt class="h-4 w-4" />
-					<p>Spec</p>
-				</Tabs.Trigger>
-				<Tabs.Trigger value="plan" class="gap-2">
-					<ListTree class="h-4 w-4" />
-					<p>Plan</p>
-				</Tabs.Trigger>
-				<Tabs.Trigger value="actions" class="gap-2">
-					<History class="h-4 w-4" />
-					<p>Actions</p>
-				</Tabs.Trigger>
-				<Toggle bind:pressed={auto}>Auto</Toggle>
-				<Separator orientation="vertical" />
-				<Tabs.Trigger value="terminal" class="gap-2">
-					<SquareTerminal class="h-4 w-4" />
-					<p>Terminal</p>
-				</Tabs.Trigger>
-				<Tabs.Trigger value="file" class="gap-2">
-					<FileStack class="h-4 w-4" />
-					<p>File</p>
-				</Tabs.Trigger>
-				<Tabs.Trigger value="browser" class="gap-2">
-					<Globe class="h-4 w-4" />
-					<p>Browser</p>
-				</Tabs.Trigger>
+			<Tabs.List class="flex h-full w-full flex-nowrap justify-between bg-transparent">
+				<!-- Left group -->
+				<div class="flex flex-nowrap gap-2">
+					<Tabs.Trigger value="spec" class="gap-2">
+						<SquareChartGantt class="h-4 w-4" />
+						<p>Spec</p>
+					</Tabs.Trigger>
+					<Tabs.Trigger value="plan" class="gap-2">
+						<ListTree class="h-4 w-4" />
+						<p>Plan</p>
+					</Tabs.Trigger>
+					<Tabs.Trigger value="actions" class="gap-2">
+						<History class="h-4 w-4" />
+						<p>Actions</p>
+					</Tabs.Trigger>
+				</div>
+
+				<!-- Right group -->
+				<div class="flex flex-nowrap gap-2">
+					<Toggle bind:pressed={auto}>Auto</Toggle>
+					<Separator orientation="vertical" />
+					<Tabs.Trigger value="terminal" class="gap-2">
+						<SquareTerminal class="h-4 w-4" />
+						<p>Terminal</p>
+					</Tabs.Trigger>
+					<Tabs.Trigger value="file" class="gap-2">
+						<FileStack class="h-4 w-4" />
+						<p>File</p>
+					</Tabs.Trigger>
+					<Tabs.Trigger value="browser" class="gap-2">
+						<Globe class="h-4 w-4" />
+						<p>Browser</p>
+					</Tabs.Trigger>
+				</div>
 			</Tabs.List>
 		</div>
 	</div>
