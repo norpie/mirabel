@@ -21,9 +21,15 @@
 		$props();
 
 	let auto = $state(false);
+
+    function onTabChange() {
+        if(auto) {
+            auto = false;
+        }
+    }
 </script>
 
-<Tabs.Root bind:value={tab} class="m-2 flex h-full flex-col">
+<Tabs.Root bind:value={tab} onValueChange={onTabChange} class="m-2 flex h-full flex-col">
 	<div class="relative w-full" style="height: 40px; overflow: hidden;">
 		<div class="absolute inset-0 overflow-x-auto" style="overflow-y: hidden;">
 			<Tabs.List class="flex h-full w-full flex-nowrap justify-between bg-transparent">
@@ -92,7 +98,7 @@
 	{#if tab === 'file'}
 		<Tabs.Content
 			value="file"
-			class="svelte-flow-clipping h-full overflow-hidden rounded-xl md:min-h-min"
+			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 		>
 			<File />
 		</Tabs.Content>
