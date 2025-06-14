@@ -1,5 +1,5 @@
 use crate::{
-    dto::session::SessionEvent, model::user::User, prelude::*, service::sessions::SessionService,
+    dto::session::event::SessionEvent, model::user::User, prelude::*, service::sessions::SessionService,
 };
 
 use actix_web::{

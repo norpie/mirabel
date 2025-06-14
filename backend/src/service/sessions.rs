@@ -1,10 +1,10 @@
-use crate::{dto::session::{AcknowledgmentType, SessionEventContent}, prelude::*, repository::RepositoryProvider};
+use crate::{dto::session::event::{AcknowledgmentType, SessionEventContent}, prelude::*, repository::RepositoryProvider};
 
 use actix_web::web::Data;
 use chrono::Utc;
 use log::debug;
 
-use crate::{dto::session::SessionEvent, model::user::User};
+use crate::{dto::session::event::SessionEvent, model::user::User};
 
 pub struct SessionService {
     repository: Data<RepositoryProvider>,

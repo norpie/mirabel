@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct Chat {
     id: String,
     participants: Vec<ChatParticipant>,
+    messages: Vec<ChatMessage>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
