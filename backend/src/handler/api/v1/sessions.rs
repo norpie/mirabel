@@ -63,11 +63,13 @@ pub async fn session_socket(
                     }
                 }
                 Message::Close(_reason) => {
+                    debug!("WebSocket connection closed for session: {}", session_id);
                     break;
                 }
                 _ => {}
             }
         }
+        debug!("WebSocket loop ended for session: {}", session_id);
     });
 
     Ok(res)
