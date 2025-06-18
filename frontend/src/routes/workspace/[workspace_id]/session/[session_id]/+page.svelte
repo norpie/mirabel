@@ -41,31 +41,24 @@
     let socketStatus: 'open' | 'closed' | 'error' = $state('closed');
 
 	onMount(async () => {
-		console.log('Mounting session page with data:', data);
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
 
-		// Update local state variables from selectedSession when it changes
 		if ($selectedSession) {
 			spec = $selectedSession.plan.spec;
 			plan = $selectedSession.plan;
             terminal = $selectedSession.terminal;
             chat = $selectedSession.chat;
+			socket = connectWebSocket('v1/' + 'session/' + $selectedSession.id, undefined, (status) => {
+				socketStatus = status;
+			});
 		}
-
-		socket = new SessionSocketHandler(connectWebSocket('v1/' + 'session/' + $selectedSession?.id), socketStateHandler);
 	});
-
-    function socketStateHandler(status: 'open' | 'closed' | 'error') {
-        socketStatus = status;
-    }
 
 	onDestroy(async () => {
 		if (!socket) return;
-		console.log('Cleaning up WebSocket connection');
 		socket.close();
-        socket = undefined;
 	});
 </script>
 

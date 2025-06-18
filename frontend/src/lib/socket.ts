@@ -1,4 +1,5 @@
 import type { SessionEvent, SessionContent, MessageContent, AgentActionContent, AgentPromptContent, UserPromptResponseContent, AgentNewTaskEvent, AgentTaskEvent, AgentSpecUpdateEvent, AgentTerminalContentEvent } from "./models/event";
+import { toast } from 'svelte-sonner';
 
 // Type mapping from event type strings to their corresponding content types
 type EventTypeMap = {
@@ -14,86 +15,113 @@ type EventTypeMap = {
 
 // Valid event type keys
 type EventType = keyof EventTypeMap;
+type ConnectionStatus = "open" | "closed" | "error";
 
 export class SessionSocketHandler {
     socket: WebSocket;
-    status: "open" | "closed" | "error" = "closed";
-    stateHandler: (status: "open" | "closed" | "error") => void;
-    handlers: { [K in EventType]?: ((data: EventTypeMap[K]) => void)[] } = {};
+    status: ConnectionStatus = "closed";
     private url: string;
-
-    constructor(socket: WebSocket, stateHandler?: (status: "open" | "closed" | "error") => void) {
-        this.socket = socket;
-        if (!stateHandler) {
-            this.stateHandler = (status: string) => {console.log(`WebSocket state changed: ${status}`); };
-        } else {
-            this.stateHandler = stateHandler;
-        }
-        this.url = socket.url;
+    private shouldReconnect = true;
+    private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+    private toastId?: string | number;
+    public isReconnecting = false;
+    private isLeavingPage = false;
+    
+    handlers: { [K in EventType]?: ((data: EventTypeMap[K]) => void)[] } = {};
+    
+    constructor(
+        url: string, 
+        private stateHandler: (status: ConnectionStatus) => void = (status) => console.log(`WebSocket state: ${status}`)
+    ) {
+        this.url = url;
+        this.socket = new WebSocket(url);
         this.listen();
     }
 
+    private setState(status: ConnectionStatus): void {
+        this.status = status;
+        this.stateHandler(status);
+        
+        if (this.isLeavingPage) return;
+        
+        if (status === 'open') {
+            this.isReconnecting = false;
+            if (this.toastId) {
+                toast.dismiss(this.toastId);
+                toast.success('Connection restored');
+                this.toastId = undefined;
+            }
+        } else if (!this.toastId) {
+            this.isReconnecting = true;
+            this.toastId = toast.error('Connection lost', {
+                description: 'The connection to the server was lost.'
+            });
+        }
+    }
+
     private reconnect(): void {
-        console.log("Attempting to reconnect in 3 seconds...");
-        setTimeout(() => {
+        if (!this.shouldReconnect) return;
+
+        this.isReconnecting = true;
+        
+        this.reconnectTimeout = setTimeout(() => {
             try {
                 this.socket = new WebSocket(this.url);
                 this.listen();
             } catch (error) {
                 console.error("Reconnection failed:", error);
-                this.reconnect(); // Try again if failed
+                this.reconnect();
             }
         }, 3000);
     }
 
-    private setState(status: "open" | "closed" | "error"): void {
-        this.status = status;
-        this.stateHandler(status);
-    }
-
     addHandler<T extends EventType>(event: T, handler: (data: EventTypeMap[T]) => void): void {
-        if (!this.handlers[event]) {
-            this.handlers[event] = [];
-        }
+        this.handlers[event] ??= [];
         (this.handlers[event] as ((data: EventTypeMap[T]) => void)[]).push(handler);
     }
 
     listen(): void {
-        this.socket.onopen = () => {
-            this.setState("open");
-        };
-        this.socket.onclose = () => {
+        this.socket.onopen = () => this.setState("open");
+        
+        this.socket.onclose = (event) => {
             this.setState("closed");
-            this.reconnect();
+            if (event.code !== 1000) this.reconnect();
         };
-        this.socket.onerror = (error: Event) => {
-            this.setState("error");
-            console.error("WebSocket error:", error);
-            this.reconnect();
-        };
+        
+        this.socket.onerror = () => this.setState("error");
+        
         this.socket.onmessage = (e: MessageEvent) => {
             const event: SessionEvent = JSON.parse(e.data);
             const eventType = event.content.type as EventType;
-            const handlers = this.handlers[eventType];
-            if (handlers) {
-                for (const handler of handlers) {
-                    try {
-                        handler(event.content as any);
-                    } catch (error) {
-                        console.error("Error in handler for event", eventType, ":", error);
-                    }
+            
+            this.handlers[eventType]?.forEach(handler => {
+                try {
+                    handler(event.content as any);
+                } catch (error) {
+                    console.error(`Error in handler for ${eventType}:`, error);
                 }
-            }
+            });
         };
     }
 
     close(): void {
-        if (this.socket.readyState === WebSocket.OPEN) {
-            this.socket.close();
-            this.stateHandler("closed");
-        } else {
-            console.warn("WebSocket is not open, cannot close.");
+        this.shouldReconnect = false;
+        this.isLeavingPage = true;
+        
+        if (this.toastId) {
+            toast.dismiss(this.toastId);
+            this.toastId = undefined;
         }
+        
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+        
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.socket.close(1000, "Normal closure");
+        }
+        
         this.handlers = {};
     }
 
@@ -103,5 +131,17 @@ export class SessionSocketHandler {
         } else {
             console.warn("WebSocket is not open, cannot send data.");
         }
+    }
+    
+    manualReconnect(): void {
+        if (this.socket.readyState !== WebSocket.OPEN && 
+            this.socket.readyState !== WebSocket.CONNECTING) {
+            this.shouldReconnect = true;
+            this.reconnect();
+        }
+    }
+
+    isCurrentlyReconnecting(): boolean {
+        return this.isReconnecting;
     }
 }

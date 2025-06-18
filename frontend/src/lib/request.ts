@@ -1,5 +1,6 @@
 import { goto } from "$app/navigation";
 import type Result from "../models/result";
+import { SessionSocketHandler, type ConnectionStatus } from "./socket";
 
 // TODO: Get the URL from the environment
 const url = "http://localhost:8080/api";
@@ -25,7 +26,7 @@ function isPublicPath(endpoint: string): boolean {
   return publicPaths.some(path => endpoint.includes(path));
 }
 
-function connectWebSocket(path: string, body?: any): WebSocket {
+function connectWebSocket(path: string, body?: any, stateHandler?: (status: ConnectionStatus) => void): SessionSocketHandler {
     let endpoint = formatWebSocketEndpoint(path);
 
     // Format query parameters
@@ -50,7 +51,7 @@ function connectWebSocket(path: string, body?: any): WebSocket {
         query = query.slice(0, -1);
     }
 
-    return new WebSocket(endpoint + query);
+    return new SessionSocketHandler(endpoint + query, stateHandler);
 }
 
 async function request<T>(method: string, endpoint: string, body?: any): Promise<Result<T>> {
