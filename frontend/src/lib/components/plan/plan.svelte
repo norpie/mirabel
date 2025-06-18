@@ -91,6 +91,6 @@
 	onMount(layout);
 </script>
 
-<SvelteFlow class="font-mono" {nodes} {edges} colorMode={$mode} fitView {proOptions}>
+<SvelteFlow class="svelte-flow-clipping font-mono" {nodes} {edges} colorMode={$mode} fitView {proOptions}>
 	<Background variant={BackgroundVariant.Dots} />
 </SvelteFlow>

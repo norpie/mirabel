@@ -123,7 +123,7 @@
 
 
 <style>
-.svelte-flow-clipping {
+:global(.svelte-flow-clipping) {
     clip-path: inset(0 round 1rem);
 }
 </style>
