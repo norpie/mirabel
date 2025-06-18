@@ -15,7 +15,7 @@
 	const sidebar = useSidebar();
 </script>
 
-{#if $selectedWorkspace !== null && $sessions !== null}
+{#if $selectedWorkspace && $sessions}
 	<Sidebar.Group class="group-data-[collapsible=icon]:hidden">
 		<Sidebar.GroupLabel>Sessions</Sidebar.GroupLabel>
 		<Sidebar.Menu>
