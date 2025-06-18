@@ -101,7 +101,7 @@
     });
 </script>
 
-<div id="terminal" class="h-full w-full overflow-hidden"></div>
+<div id="terminal" class="flex h-full w-full overflow-hidden"></div>
 
 <style>
     /* Ensure the terminal container and xterm elements take full space */

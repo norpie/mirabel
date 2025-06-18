@@ -81,7 +81,7 @@
 	{/if}
 
 	{#if tab === 'plan'}
-		<Tabs.Content value="plan" class="h-full flex-1 overflow-hidden rounded-xl md:min-h-min">
+		<Tabs.Content value="plan" class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min">
 			<Plan bind:plan />
 		</Tabs.Content>
 	{/if}
@@ -120,3 +120,10 @@
 		></Tabs.Content>
 	{/if}
 </Tabs.Root>
+
+
+<style>
+.svelte-flow-clipping {
+    clip-path: inset(0 round 1rem);
+}
+</style>
