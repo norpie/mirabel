@@ -1,3 +1,5 @@
+use std::{sync::Arc, time::Duration};
+
 use crate::{
     dto::session::event::SessionEvent, model::user::User, prelude::*, service::sessions::SessionService,
 };
@@ -9,6 +11,7 @@ use actix_web::{
 use actix_ws::Message;
 use futures_util::StreamExt;
 use log::{error, debug};
+use tokio::{sync::Mutex, time::Instant};
 
 use crate::handler::middleware::auth_middleware::Auth;
 
@@ -26,6 +29,26 @@ pub async fn session_socket(
 ) -> Result<HttpResponse> {
     debug!("WebSocket connection for session: {}", session_id);
     let (res, mut session, mut msg_stream) = actix_ws::handle(&req, stream)?;
+
+    let alive = Arc::new(Mutex::new(Instant::now()));
+
+    let mut session2 = session.clone();
+    let alive2 = alive.clone();
+    actix_web::rt::spawn(async move {
+        let mut interval = actix_web::rt::time::interval(Duration::from_secs(5));
+
+        loop {
+            interval.tick().await;
+            if session2.ping(b"").await.is_err() {
+                break;
+            }
+
+            if Instant::now().duration_since(*alive2.lock().await) > Duration::from_secs(10) {
+                let _ = session2.close(None).await;
+                break;
+            }
+        }
+    });
 
     actix_web::rt::spawn(async move {
         while let Some(Ok(msg)) = msg_stream.next().await {
@@ -62,6 +85,9 @@ pub async fn session_socket(
                         break;
                     }
                 }
+                Message::Pong(_) => {
+                    *alive.lock().await = Instant::now();
+                }
                 Message::Close(_reason) => {
                     debug!("WebSocket connection closed for session: {}", session_id);
                     break;
@@ -69,6 +95,8 @@ pub async fn session_socket(
                 _ => {}
             }
         }
+
+        let _ = session.close(None).await;
         debug!("WebSocket loop ended for session: {}", session_id);
     });
 
