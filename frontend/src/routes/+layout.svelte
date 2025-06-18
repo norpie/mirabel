@@ -57,7 +57,7 @@
 </script>
 
 <ModeWatcher />
-<Toaster />
+<Toaster richColors expand position="top-center"/>
 
 {#if $user === undefined}
 	<div class="flex h-screen w-full items-center justify-center">
