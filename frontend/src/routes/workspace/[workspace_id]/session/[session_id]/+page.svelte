@@ -16,14 +16,14 @@
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { Chat as ChatModel, Plan } from '$lib/models/session';
 
-	let sessionPane: PaneAPI | undefined = $state();
-	let workPane: PaneAPI | undefined = $state();
+	let chatPane: PaneAPI | undefined = $state();
+	let monitorPane: PaneAPI | undefined = $state();
 
 	const minSize = 5;
     const maxSize = 100 - minSize;
 	const hideSize = 10;
 	const chatSize = 40;
-	const workSize = 100 - chatSize;
+	const monitorSize = 100 - chatSize;
     const smallScreenSize = 768;
 
     let isSmallScreen = $state(false);
@@ -40,27 +40,27 @@
     function handleResize() {
         if (window.innerWidth < smallScreenSize && !isSmallScreen) {
             isSmallScreen = true;
-            sessionPane?.resize(maxSize);
-            workPane?.resize(minSize);
+            chatPane?.resize(maxSize);
+            monitorPane?.resize(minSize);
         } else if (window.innerWidth >= smallScreenSize && isSmallScreen) {
             isSmallScreen = false;
-            sessionPane?.resize(chatSize);
-            workPane?.resize(workSize);
+            chatPane?.resize(chatSize);
+            monitorPane?.resize(monitorSize);
         }
     }
 
 	function switchSide() {
         if (isSmallScreen) {
-            if (sessionPane?.getSize() == maxSize) {
-                sessionPane?.resize(minSize);
-                workPane?.resize(maxSize);
+            if (chatPane?.getSize() == maxSize) {
+                chatPane?.resize(minSize);
+                monitorPane?.resize(maxSize);
             } else {
-                sessionPane?.resize(maxSize);
-                workPane?.resize(minSize);
+                chatPane?.resize(maxSize);
+                monitorPane?.resize(minSize);
             }
         } else {
-		    sessionPane?.resize(chatSize);
-		    workPane?.resize(workSize);
+		    chatPane?.resize(chatSize);
+		    monitorPane?.resize(monitorSize);
         }
 	}
 
@@ -98,11 +98,11 @@
 			<Resizable.Pane
 				id="chat"
 				class="flex h-full flex-col"
-				bind:this={sessionPane}
+				bind:this={chatPane}
 				defaultSize={chatSize}
 				{minSize}
 			>
-				{#if sessionPane?.getSize() < hideSize}
+				{#if chatPane?.getSize() < hideSize}
 					<button
 						class="flex h-full w-full items-center justify-center rounded-l-xl transition-colors hover:bg-secondary"
 						onclick={() => switchSide()}
@@ -115,12 +115,12 @@
 			</Resizable.Pane>
 			<Resizable.Handle withHandle={enableHandle} disabled={disableResize}/>
 			<Resizable.Pane
-				bind:this={workPane}
-				defaultSize={workSize}
+				bind:this={monitorPane}
+				defaultSize={monitorSize}
 				{minSize}
 				class="flex h-full flex-col"
 			>
-				{#if workPane?.getSize() < hideSize}
+				{#if monitorPane?.getSize() < hideSize}
 					<button
 						class="flex h-full w-full items-center justify-center rounded-r-xl transition-colors hover:bg-secondary"
 						onclick={() => switchSide()}
