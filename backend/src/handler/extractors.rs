@@ -14,7 +14,7 @@ impl FromRequest for User {
     type Future = Pin<Box<dyn Future<Output = Result<Self>>>>;
 
     fn from_request(req: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
-        let mut id_opt = req.extensions().get::<String>().cloned();
+        let id_opt = req.extensions().get::<String>().cloned();
         let db_opt = req.app_data::<Data<UserService>>().cloned();
 
         Box::pin(async move {
