@@ -14,6 +14,7 @@
 	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
+	import { Separator } from '$lib/components/ui/separator';
 
 	let {
 		socket = $bindable(),
@@ -221,6 +222,9 @@
 	{#if chat}
 		{#each chat.messages as msg, index}
 			{@const participant = messageAuthor(msg.participant)}
+            {#if index > 0}
+                <Separator class="my-4" />
+            {/if}
 			<div class="mb-4 flex space-x-4">
 				<Avatar.Root class="h-8 w-8 rounded-lg">
 					{#if participant.user}
