@@ -31,7 +31,7 @@
 	}
 </script>
 
-<div class="h-full w-full flex items-center justify-center">
+<div class="h-full w-full flex items-center justify-center bg-primary rounded-xl">
     <div class="relative max-w-xl w-full">
         <!-- Recent sessions above chat input -->
         {#if $sessions && $sessions.length > 0}

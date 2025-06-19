@@ -9,7 +9,7 @@
     });
 </script>
 
-<div class="h-full w-full flex items-center justify-center">
+<div class="h-full w-full flex items-center justify-center bg-primary rounded-xl">
     <div class="relative max-w-xl w-full">
         <div class="bg-secondary rounded-lg p-5 mx-auto shadow-md border border-secondary/30">
             <h3 class="mb-4 text-lg font-medium text-center">Your Workspaces</h3>
