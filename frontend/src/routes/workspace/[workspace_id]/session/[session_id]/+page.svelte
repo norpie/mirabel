@@ -20,9 +20,15 @@
 	let workPane: PaneAPI | undefined = $state();
 
 	const minSize = 5;
+    const maxSize = 100 - minSize;
 	const hideSize = 10;
 	const chatSize = 40;
 	const workSize = 100 - chatSize;
+    const smallScreenSize = 768;
+
+    let isSmallScreen = $state(false);
+    let disableResize = $derived(isSmallScreen);
+    let enableHandle = $derived(!disableResize);
 
 	let tab = $state('spec');
 
@@ -31,9 +37,31 @@
 	let plan: Plan | undefined = $state();
 	let terminal: string[] = $state([]);
 
-	function reset() {
-		sessionPane?.resize(chatSize);
-		workPane?.resize(workSize);
+    function handleResize() {
+        if (window.innerWidth < smallScreenSize && !isSmallScreen) {
+            isSmallScreen = true;
+            sessionPane?.resize(maxSize);
+            workPane?.resize(minSize);
+        } else if (window.innerWidth >= smallScreenSize && isSmallScreen) {
+            isSmallScreen = false;
+            sessionPane?.resize(chatSize);
+            workPane?.resize(workSize);
+        }
+    }
+
+	function switchSide() {
+        if (isSmallScreen) {
+            if (sessionPane?.getSize() == maxSize) {
+                sessionPane?.resize(minSize);
+                workPane?.resize(maxSize);
+            } else {
+                sessionPane?.resize(maxSize);
+                workPane?.resize(minSize);
+            }
+        } else {
+		    sessionPane?.resize(chatSize);
+		    workPane?.resize(workSize);
+        }
 	}
 
 	let { data }: PageProps = $props();
@@ -41,6 +69,7 @@
     let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state('closed');
 
 	onMount(async () => {
+        window.addEventListener('resize', handleResize);
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
@@ -57,6 +86,7 @@
 	});
 
 	onDestroy(async () => {
+        window.removeEventListener('resize', handleResize);
 		if (!socket) return;
 		socket.close();
 	});
@@ -75,7 +105,7 @@
 				{#if sessionPane?.getSize() < hideSize}
 					<button
 						class="flex h-full w-full items-center justify-center rounded-l-xl transition-colors hover:bg-secondary"
-						onclick={() => reset()}
+						onclick={() => switchSide()}
 					>
 						<ChevronsRight />
 					</button>
@@ -83,7 +113,7 @@
 					<Chat {socket} {socketStatus} {chat} />
 				{/if}
 			</Resizable.Pane>
-			<Resizable.Handle withHandle />
+			<Resizable.Handle withHandle={enableHandle} disabled={disableResize}/>
 			<Resizable.Pane
 				bind:this={workPane}
 				defaultSize={workSize}
@@ -93,7 +123,7 @@
 				{#if workPane?.getSize() < hideSize}
 					<button
 						class="flex h-full w-full items-center justify-center rounded-r-xl transition-colors hover:bg-secondary"
-						onclick={() => reset()}
+						onclick={() => switchSide()}
 					>
 						<ChevronsLeft />
 					</button>
