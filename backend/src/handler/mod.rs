@@ -1,18 +1,22 @@
 use crate::{
     prelude::*,
     repository::RepositoryProvider,
-    service::{auth::AuthService, sessions::SessionService, users::UserService, workspaces::WorkspaceService},
+    service::{
+        auth::AuthService, sessions::SessionService, users::UserService,
+        workspaces::WorkspaceService,
+    },
 };
 
 use std::env;
 
 use actix_cors::Cors;
 use actix_web::{
+    App, HttpResponse, HttpServer,
     middleware::Logger,
     web::{self, Data},
-    App, HttpResponse, HttpServer,
 };
 use log::info;
+use tokio::sync::RwLock;
 
 mod api;
 pub(crate) mod extractors;
@@ -24,7 +28,7 @@ pub async fn run(db: Data<RepositoryProvider>) -> Result<()> {
 
     let auth_service = Data::new(AuthService::from(db.clone())?);
     let user_service = Data::new(UserService::from(db.clone())?);
-    let session_service = Data::new(SessionService::from(db.clone())?);
+    let session_service = Data::new(RwLock::new(SessionService::from(db.clone())?));
     let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
 
     info!("Listening on {}:{}", host, port);

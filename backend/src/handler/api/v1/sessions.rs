@@ -1,7 +1,8 @@
 use std::{sync::Arc, time::Duration};
 
 use crate::{
-    dto::session::event::SessionEvent, model::user::User, prelude::*, service::sessions::SessionService,
+    dto::session::event::SessionEvent, model::user::User, prelude::*,
+    service::sessions::SessionService,
 };
 
 use actix_web::{
@@ -10,8 +11,12 @@ use actix_web::{
 };
 use actix_ws::Message;
 use futures_util::StreamExt;
-use log::{error, debug};
-use tokio::{sync::Mutex, time::Instant};
+use log::{debug, error};
+use surrealdb::Uuid;
+use tokio::{
+    sync::{Mutex, RwLock},
+    time::Instant,
+};
 
 use crate::handler::middleware::auth_middleware::Auth;
 
@@ -23,28 +28,35 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 pub async fn session_socket(
     req: HttpRequest,
     stream: web::Payload,
-    session_service: Data<SessionService>,
+    session_service: Data<RwLock<SessionService>>,
     user: User,
     session_id: Path<String>,
 ) -> Result<HttpResponse> {
     debug!("WebSocket connection for session: {}", session_id);
-    let (res, mut session, mut msg_stream) = actix_ws::handle(&req, stream)?;
+    let (res, mut socket, mut msg_stream) = actix_ws::handle(&req, stream)?;
 
     let alive = Arc::new(Mutex::new(Instant::now()));
 
-    let mut session2 = session.clone();
+    let mut socket2 = socket.clone();
+    let socket3 = socket.clone();
+    let socket_id = Uuid::new_v4();
+    session_service
+        .write()
+        .await
+        .add_socket(&session_id, (socket_id.clone(), socket3))
+        .await?;
     let alive2 = alive.clone();
     actix_web::rt::spawn(async move {
         let mut interval = actix_web::rt::time::interval(Duration::from_secs(5));
 
         loop {
             interval.tick().await;
-            if session2.ping(b"").await.is_err() {
+            if socket2.ping(b"").await.is_err() {
                 break;
             }
 
             if Instant::now().duration_since(*alive2.lock().await) > Duration::from_secs(10) {
-                let _ = session2.close(None).await;
+                let _ = socket2.close(None).await;
                 break;
             }
         }
@@ -63,7 +75,7 @@ pub async fn session_socket(
                     .await;
                     match result {
                         Ok(response) => {
-                            if let Err(e) = session.text(response).await {
+                            if let Err(e) = socket.text(response).await {
                                 error!("Error sending message: {:?}", e);
                                 break;
                             }
@@ -72,7 +84,7 @@ pub async fn session_socket(
                             error!("Error handling message: {:?}", e);
                             let json_error =
                                 serde_json::to_string_pretty(&SessionEvent::error()).unwrap();
-                            if let Err(e) = session.text(json_error).await {
+                            if let Err(e) = socket.text(json_error).await {
                                 error!("Error sending error message: {:?}", e);
                             }
                             break;
@@ -80,7 +92,7 @@ pub async fn session_socket(
                     }
                 }
                 Message::Ping(bytes) => {
-                    if let Err(e) = session.pong(&bytes).await {
+                    if let Err(e) = socket.pong(&bytes).await {
                         error!("Error responding to ping: {:?}", e);
                         break;
                     }
@@ -96,7 +108,13 @@ pub async fn session_socket(
             }
         }
 
-        let _ = session.close(None).await;
+        session_service
+            .write()
+            .await
+            .remove_socket(&session_id, socket_id)
+            .await
+            .unwrap_or_else(|e| error!("Error removing socket: {:?}", e));
+        let _ = socket.close(None).await;
         debug!("WebSocket loop ended for session: {}", session_id);
     });
 
@@ -104,13 +122,15 @@ pub async fn session_socket(
 }
 
 pub async fn handle_json_message(
-    session_service: Data<SessionService>,
+    session_service: Data<RwLock<SessionService>>,
     session_id: &Path<String>,
     user: &User,
     json: String,
 ) -> Result<String> {
     let parsed = serde_json::from_str::<SessionEvent>(&json)?;
     let response = session_service
+        .read()
+        .await
         .handle_event(session_id, user, parsed)
         .await?;
     let value = serde_json::to_string_pretty(&response)?;
