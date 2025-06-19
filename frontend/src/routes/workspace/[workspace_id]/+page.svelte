@@ -33,9 +33,9 @@
 
 <div class="h-full w-full flex items-center justify-center">
     <div class="relative max-w-xl w-full">
-        <!-- Absolutely positioned recents above chat input -->
-        <div class="absolute bottom-full left-0 right-0 mb-8" id="recents">
-            {#if $sessions && $sessions.length > 0}
+        <!-- Recent sessions above chat input -->
+        {#if $sessions && $sessions.length > 0}
+            <div class="absolute bottom-full left-0 right-0 mb-8">
                 <div class="bg-secondary relative rounded-lg p-5 mx-auto shadow-md border border-secondary/30">
                     <h3 class="mb-4 text-lg font-medium text-center">Recent Sessions</h3>
                     <ul class="space-y-2">
@@ -52,11 +52,11 @@
                         {/each}
                     </ul>
                 </div>
-            {/if}
-        </div>
+            </div>
+        {/if}
 
         <!-- Chat input section -->
-        <div id="chat-input" class="flex items-center flex-row bg-secondary rounded-lg p-2 mx-auto">
+        <div class="flex items-center flex-row bg-secondary rounded-lg p-2 mx-auto">
             <Textarea
                 class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 placeholder="Type your message here..."
@@ -68,7 +68,7 @@
                     }
                 }}
             />
-            <div id="buttons" class="flex flex-col gap-1 pl-2">
+            <div class="flex flex-col gap-1 pl-2">
                 <Button onclick={() => sendMessage()}>
                     <SendHorizontal class="pointer-events-none" />
                 </Button>
