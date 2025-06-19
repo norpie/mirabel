@@ -21,7 +21,7 @@
 		chat
 	}: {
 		socket: SessionSocketHandler | undefined;
-        socketStatus: 'open' | 'closed' | 'error';
+        socketStatus: 'open' | 'closed' | 'connecting' | 'error';
 		chat: Chat | undefined;
 	} = $props();
 
@@ -84,15 +84,17 @@
 		}
 	});
 
-	function getSocketStatusStyle(status: 'open' | 'closed' | 'error'): {
+	function getSocketStatusStyle(status: 'open' | 'closed' | 'connecting' | 'error'): {
 		color: string;
 		title: string;
 	} {
 		switch (status) {
 			case 'open':
 				return { color: 'bg-green-500', title: 'Connection established' };
+			case 'connecting':
+				return { color: 'bg-amber-500', title: 'Connecting...' };
 			case 'closed':
-				return { color: 'bg-amber-500', title: 'Connection closed' };
+				return { color: 'bg-red-500', title: 'Connection closed' };
 			case 'error':
 				return { color: 'bg-red-500', title: 'Connection error' };
 			default:

@@ -38,7 +38,7 @@
 
 	let { data }: PageProps = $props();
 	let socket: SessionSocketHandler | undefined = $state();
-    let socketStatus: 'open' | 'closed' | 'error' = $state('closed');
+    let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state('closed');
 
 	onMount(async () => {
 		sessions.set(data.sessions);

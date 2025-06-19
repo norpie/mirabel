@@ -15,7 +15,7 @@ type EventTypeMap = {
 
 // Valid event type keys
 type EventType = keyof EventTypeMap;
-type ConnectionStatus = "open" | "closed" | "error";
+type ConnectionStatus = "open" | "closed" | "connecting" | "error";
 
 export class SessionSocketHandler {
     socket: WebSocket;
@@ -52,7 +52,7 @@ export class SessionSocketHandler {
                 this.toastId = undefined;
             }
         } else if (!this.toastId) {
-            this.isReconnecting = true;
+            this.isReconnecting = status === 'connecting';
             this.toastId = toast.error('Connection lost', {
                 description: 'The connection to the server was lost.'
             });
@@ -63,6 +63,7 @@ export class SessionSocketHandler {
         if (!this.shouldReconnect) return;
 
         this.isReconnecting = true;
+        this.setState("connecting");
         
         this.reconnectTimeout = setTimeout(() => {
             try {
@@ -81,6 +82,8 @@ export class SessionSocketHandler {
     }
 
     listen(): void {
+        this.setState("connecting");
+        
         this.socket.onopen = () => this.setState("open");
         
         this.socket.onclose = (event) => {
