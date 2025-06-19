@@ -43,7 +43,7 @@ pub async fn session_socket(
     session_service
         .write()
         .await
-        .add_socket(&session_id, (socket_id.clone(), socket3))
+        .add_socket(&session_id, (socket_id, socket3))
         .await?;
     let alive2 = alive.clone();
     actix_web::rt::spawn(async move {
