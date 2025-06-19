@@ -1,6 +1,7 @@
 import type { PlanItem, Session, ShallowSession } from "$lib/models/session";
 import type { Page, PageResponse } from "$lib/models/page";
 import { generateId } from "$lib/utils";
+import { get } from "$lib/request";
 
 /*
 # User History Page Specification (Final)
@@ -487,12 +488,10 @@ terminal: [
     ]
 };
 
-export async function fetchSession(sessionId: string): Promise<Session> {
-    setTimeout(() => { }, 1000);
-    return sampleResponse.data[0];
+export async function fetchSession(workspaceId: string, sessionId: string): Promise<Session> {
+    return await get(`v1/workspace/${workspaceId}/sessions/${sessionId}`);
 }
 
 export async function fetchAllSessions(workspaceId: string, page: Page): Promise<PageResponse<ShallowSession[]>> {
-    setTimeout(() => { }, 1000);
-    return sampleResponse;
+    return await get(`v1/workspace/${workspaceId}/sessions`, page);
 }

@@ -9,7 +9,7 @@ export async function load({params}: PageLoad) {
     if (!workspaceLoad) {
         goto("/not-found");
     }
-    const session = await fetchSession(params.session_id)
+    const session = await fetchSession(params.workspace_id, params.session_id)
     if (!session) {
         goto("/not-found");
     }

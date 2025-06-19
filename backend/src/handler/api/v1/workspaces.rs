@@ -11,7 +11,7 @@ use crate::{
 
 use actix_web::{
     delete, get, patch, post,
-    web::{self, Data, Json, Path},
+    web::{self, Data, Json, Path, Query},
     Responder, Scope,
 };
 
@@ -21,7 +21,7 @@ use self::workspaces::WorkspaceService;
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        Scope::new("/workspaces")
+        Scope::new("/workspace")
             .wrap(Auth)
             .service(set_workspace_avatar)
             .service(get_user_workspace_sessions)
@@ -51,7 +51,7 @@ pub async fn get_user_workspace_sessions(
     workspace_service: Data<WorkspaceService>,
     user: User,
     id: Path<String>,
-    page: Json<PageRequest>,
+    page: Query<PageRequest>,
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
         workspace_service
