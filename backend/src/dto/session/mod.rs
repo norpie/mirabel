@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::model::{chat::Chat, plan::Plan};
+use crate::{model::{chat::{Chat, ChatParticipant}, plan::Plan, session::Session}, repository::traits::Entity};
 
 pub mod event;
 
@@ -8,9 +8,22 @@ pub mod event;
 pub struct FullSession {
     pub id: String,
     pub title: String,
+    pub participants: Vec<ChatParticipant>,
     pub chat: Chat,
     pub plan: Option<Plan>,
     pub terminal: Option<Vec<String>>,
     // pub actions: Vec<Action>,
-    pub spec: Option<String>,
+}
+
+impl From<Session> for FullSession {
+    fn from(session: Session) -> Self {
+        Self {
+            id: session.id().unwrap_or_else(|| "unknown".to_string()),
+            title: session.title,
+            participants: session.participants,
+            chat: session.chat,
+            plan: session.plan,
+            terminal: session.terminal,
+        }
+    }
 }

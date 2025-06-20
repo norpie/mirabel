@@ -9,6 +9,8 @@
 	import { toast } from 'svelte-sonner';
 	import { sessions, selectedSession, selectedWorkspace } from '$lib/store';
 	import { page } from '$app/state';
+	import { createNewSession } from '$lib/api/session';
+	import { goto } from '$app/navigation';
 
 	let { data }: PageProps = $props();
 	let chatInput = $state('');
@@ -21,13 +23,16 @@
 	});
 
 	async function sendMessage() {
+        if (!$selectedWorkspace) {
+            toast.error('Please select a workspace first.');
+            return;
+        }
 		if (!chatInput.trim()) return;
 
-		// Placeholder for actual message sending functionality
-		toast.success(`Message sent: ${chatInput}`);
+        const session = await createNewSession($selectedWorkspace.id, chatInput.trim());
 
-		console.log('Sending message:', chatInput);
 		chatInput = '';
+        goto(`/workspace/${$selectedWorkspace.id}/session/${session.data.id}`);
 	}
 </script>
 

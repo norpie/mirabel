@@ -3,9 +3,9 @@ use crate::{
         page::{PageRequest, PageResponse},
         workspace::FrontendWorkspace,
     },
-    model::{session::Session, workspace::NewWorkspace},
+    model::{session::Session, user::User, workspace::NewWorkspace},
     prelude::*,
-    repository::RepositoryProvider,
+    repository::{RepositoryProvider, traits::Entity},
 };
 
 use actix_web::web::Data;
@@ -65,16 +65,22 @@ impl WorkspaceService {
 
     pub async fn create_workspace_session(
         &self,
-        _user_id: String,
+        user: User,
         workspace_id: String,
+        input: String,
     ) -> Result<Session> {
-        self.repository
+        let mut session = self
+            .repository
             .workspace_session_repo()
             .create_child(
-                Session::new(format!("New Session: {}", Utc::now().to_rfc2822()), None),
+                Session::new(format!("New Session: {}", Utc::now().to_rfc2822())),
                 &workspace_id,
             )
-            .await
+            .await?;
+        session.add_participant(user.clone());
+        session.add_user_message(user.id().unwrap(), input);
+        self.repository.session_repo().save(session.clone()).await?;
+        Ok(session)
     }
 
     pub async fn get_user_session_by_id(
@@ -86,14 +92,14 @@ impl WorkspaceService {
         self.repository.session_repo().find(&id).await
     }
 
-    pub async fn update_user_session(&self, id: String, title: Option<String>) -> Result<Session> {
+    pub async fn update_user_session(&self, id: String, title: String) -> Result<Session> {
         let mut session = self
             .repository
             .session_repo()
             .find(&id)
             .await?
             .ok_or(Error::NotFound)?;
-        session.set_user_title(title);
+        session.set_title(title);
         self.repository.session_repo().save(session).await
     }
 

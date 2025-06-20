@@ -1,6 +1,6 @@
 use crate::{
     dto::{
-        api_response::ApiResponse, avatar::Avatar, page::PageRequest,
+        api_response::ApiResponse, avatar::Avatar, page::PageRequest, session::FullSession,
         updated_session::UpdatedSession,
     },
     model::user::User,
@@ -10,10 +10,10 @@ use crate::{
 };
 
 use actix_web::{
-    delete, get, patch, post,
+    Responder, Scope, delete, get, patch, post,
     web::{self, Data, Json, Path, Query},
-    Responder, Scope,
 };
+use serde::Deserialize;
 
 use crate::handler::middleware::auth_middleware::Auth;
 
@@ -56,8 +56,14 @@ pub async fn get_user_workspace_sessions(
     Ok(ApiResponse::ok(
         workspace_service
             .get_user_workspace_sessions(id.to_string(), user.id().unwrap(), page.into_inner())
-            .await?,
+            .await?
+            .to::<FullSession>(),
     ))
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct SessionInput {
+    input: String,
 }
 
 #[post("/{id}/sessions")]
@@ -65,12 +71,13 @@ pub async fn create_workspace_session(
     workspace_service: Data<WorkspaceService>,
     user: User,
     id: Path<String>,
+    input: Json<SessionInput>,
 ) -> Result<impl Responder> {
-    Ok(ApiResponse::ok(
+    Ok(ApiResponse::ok(Into::<FullSession>::into(
         workspace_service
-            .create_workspace_session(user.id().unwrap(), id.to_string())
+            .create_workspace_session(user, id.to_string(), input.0.input)
             .await?,
-    ))
+    )))
 }
 
 #[delete("/{id}/sessions/{session_id}")]
@@ -95,7 +102,7 @@ pub async fn update_user_session(
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
         workspace_service
-            .update_user_session(session_id.to_string(), session.into_inner().user_title)
+            .update_user_session(session_id.to_string(), session.into_inner().title)
             .await?,
     ))
 }
@@ -104,12 +111,12 @@ pub async fn update_user_session(
 pub async fn get_workspace_session(
     workspace_service: Data<WorkspaceService>,
     user: User,
-    id: Path<String>,
-    session_id: Path<String>,
+    ids: Path<(String, String)>,
 ) -> Result<impl Responder> {
-    Ok(ApiResponse::ok(
-        workspace_service
-            .get_workspace_session_by_id(user.id().unwrap(), id.to_string(), session_id.to_string())
-            .await?,
-    ))
+    let (workspace_id, session_id) = ids.into_inner();
+    let session = workspace_service
+        .get_workspace_session_by_id(user.id().unwrap(), workspace_id, session_id)
+        .await?
+        .map(Into::<FullSession>::into);
+    Ok(ApiResponse::ok(session))
 }

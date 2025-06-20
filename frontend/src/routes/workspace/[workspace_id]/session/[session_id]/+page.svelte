@@ -15,84 +15,96 @@
 	import { connectWebSocket } from '$lib/request';
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { Chat as ChatModel, Plan } from '$lib/models/session';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 
 	let chatPane: PaneAPI | undefined = $state();
 	let monitorPane: PaneAPI | undefined = $state();
 
+	let inset: HTMLDivElement | undefined = $state();
+
 	const minSize = 5;
-    const maxSize = 100 - minSize;
+	const maxSize = 100 - minSize;
 	const hideSize = 15;
 	const chatSize = 40;
 	const monitorSize = 100 - chatSize;
-    const smallScreenSize = 768;
+	const smallScreenSize = 768;
 
-    let isSmallScreen = $state(false);
-    let disableResize = $derived(isSmallScreen);
-    let enableHandle = $derived(!disableResize);
+	let isSmallScreen = $state(false);
+	let disableResize = $derived(isSmallScreen);
+	let enableHandle = $derived(!disableResize);
 
 	let tab = $state('spec');
 
-	let spec: string = $state("");
+	let spec: string | undefined = $state();
 	let chat: ChatModel | undefined = $state();
 	let plan: Plan | undefined = $state();
-	let terminal: string[] = $state([]);
+	let terminal: string[] | undefined = $state([]);
 
-    function handleResize() {
-        if (window.innerWidth < smallScreenSize && !isSmallScreen) {
-            isSmallScreen = true;
-            chatPane?.resize(maxSize);
-            monitorPane?.resize(minSize);
-        } else if (window.innerWidth >= smallScreenSize && isSmallScreen) {
-            isSmallScreen = false;
-            chatPane?.resize(chatSize);
-            monitorPane?.resize(monitorSize);
-        }
-    }
+	function handleResize() {
+		if (!inset) return;
+		if (inset?.clientWidth < smallScreenSize && !isSmallScreen) {
+			isSmallScreen = true;
+			chatPane?.resize(maxSize);
+			monitorPane?.resize(minSize);
+		} else if (inset.clientWidth >= smallScreenSize && isSmallScreen) {
+			isSmallScreen = false;
+			chatPane?.resize(chatSize);
+			monitorPane?.resize(monitorSize);
+		}
+	}
 
 	function switchSide() {
-        if (isSmallScreen) {
-            if (chatPane?.getSize() == maxSize) {
-                chatPane?.resize(minSize);
-                monitorPane?.resize(maxSize);
-            } else {
-                chatPane?.resize(maxSize);
-                monitorPane?.resize(minSize);
-            }
-        } else {
-		    chatPane?.resize(chatSize);
-		    monitorPane?.resize(monitorSize);
-        }
+		if (isSmallScreen) {
+			if (chatPane?.getSize() == maxSize) {
+				chatPane?.resize(minSize);
+				monitorPane?.resize(maxSize);
+			} else {
+				chatPane?.resize(maxSize);
+				monitorPane?.resize(minSize);
+			}
+		} else {
+			chatPane?.resize(chatSize);
+			monitorPane?.resize(monitorSize);
+		}
 	}
 
 	let { data }: PageProps = $props();
 	let socket: SessionSocketHandler | undefined = $state();
-    let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state('closed');
+	let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state('closed');
 
-	onMount(async () => {
-        window.addEventListener('resize', handleResize);
+	afterNavigate(async () => {
+		window.addEventListener('resize', handleResize);
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
+		console.log('Session page mounted', data.session);
 
 		if ($selectedSession) {
-			spec = $selectedSession.plan.spec;
 			plan = $selectedSession.plan;
-            terminal = $selectedSession.terminal;
-            chat = $selectedSession.chat;
+			if (plan) {
+				spec = plan.spec;
+			}
+			terminal = $selectedSession.terminal;
+			chat = $selectedSession.chat;
 			socket = connectWebSocket('v1/' + 'session/' + $selectedSession.id, undefined, (status) => {
 				socketStatus = status;
 			});
+            console.log('WebSocket connected for session', $selectedSession.id, "and socket", socket.id);
 		}
 	});
 
-	onDestroy(async () => {
-        window.removeEventListener('resize', handleResize);
+	function cleanup() {
+		window.removeEventListener('resize', handleResize);
+		console.log('Session page destroyed, socket closed');
 		if (!socket) return;
 		socket.close();
-	});
+	}
+
+	beforeNavigate(cleanup);
+    onDestroy(cleanup);
 </script>
 
-<div class="h-full rounded-xl bg-primary md:min-h-min">
+<div bind:this={inset} class="h-full rounded-xl bg-primary md:min-h-min">
 	{#if $selectedSession}
 		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane
@@ -113,7 +125,7 @@
 					<Chat {socket} {socketStatus} {chat} />
 				{/if}
 			</Resizable.Pane>
-			<Resizable.Handle withHandle={enableHandle} disabled={disableResize}/>
+			<Resizable.Handle withHandle={enableHandle} disabled={disableResize} />
 			<Resizable.Pane
 				bind:this={monitorPane}
 				defaultSize={monitorSize}

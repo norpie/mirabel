@@ -18,6 +18,7 @@ type EventType = keyof EventTypeMap;
 type ConnectionStatus = "open" | "closed" | "connecting" | "error";
 
 export class SessionSocketHandler {
+    id: string;
     socket: WebSocket;
     status: ConnectionStatus = "closed";
     private url: string;
@@ -26,13 +27,15 @@ export class SessionSocketHandler {
     private toastId?: string | number;
     public isReconnecting = false;
     private isLeavingPage = false;
-    
+    private hasConnectedBefore = false;
+
     handlers: { [K in EventType]?: ((data: EventTypeMap[K]) => void)[] } = {};
-    
+
     constructor(
-        url: string, 
+        url: string,
         private stateHandler: (status: ConnectionStatus) => void = (status) => console.log(`WebSocket state: ${status}`)
     ) {
+        this.id = crypto.randomUUID();
         this.url = url;
         this.socket = new WebSocket(url);
         this.listen();
@@ -41,16 +44,19 @@ export class SessionSocketHandler {
     private setState(status: ConnectionStatus): void {
         this.status = status;
         this.stateHandler(status);
-        
+
         if (this.isLeavingPage) return;
-        
+
         if (status === 'open') {
             this.isReconnecting = false;
             if (this.toastId) {
                 toast.dismiss(this.toastId);
-                toast.success('Connection restored');
+                if (this.hasConnectedBefore) {
+                    toast.success('Connection restored');
+                }
                 this.toastId = undefined;
             }
+            this.hasConnectedBefore = true;
         } else if (!this.toastId) {
             this.isReconnecting = status === 'connecting';
             this.toastId = toast.error('Connection lost', {
@@ -64,7 +70,7 @@ export class SessionSocketHandler {
 
         this.isReconnecting = true;
         this.setState("connecting");
-        
+
         this.reconnectTimeout = setTimeout(() => {
             try {
                 this.socket = new WebSocket(this.url);
@@ -83,20 +89,20 @@ export class SessionSocketHandler {
 
     listen(): void {
         this.setState("connecting");
-        
+
         this.socket.onopen = () => this.setState("open");
-        
+
         this.socket.onclose = (event) => {
             this.setState("closed");
             if (event.code !== 1000) this.reconnect();
         };
-        
+
         this.socket.onerror = () => this.setState("error");
-        
+
         this.socket.onmessage = (e: MessageEvent) => {
             const event: SessionEvent = JSON.parse(e.data);
             const eventType = event.content.type as EventType;
-            
+
             this.handlers[eventType]?.forEach(handler => {
                 try {
                     handler(event.content as any);
@@ -110,21 +116,21 @@ export class SessionSocketHandler {
     close(): void {
         this.shouldReconnect = false;
         this.isLeavingPage = true;
-        
+
         if (this.toastId) {
             toast.dismiss(this.toastId);
             this.toastId = undefined;
         }
-        
+
         if (this.reconnectTimeout) {
             clearTimeout(this.reconnectTimeout);
             this.reconnectTimeout = null;
         }
-        
+
         if (this.socket.readyState === WebSocket.OPEN) {
             this.socket.close(1000, "Normal closure");
         }
-        
+
         this.handlers = {};
     }
 
@@ -135,9 +141,9 @@ export class SessionSocketHandler {
             console.warn("WebSocket is not open, cannot send data.");
         }
     }
-    
+
     manualReconnect(): void {
-        if (this.socket.readyState !== WebSocket.OPEN && 
+        if (this.socket.readyState !== WebSocket.OPEN &&
             this.socket.readyState !== WebSocket.CONNECTING) {
             this.shouldReconnect = true;
             this.reconnect();

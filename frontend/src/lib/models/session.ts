@@ -8,12 +8,11 @@ export interface Session {
     title: string;
     participants: Participant[];
     chat: Chat;
-    plan: Plan;
-    terminal: string[];
+    plan: Plan | undefined;
+    terminal: string[] | undefined;
 }
 
 export interface Plan {
-    id: string;
     goal: string;
     spec: string;
     children: PlanItem[];
@@ -30,7 +29,6 @@ export interface PlanItem {
 export interface Participant {
     id: string;
     name: string;
-    user: boolean;
     avatar?: string;
 }
 

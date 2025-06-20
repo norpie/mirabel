@@ -1,7 +1,8 @@
 import type { PlanItem, Session, ShallowSession } from "$lib/models/session";
 import type { Page, PageResponse } from "$lib/models/page";
 import { generateId } from "$lib/utils";
-import { get } from "$lib/request";
+import { get, post } from "$lib/request";
+import type Result from "$lib/models/result";
 
 /*
 # User History Page Specification (Final)
@@ -488,10 +489,16 @@ terminal: [
     ]
 };
 
-export async function fetchSession(workspaceId: string, sessionId: string): Promise<Session> {
+export async function fetchSession(workspaceId: string, sessionId: string): Promise<Result<Session>> {
     return await get(`v1/workspace/${workspaceId}/sessions/${sessionId}`);
 }
 
-export async function fetchAllSessions(workspaceId: string, page: Page): Promise<PageResponse<ShallowSession[]>> {
+export async function fetchAllSessions(workspaceId: string, page: Page): Promise<Result<PageResponse<ShallowSession[]>>> {
     return await get(`v1/workspace/${workspaceId}/sessions`, page);
+}
+
+export async function createNewSession(workspaceId: string, input: string): Promise<Result<Session>> {
+    return await post(`v1/workspace/${workspaceId}/sessions`, {
+        "input": input,
+    });
 }

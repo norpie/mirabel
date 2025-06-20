@@ -221,15 +221,15 @@
 >
 	{#if chat}
 		{#each chat.messages as msg, index}
-			{@const participant = messageAuthor(msg.participant)}
+			{@const participant = messageAuthor(msg.authorId)}
             {#if index > 0}
                 <Separator class="my-4" />
             {/if}
 			<div class="mb-4 flex space-x-4">
 				<Avatar.Root class="h-8 w-8 rounded-lg">
-					{#if participant.user}
+					{#if msg.authorId != "mirabel"}
 						<Avatar.Image src={participant.avatar} alt={`${participant.name}'s avatar`} />
-						<Avatar.Fallback class="rounded-lg"></Avatar.Fallback>
+						<Avatar.Fallback class="rounded-lg">{participant.name[0]}</Avatar.Fallback>
 					{:else}
 						<Avatar.Image src={Mirabel} alt={`${participant.name}'s avatar`} />
 						<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>

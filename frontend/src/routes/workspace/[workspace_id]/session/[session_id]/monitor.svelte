@@ -17,16 +17,25 @@
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 
-	let { tab = $bindable(), plan, spec, terminal }: { tab: string; plan: any; spec: string; terminal: string[] } =
-		$props();
+	let {
+		tab = $bindable(),
+		plan,
+		spec,
+		terminal
+	}: {
+		tab: string;
+		plan: Plan | undefined;
+		spec: string | undefined;
+		terminal: string[] | undefined;
+	} = $props();
 
 	let auto = $state(false);
 
-    function onTabChange() {
-        if(auto) {
-            auto = false;
-        }
-    }
+	function onTabChange() {
+		if (auto) {
+			auto = false;
+		}
+	}
 </script>
 
 <Tabs.Root bind:value={tab} onValueChange={onTabChange} class="m-2 flex h-full flex-col">
@@ -71,17 +80,26 @@
 	</div>
 
 	{#if tab === 'spec'}
-		<Tabs.Content value="spec" class="h-full flex-1 flex-col rounded-xl bg-secondary md:min-h-min">
-			<div class="flex h-full flex-col">
-				<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4" thumbClass="bg-zinc-600" >
-					<Markdown bind:markdown={spec} />
-				</ScrollArea>
-			</div>
+		<Tabs.Content value="spec" class="h-full flex-1 flex-col rounded-xl md:min-h-min">
+            {#if spec}
+			    <div class="flex h-full flex-col bg-secondary">
+			    	<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4" thumbClass="bg-zinc-600">
+			    		<Markdown bind:markdown={spec} />
+			    	</ScrollArea>
+			    </div>
+            {:else}
+                <div class="flex items-center justify-center h-full w-full">
+                    <p class="text-gray-500">No spec available.</p>
+                </div>
+            {/if}
 		</Tabs.Content>
 	{/if}
 
 	{#if tab === 'plan'}
-		<Tabs.Content value="plan" class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min">
+		<Tabs.Content
+			value="plan"
+			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
+		>
 			<Plan bind:plan />
 		</Tabs.Content>
 	{/if}
@@ -121,9 +139,8 @@
 	{/if}
 </Tabs.Root>
 
-
 <style>
-:global(.svelte-flow-clipping) {
-    clip-path: inset(0 round 1rem);
-}
+	:global(.svelte-flow-clipping) {
+		clip-path: inset(0 round 1rem);
+	}
 </style>

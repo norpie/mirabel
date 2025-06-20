@@ -10,13 +10,14 @@
 	import Elk from 'elkjs/lib/elk.bundled.js';
 	import { getEdges, getNodes } from './planToFlow';
 
-	let { plan = $bindable() }: { plan: Plan } = $props();
+	let { plan = $bindable() }: { plan: Plan | undefined } = $props();
 
 	let nodes: Writable<any[]> = writable([]);
 	let edges: Writable<any[]> = writable([]);
 	let elk = new Elk();
 
 	async function layout() {
+        if (!plan || !plan.nodes || !plan.edges) return;
 		const graph = {
 			id: 'root',
 			layoutOptions: {
@@ -89,8 +90,17 @@
 	const proOptions = { hideAttribution: true };
 
 	onMount(layout);
+    $effect(() => {
+        layout();
+    });
 </script>
 
-<SvelteFlow class="svelte-flow-clipping font-mono" {nodes} {edges} colorMode={$mode} fitView {proOptions}>
-	<Background variant={BackgroundVariant.Dots} />
-</SvelteFlow>
+{#if plan}
+    <SvelteFlow class="svelte-flow-clipping font-mono" {nodes} {edges} colorMode={$mode} fitView {proOptions}>
+    	<Background variant={BackgroundVariant.Dots} />
+    </SvelteFlow>
+{:else}
+    <div class="flex items-center justify-center h-full w-full">
+        <p class="text-gray-500">No plan available.</p>
+    </div>
+{/if}
