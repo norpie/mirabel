@@ -26,7 +26,7 @@ function isPublicPath(endpoint: string): boolean {
   return publicPaths.some(path => endpoint.includes(path));
 }
 
-function connectWebSocket(path: string, body?: any, stateHandler?: (status: ConnectionStatus) => void): SessionSocketHandler {
+function connectWebSocket(path: string, body?: any): SessionSocketHandler {
     let endpoint = formatWebSocketEndpoint(path);
 
     // Format query parameters
@@ -51,10 +51,10 @@ function connectWebSocket(path: string, body?: any, stateHandler?: (status: Conn
         query = query.slice(0, -1);
     }
 
-    return new SessionSocketHandler(endpoint + query, stateHandler);
+    return new SessionSocketHandler(endpoint + query);
 }
 
-async function request<T>(method: string, endpoint: string, body?: any): Promise<Result<T>> {
+async function request<T>(method: string, endpoint: string, body: any | null = null, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
     // Don't add authorization header for public paths
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -64,7 +64,7 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
         headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
     }
 
-    const response = await fetch(endpoint, {
+    const response = await fetchFunction(endpoint, {
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined
@@ -99,7 +99,7 @@ async function request<T>(method: string, endpoint: string, body?: any): Promise
     return await response.json();
 }
 
-async function get<T>(path: string, body?: any): Promise<Result<T>> {
+async function get<T>(path: string, body?: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
     let query = "";
     if (body) {
         query += "?";
@@ -111,23 +111,23 @@ async function get<T>(path: string, body?: any): Promise<Result<T>> {
             query = query.slice(0, -1);
         }
     }
-    return request("GET", formatEndpoint(`${path}${query}`));
+    return request("GET", formatEndpoint(`${path}${query}`), fetch);
 }
 
-async function post<T>(path: string, body: any): Promise<Result<T>> {
-    return request("POST", formatEndpoint(path), body);
+async function post<T>(path: string, body: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
+    return request("POST", formatEndpoint(path), body, fetch);
 }
 
-async function put<T>(path: string, body: any): Promise<Result<T>> {
-    return request("PUT", formatEndpoint(path), body);
+async function put<T>(path: string, body: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
+    return request("PUT", formatEndpoint(path), body, fetch);
 }
 
-async function del<T>(path: string): Promise<Result<T>> {
-    return request("DELETE", formatEndpoint(path));
+async function del<T>(path: string, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
+    return request("DELETE", formatEndpoint(path), fetch);
 }
 
-async function refresh(): Promise<Result<{ access_token: string }> | null> {
-    const response = await fetch(formatEndpoint("v1/auth/refresh"), {
+async function refresh(fetchFunction: typeof fetch = fetch): Promise<Result<{ access_token: string }> | null> {
+    const response = await fetchFunction(formatEndpoint("v1/auth/refresh"), {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

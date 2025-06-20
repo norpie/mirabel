@@ -23,6 +23,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(
         Scope::new("/workspace")
             .wrap(Auth)
+            .service(get_workspace_by_id)
             .service(set_workspace_avatar)
             .service(get_user_workspace_sessions)
             .service(create_workspace_session)
@@ -30,6 +31,19 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
             .service(delete_user_session)
             .service(update_user_session),
     );
+}
+
+#[get("/{id}")]
+pub async fn get_workspace_by_id(
+    workspace_service: Data<WorkspaceService>,
+    user: User,
+    id: Path<String>,
+) -> Result<impl Responder> {
+    Ok(ApiResponse::ok(
+        workspace_service
+            .get_workspace_by_id(user.id().unwrap(), id.to_string())
+            .await?,
+    ))
 }
 
 #[post("/{id}/avatar")]

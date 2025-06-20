@@ -47,6 +47,18 @@ impl WorkspaceService {
             .to())
     }
 
+    pub async fn get_workspace_by_id(
+        &self,
+        user_id: String,
+        workspace_id: String,
+    ) -> Result<Option<FrontendWorkspace>> {
+        self.repository
+            .workspace_repo()
+            .find(&workspace_id)
+            .await
+            .map(|opt| opt.map(|w| w.into()))
+    }
+
     pub async fn set_workspace_avatar(
         &self,
         _user_id: String,

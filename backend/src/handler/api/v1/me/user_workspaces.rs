@@ -16,7 +16,7 @@ use self::workspaces::WorkspaceService;
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(
-        Scope::new("/workspaces")
+        Scope::new("/workspace")
             .service(get_user_workspaces)
             .service(new_user_workspace),
     );

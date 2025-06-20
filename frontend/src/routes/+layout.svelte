@@ -4,16 +4,12 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 
-	let { children } = $props();
-
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
 	import BrainCircuit from 'lucide-svelte/icons/brain-circuit';
-
-	import Spinner from '$lib/components/spinner.svelte';
 
 	import { page } from '$app/state';
 
@@ -22,27 +18,31 @@
 		hideSidebar = ['/login', '/register'].includes(page.url.pathname);
 	});
 
-	import { user, selectedWorkspace, selectedSession } from '$lib/store';
+	import { user, workspaces, selectedWorkspace, selectedSession } from '$lib/store';
+	import type { LayoutProps } from './$types';
+
+	let { data, children }: LayoutProps = $props();
+
+	user.set(data.user);
+	workspaces.set(data.workspaces);
+	selectedWorkspace.set(null);
+	selectedSession.set(null);
 
 	let items = $state([
 		{
 			title: 'Knowledge',
-            callback: () => {
-                console.log('Knowledge clicked');
-            },
-			icon: BrainCircuit,
+			callback: () => {
+				console.log('Knowledge clicked');
+			},
+			icon: BrainCircuit
 		}
 	]);
 </script>
 
 <ModeWatcher />
-<Toaster richColors expand position="top-center"/>
+<Toaster richColors expand position="top-center" />
 
-{#if $user === undefined}
-	<div class="flex h-screen w-full items-center justify-center">
-		<Spinner />
-	</div>
-{:else if hideSidebar}
+{#if hideSidebar}
 	{@render children()}
 {:else}
 	<Sidebar.Provider>
@@ -54,30 +54,28 @@
 					<Separator orientation="vertical" class="mr-2 h-4" />
 					<Breadcrumb.Root>
 						<Breadcrumb.List>
-                            <Breadcrumb.Item class="hidden md:block">
-                                <Breadcrumb.Link href="/">
-                                    Home
-                                </Breadcrumb.Link>
-                            </Breadcrumb.Item>
-					        {#if $selectedWorkspace}
-                                <Breadcrumb.Separator class="hidden md:block" />
-							    <Breadcrumb.Item class="hidden md:block">
-							    	<Breadcrumb.Link href={`/workspace/${$selectedWorkspace.id}`}
-							    		>{$selectedWorkspace.name}</Breadcrumb.Link
-							    	>
-							    </Breadcrumb.Item>
-							    {#if $selectedSession}
-							        <Breadcrumb.Separator class="hidden md:block" />
-							        <Breadcrumb.Item>
-							        	<Breadcrumb.Link
-							        		href={`/workspace/${$selectedWorkspace.id}/session/${$selectedSession.id}`}
-							        	>
-							        		{$selectedSession.title}
-							        	</Breadcrumb.Link>
-							        </Breadcrumb.Item>
-							    {/if}
-					        {/if}
-					    </Breadcrumb.List>
+							<Breadcrumb.Item class="hidden md:block">
+								<Breadcrumb.Link href="/">Home</Breadcrumb.Link>
+							</Breadcrumb.Item>
+							{#if $selectedWorkspace}
+								<Breadcrumb.Separator class="hidden md:block" />
+								<Breadcrumb.Item class="hidden md:block">
+									<Breadcrumb.Link href={`/workspace/${$selectedWorkspace.id}`}
+										>{$selectedWorkspace.name}</Breadcrumb.Link
+									>
+								</Breadcrumb.Item>
+								{#if $selectedSession}
+									<Breadcrumb.Separator class="hidden md:block" />
+									<Breadcrumb.Item>
+										<Breadcrumb.Link
+											href={`/workspace/${$selectedWorkspace.id}/session/${$selectedSession.id}`}
+										>
+											{$selectedSession.title}
+										</Breadcrumb.Link>
+									</Breadcrumb.Item>
+								{/if}
+							{/if}
+						</Breadcrumb.List>
 					</Breadcrumb.Root>
 				</div>
 			</header>

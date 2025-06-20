@@ -489,14 +489,6 @@ terminal: [
     ]
 };
 
-export async function fetchSession(workspaceId: string, sessionId: string): Promise<Result<Session>> {
-    return await get(`v1/workspace/${workspaceId}/sessions/${sessionId}`);
-}
-
-export async function fetchAllSessions(workspaceId: string, page: Page): Promise<Result<PageResponse<ShallowSession[]>>> {
-    return await get(`v1/workspace/${workspaceId}/sessions`, page);
-}
-
 export async function createNewSession(workspaceId: string, input: string): Promise<Result<Session>> {
     return await post(`v1/workspace/${workspaceId}/sessions`, {
         "input": input,

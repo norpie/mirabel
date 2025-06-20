@@ -1,28 +1,39 @@
 import type { PageLoad } from './$types';
-import { fetchSession } from '$lib/api/session';
 
 import { load as loadWorkspace } from "../../+page";
-import { goto } from '$app/navigation';
-import { toast } from 'svelte-sonner';
+import { connectWebSocket, get } from '$lib/request';
+import type { Session, ShallowSession } from '$lib/models/session';
+import type { Workspace } from '$lib/models/workspace';
+import type { SessionSocketHandler } from '$lib/socket';
+import { error } from '@sveltejs/kit';
 
-export async function load({params}: PageLoad) {
-    let workspaceLoad = await loadWorkspace({params});
-    console.log('load session page');
-    if (!workspaceLoad) {
-        goto("/not-found");
-    }
-    const session = await fetchSession(params.workspace_id, params.session_id)
+export async function load({params, fetch}: PageLoad): Promise<
+{
+    workspace_id: string;
+    workspace: Workspace;
+    sessions: ShallowSession[];
+    session_id: string;
+    session: Session;
+    socket: SessionSocketHandler;
+}>{
+    let workspaceLoad = await loadWorkspace({params, fetch});
+    const session = await get(`v1/workspace/${params.workspace_id}/sessions/${params.session_id}`, fetch);
     if (!session) {
-        goto("/not-found");
+        error(503, 'Could not connect to the server');
+    }
+    if (!session.data && session.error) {
+        error(500, `Failed to load session: ${session.error}`);
     }
     if (!session.data) {
-        toast.error(`Failed to load sessions: ${session.error}`);
-        return;
+        error(404, 'Session not found');
     }
+    const socket = connectWebSocket('v1/' + 'session/' + params.session_id, undefined);
     return {
-        id: params.session_id,
+        workspace_id: params.workspace_id,
         workspace: workspaceLoad.workspace,
         sessions: workspaceLoad.sessions,
+        session_id: params.session_id,
         session: session.data,
+        socket: socket,
     };
 };

@@ -77,7 +77,9 @@
 		sessions.set(data.sessions);
 		selectedWorkspace.set(data.workspace);
 		selectedSession.set(data.session);
-		console.log('Session page mounted', data.session);
+        socket = data.socket;
+        socket.setStateHandler((status) => { socketStatus = status; });
+        socketStatus = socket.status;
 
 		if ($selectedSession) {
 			plan = $selectedSession.plan;
@@ -86,18 +88,11 @@
 			}
 			terminal = $selectedSession.terminal;
 			chat = $selectedSession.chat;
-			socket = connectWebSocket('v1/' + 'session/' + $selectedSession.id, undefined, (status) => {
-				socketStatus = status;
-			});
-            console.log('WebSocket connected for session', $selectedSession.id, "and socket", socket.id);
 		}
 	});
 
 	function cleanup() {
 		window.removeEventListener('resize', handleResize);
-		console.log('Session page destroyed, socket closed');
-		if (!socket) return;
-		socket.close();
 	}
 
 	beforeNavigate(cleanup);

@@ -87,6 +87,10 @@ export class SessionSocketHandler {
         (this.handlers[event] as ((data: EventTypeMap[T]) => void)[]).push(handler);
     }
 
+    setStateHandler(handler: (status: ConnectionStatus) => void): void {
+        this.stateHandler = handler;
+    }
+
     listen(): void {
         this.setState("connecting");
 

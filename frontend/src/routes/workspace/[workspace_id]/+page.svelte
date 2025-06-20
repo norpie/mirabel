@@ -13,12 +13,13 @@
 	import { goto } from '$app/navigation';
 
 	let { data }: PageProps = $props();
+	selectedWorkspace.set(data.workspace);
+	sessions.set(data.sessions);
+
 	let chatInput = $state('');
 	let workspaceId = $derived(page.params.workspace_id);
 
 	onMount(() => {
-		selectedWorkspace.set(data.workspace);
-		sessions.set(data.sessions);
 		selectedSession.set(null);
 	});
 
@@ -28,10 +29,7 @@
             return;
         }
 		if (!chatInput.trim()) return;
-
         const session = await createNewSession($selectedWorkspace.id, chatInput.trim());
-
-		chatInput = '';
         goto(`/workspace/${$selectedWorkspace.id}/session/${session.data.id}`);
 	}
 </script>
