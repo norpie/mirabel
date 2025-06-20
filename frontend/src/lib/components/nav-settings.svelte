@@ -1,81 +1,38 @@
 <script lang="ts">
-	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 
-    import { selectedWorkspace } from '$lib/store';
+	import { selectedWorkspace } from '$lib/store';
 
 	let {
-		items = $bindable()
+		items = $bindable(),
+        ...props
 	}: {
 		items: {
 			title: string;
-			url: string;
-			// this should be `Component` after lucide-svelte updates types
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			callback?: () => void;
 			icon?: any;
-			isActive?: boolean;
-			items?: {
-				title: string;
-				url: string;
-			}[];
 		}[];
 	} = $props();
-
-    function openSettings() {
-        console.log('openSettings');
-    }
 </script>
 
 {#if $selectedWorkspace}
-<Sidebar.Group>
-	<Sidebar.GroupLabel>Mirabel</Sidebar.GroupLabel>
-	<Sidebar.Menu>
-		{#each items as mainItem (mainItem.title)}
-			<Collapsible.Root open={mainItem.isActive} class="group/collapsible">
-				{#snippet child({ props })}
-					<Sidebar.MenuItem {...props}>
-						<Collapsible.Trigger>
-							{#snippet child({ props })}
-								<Sidebar.MenuButton {...props}>
-									{#snippet tooltipContent()}
-										{mainItem.title}
-									{/snippet}
-									{#if mainItem.icon}
-										<mainItem.icon />
-									{/if}
-									<span>{mainItem.title}</span>
-									<ChevronRight
-										class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-									/>
-								</Sidebar.MenuButton>
-							{/snippet}
-						</Collapsible.Trigger>
-						<Collapsible.Content>
-							{#if mainItem.items}
-								<Sidebar.MenuSub>
-									{#each mainItem.items as subItem (subItem.title)}
-										<Sidebar.MenuSubItem>
-											<Sidebar.MenuSubButton>
-												{#snippet child({ props })}
-													<a
-														{...props}
-														href="##"
-														onclick={openSettings}
-													>
-														<span>{subItem.title}</span>
-													</a>
-												{/snippet}
-											</Sidebar.MenuSubButton>
-										</Sidebar.MenuSubItem>
-									{/each}
-								</Sidebar.MenuSub>
-							{/if}
-						</Collapsible.Content>
-					</Sidebar.MenuItem>
-				{/snippet}
-			</Collapsible.Root>
-		{/each}
-	</Sidebar.Menu>
-</Sidebar.Group>
+	<Sidebar.Group>
+		<Sidebar.GroupLabel>Mirabel</Sidebar.GroupLabel>
+		<Sidebar.Menu>
+			{#each items as mainItem (mainItem.title)}
+				<Sidebar.MenuItem {...props}>
+					<Sidebar.MenuButton {...props} onclick={mainItem.callback}>
+						{#snippet tooltipContent()}
+							{mainItem.title}
+						{/snippet}
+						{#if mainItem.icon}
+							<mainItem.icon />
+						{/if}
+						<span>{mainItem.title}</span>
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
+			{/each}
+		</Sidebar.Menu>
+	</Sidebar.Group>
 {/if}

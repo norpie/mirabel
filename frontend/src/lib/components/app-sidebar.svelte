@@ -14,13 +14,8 @@
 	}: {
 		items: {
 			title: string;
-			url: string;
+			callback?: () => void;
 			icon: any;
-			isActive: boolean;
-			items: {
-				title: string;
-				url: string;
-			}[];
 		}[];
 
 		ref?: any;

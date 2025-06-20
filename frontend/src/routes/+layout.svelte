@@ -26,32 +26,11 @@
 
 	let items = $state([
 		{
-			url: '/knowledge',
 			title: 'Knowledge',
+            callback: () => {
+                console.log('Knowledge clicked');
+            },
 			icon: BrainCircuit,
-			isActive: false,
-			items: [
-				{
-					url: '/knowledge/technologies',
-					id: 'technologies',
-					title: 'Technologies'
-				},
-				{
-					url: '/knowledge/documentation',
-					id: 'documentation',
-					title: 'Documentation'
-				},
-				{
-					url: '/knowledge/structure',
-					id: 'structure',
-					title: 'Structure'
-				},
-				{
-					url: '/knowledge/workflow',
-					id: 'workflow',
-					title: 'Git Workflow'
-				}
-			]
 		}
 	]);
 </script>
