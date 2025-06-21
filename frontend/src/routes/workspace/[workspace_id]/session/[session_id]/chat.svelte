@@ -11,7 +11,7 @@
 	import { selectedSession } from '$lib/store';
 	import { formatTime, formatElapsedTime } from '$lib/time';
 	import { SessionSocketHandler } from '$lib/socket';
-	import type { SessionEvent } from '$lib/models/event';
+	import type { AcknowledgmentContent, SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
 	import { Separator } from '$lib/components/ui/separator';
 
@@ -27,6 +27,12 @@
         events: SessionEvent[] | undefined;
 	} = $props();
 
+    $effect(() => {
+        socket?.addHandler('AcknowledgmentContent', (content: AcknowledgmentContent) => {
+            acknowledgementEvents = [...acknowledgementEvents, content];
+        });
+    });
+
 	let socketStatusStyle = $derived(getSocketStatusStyle(socketStatus));
 
 	let initialLoad = $state(true);
@@ -34,11 +40,12 @@
 	let scrollArea: HTMLElement | null = $state(null);
 	let previousMessageCount = $state(0);
 	let chatInput = $state('');
+
+    let acknowledgementEvents: AcknowledgmentContent[] = $state([]);
     let lastChatStatus: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing' | 'paused' = $derived.by(() => {
-        const acknowledgementEvents = events?.filter(event => event.content.type === 'AcknowledgmentContent');
-        return acknowledgementEvents?.length
-            ? acknowledgementEvents[acknowledgementEvents.length - 1].content.ackType
-            : null;
+        if (!acknowledgementEvents || acknowledgementEvents.length === 0) return 'sent';
+        const lastEvent = acknowledgementEvents[acknowledgementEvents.length - 1];
+        return lastEvent.ackType || 'sent';
     });
 
     // Track when the current status started

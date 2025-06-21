@@ -43,7 +43,7 @@ pub async fn session_socket(
     session_service
         .write()
         .await
-        .add_socket(&session_id, (socket_id, socket3))
+        .add_socket(&session_id, (socket_id, Mutex::new(socket3)))
         .await?;
     let alive2 = alive.clone();
     actix_web::rt::spawn(async move {
@@ -73,22 +73,14 @@ pub async fn session_socket(
                         text.to_string(),
                     )
                     .await;
-                    match result {
-                        Ok(response) => {
-                            if let Err(e) = socket.text(response).await {
-                                error!("Error sending message: {:?}", e);
-                                break;
-                            }
+                    if let Err(e) = result {
+                        error!("Error handling message: {:?}", e);
+                        let json_error =
+                            serde_json::to_string_pretty(&SessionEvent::error()).unwrap();
+                        if let Err(e) = socket.text(json_error).await {
+                            error!("Error sending error message: {:?}", e);
                         }
-                        Err(e) => {
-                            error!("Error handling message: {:?}", e);
-                            let json_error =
-                                serde_json::to_string_pretty(&SessionEvent::error()).unwrap();
-                            if let Err(e) = socket.text(json_error).await {
-                                error!("Error sending error message: {:?}", e);
-                            }
-                            break;
-                        }
+                        break;
                     }
                 }
                 Message::Ping(bytes) => {
@@ -126,13 +118,11 @@ pub async fn handle_json_message(
     session_id: &Path<String>,
     user: &User,
     json: String,
-) -> Result<String> {
+) -> Result<()> {
     let parsed = serde_json::from_str::<SessionEvent>(&json)?;
-    let response = session_service
+    session_service
         .read()
         .await
         .handle_event(session_id, user, parsed)
-        .await?;
-    let value = serde_json::to_string_pretty(&response)?;
-    Ok(value)
+        .await
 }

@@ -17,7 +17,7 @@ use crate::{dto::session::event::SessionEvent, model::user::User};
 
 pub struct SessionService {
     repository: Data<RepositoryProvider>,
-    socket_registry: Data<Mutex<HashMap<String, Vec<(Uuid, Session)>>>>,
+    socket_registry: Data<Mutex<HashMap<String, Vec<(Uuid, Mutex<Session>)>>>>,
 }
 
 impl SessionService {
@@ -33,19 +33,44 @@ impl SessionService {
         session_id: &str,
         user: &User,
         event: SessionEvent,
-    ) -> Result<SessionEvent> {
+    ) -> Result<()> {
         debug!("Handling event for session {}: {:?}", session_id, event);
-        Ok(SessionEvent {
-            id: "lsakdjhflkasdhf".into(),
-            source: "agent".into(),
-            timestamp: Utc::now(),
-            content: SessionEventContent::Acknowledgment {
-                ack_type: AcknowledgmentType::Delivered,
+        self.send_session_event(
+            session_id,
+            SessionEvent {
+                id: "lsakdjhflkasdhf".into(),
+                source: "agent".into(),
+                timestamp: Utc::now(),
+                content: SessionEventContent::AcknowledgmentContent {
+                    ack_type: AcknowledgmentType::Delivered,
+                },
             },
-        })
+        ).await
     }
 
-    pub async fn add_socket(&mut self, session_id: &str, session: (Uuid, Session)) -> Result<()> {
+    pub async fn send_session_event(&self, session_id: &str, event: SessionEvent) -> Result<()> {
+        debug!("Sending event for session {}: {:?}", session_id, event);
+        let registry = self.socket_registry.lock().await;
+        if let Some(sockets) = registry.get(session_id) {
+            for (socket_id, socket) in sockets {
+                if let Err(e) = socket
+                    .lock()
+                    .await
+                    .text(serde_json::to_string(&event)?)
+                    .await
+                {
+                    debug!("Failed to send event to socket {}: {}", socket_id, e);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub async fn add_socket(
+        &mut self,
+        session_id: &str,
+        session: (Uuid, Mutex<Session>),
+    ) -> Result<()> {
         debug!("Adding socket for session {}", session_id);
         let mut registry = self.socket_registry.lock().await;
         registry

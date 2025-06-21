@@ -16,7 +16,7 @@ impl SessionEvent {
             id: Uuid::new_v4().to_string(),
             source: "system".to_string(),
             timestamp: Utc::now(),
-            content: SessionEventContent::Acknowledgment {
+            content: SessionEventContent::AcknowledgmentContent {
                 ack_type: AcknowledgmentType::Error,
             },
         }
@@ -36,7 +36,7 @@ pub enum AcknowledgmentType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum SessionEventContent {
-    Acknowledgment {
+    AcknowledgmentContent {
         #[serde(rename = "ackType")]
         ack_type: AcknowledgmentType,
     },
