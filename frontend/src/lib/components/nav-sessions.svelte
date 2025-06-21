@@ -11,8 +11,16 @@
 	import Spinner from './spinner.svelte';
 
 	import { selectedWorkspace } from '$lib/store';
+	import { goto } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
+	import { del } from '$lib/request';
 
 	const sidebar = useSidebar();
+
+    async function archiveSession(sessionId: string) {
+        const response = await del(`v1/workspace/${$selectedWorkspace.id}/session/${sessionId}`);
+        toast.info(JSON.stringify(response));
+    }
 </script>
 
 {#if $selectedWorkspace && $sessions}
@@ -44,16 +52,16 @@
 							>
 								<DropdownMenu.Item>
 									<Eye class="text-muted-foreground" />
-									<span>View Session</span>
+									<span onclick={() => goto(`/workspace/${$selectedWorkspace.id}/session/${session.id}`)}>View Session</span>
 								</DropdownMenu.Item>
 								<DropdownMenu.Item>
 									<Star class="text-muted-foreground" />
-									<span>Favourite Session</span>
+									<span onclick={() => toast.info("Not implemented yet.")}>Favourite Session</span>
 								</DropdownMenu.Item>
 								<DropdownMenu.Separator />
 								<DropdownMenu.Item>
 									<Archive class="text-muted-foreground" />
-									<span>Archive Session</span>
+									<span onclick={() => archiveSession(session.id)}>Archive Session</span>
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>

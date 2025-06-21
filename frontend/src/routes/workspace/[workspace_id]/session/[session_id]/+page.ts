@@ -6,7 +6,7 @@ import type { Workspace } from '$lib/models/workspace';
 import type { SessionSocketHandler } from '$lib/socket';
 import { error } from '@sveltejs/kit';
 
-export async function load({params, fetch}: PageLoad): Promise<
+export async function load({params, fetch, parent}: PageLoad): Promise<
 {
     workspace_id: string;
     workspace: Workspace;
@@ -15,8 +15,7 @@ export async function load({params, fetch}: PageLoad): Promise<
     session: Session;
     socket: SessionSocketHandler;
 }>{
-    const parentData = await parent();
-    const session = await get(`v1/workspace/${params.workspace_id}/sessions/${params.session_id}`, fetch);
+    const session = await get(`v1/workspace/${params.workspace_id}/session/${params.session_id}`, fetch);
     if (!session) {
         error(503, 'Could not connect to the server');
     }
@@ -27,6 +26,7 @@ export async function load({params, fetch}: PageLoad): Promise<
         error(404, 'Session not found');
     }
     const socket = connectWebSocket('v1/' + 'session/' + params.session_id, undefined);
+    const parentData = await parent();
     return {
         ...parentData,
         workspace_id: params.workspace_id,

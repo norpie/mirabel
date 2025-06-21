@@ -14,7 +14,6 @@ export const load: LayoutLoad<{
     sessions: ShallowSession[];
     workspace: Workspace;
 }> = async ({ params, fetch, parent }) => {
-    const parentData = await parent();
 	const page = { page: 1, size: 10 };
     const workspace = await get<Result<Workspace>>(`v1/workspace/${params.workspace_id}`, fetch);
     if (!workspace) {
@@ -26,7 +25,7 @@ export const load: LayoutLoad<{
     if (!workspace.data) {
         error(404, 'Workspace not found');
     }
-	let sessions = await get(`v1/workspace/${params.workspace_id}/sessions`, page, fetch)
+	let sessions = await get(`v1/workspace/${params.workspace_id}/session`, page, fetch)
     if (!sessions) {
         error(503, 'Could not connect to the server');
     }
@@ -36,6 +35,7 @@ export const load: LayoutLoad<{
     if (!sessions.data || !sessions.data.data) {
         error(404, 'No sessions found for this workspace');
     }
+    const parentData = await parent();
     return {
         ...parentData,
         workspaceId: params.workspace_id,
