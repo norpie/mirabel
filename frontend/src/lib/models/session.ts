@@ -38,6 +38,6 @@ export interface Chat {
 
 export interface Message {
     timestamp: string;
-    participant: string;
+    authorId: string;
     message: string;
 }

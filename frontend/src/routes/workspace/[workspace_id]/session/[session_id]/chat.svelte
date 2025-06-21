@@ -9,21 +9,22 @@
 	import Pause from 'lucide-svelte/icons/pause';
 	import type { Chat, Participant } from '$lib/models/session';
 	import { selectedSession } from '$lib/store';
-	import { formatTime } from '$lib/time';
+	import { formatTime, formatElapsedTime } from '$lib/time';
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
-	import { onMount } from 'svelte';
 	import { Separator } from '$lib/components/ui/separator';
 
 	let {
 		socket = $bindable(),
         socketStatus = $bindable(),
-		chat
+		chat,
+        events
 	}: {
 		socket: SessionSocketHandler | undefined;
         socketStatus: 'open' | 'closed' | 'connecting' | 'error';
 		chat: Chat | undefined;
+        events: SessionEvent[] | undefined;
 	} = $props();
 
 	let socketStatusStyle = $derived(getSocketStatusStyle(socketStatus));
@@ -33,7 +34,12 @@
 	let scrollArea: HTMLElement | null = $state(null);
 	let previousMessageCount = $state(0);
 	let chatInput = $state('');
-    let lastChatStatus: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing' | 'paused' = $state('sent');
+    let lastChatStatus: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing' | 'paused' = $derived.by(() => {
+        const acknowledgementEvents = events?.filter(event => event.content.type === 'AcknowledgmentContent');
+        return acknowledgementEvents?.length
+            ? acknowledgementEvents[acknowledgementEvents.length - 1].content.ackType
+            : null;
+    });
 
     // Track when the current status started
     let statusStartTime = $state(new Date());
@@ -48,7 +54,7 @@
             case 'read':
                 return 'Read';
             default:
-                return 'Unknown';
+                return '';
         }
     }
 
@@ -106,40 +112,28 @@
 	function messageAuthor(participantId: string): Participant {
 		return (
 			$selectedSession?.participants.find((p) => p.id === participantId) ?? {
-				id: 'unknown',
+				id: participantId,
 				name: 'Anon',
-				user: true
 			}
 		);
 	}
 
+    function isUser(participant: Participant): boolean {
+        return participant.id != 'mirabel';
+    }
+
 	// Function to find the last user message
-	function isLastUserMessage(msg: any, index: number): boolean {
-		if (!chat) return false;
-
-		// Check if this is a user message
-		const participant = messageAuthor(msg.participant);
-		if (!participant.user) return false;
-
-		// Is this the last user message in the list?
-		const userMessages = chat.messages.filter(m => messageAuthor(m.participant).user);
-		return userMessages[userMessages.length - 1] === msg;
+	function isLastUserMessage(index: number): boolean {
+		if (!chat || chat.messages.length === 0) return false;
+        if (chat.messages.length - 1 !== index) return false;
+        const message = chat.messages[chat.messages.length - 1];
+        if (!isUser(messageAuthor(message.authorId))) return false;
+        return true;
 	}
 
 	// Helper function to determine if status should be shown as a message
 	function isTypingStatus(status: string): boolean {
 		return status === 'thinking' || status === 'writing' || status === 'paused';
-	}
-
-	// Find assistant participant for typing indicators
-	function getAssistantParticipant(): Participant {
-		return (
-			$selectedSession?.participants.find((p) => !p.user) ?? {
-				id: 'assistant',
-				name: 'Mirabel',
-				user: false
-			}
-		);
 	}
 
 	async function sendMessage() {
@@ -166,22 +160,6 @@
 		chatInput = '';
 	}
 
-	// Format elapsed time in human-readable format
-	function formatElapsedTime(startTime: Date): string {
-		const elapsed = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-
-		const hours = Math.floor(elapsed / 3600);
-		const minutes = Math.floor((elapsed % 3600) / 60);
-		const seconds = elapsed % 60;
-
-		let result = '';
-		if (hours > 0) result += `${hours}h `;
-		if (minutes > 0 || hours > 0) result += `${minutes}m `;
-		result += `${seconds}s`;
-
-		return result;
-	}
-
 	// Update status start time when status changes
 	$effect(() => {
 		statusStartTime = new Date();
@@ -190,7 +168,7 @@
 	// Update elapsed time every second
 	let timer: number;
 
-	onMount(() => {
+	$effect(() => {
 		timer = window.setInterval(() => {
 			if (isTypingStatus(lastChatStatus)) {
 				elapsedTime = formatElapsedTime(statusStartTime);
@@ -246,7 +224,7 @@
 					</div>
 					<div class="pb-2 pt-2">
 						<p class="font-light">{msg.message}</p>
-						{#if isLastUserMessage(msg, index) && !isTypingStatus(lastChatStatus)}
+						{#if isLastUserMessage(index) && !isTypingStatus(lastChatStatus)}
 							<p class="text-xs text-muted-foreground mt-1">{formatLastChatStatus(lastChatStatus)}</p>
 						{/if}
 					</div>
@@ -256,15 +234,14 @@
 
 		<!-- Display thinking/writing/paused status as a chat message -->
 		{#if isTypingStatus(lastChatStatus)}
-			{@const assistant = getAssistantParticipant()}
 			<div class="mb-4 flex space-x-4">
 				<Avatar.Root class="h-8 w-8 rounded-lg">
-					<Avatar.Image src={Mirabel} alt={`${assistant.name}'s avatar`} />
+					<Avatar.Image src={Mirabel} alt={`Mirabel's avatar`} />
 					<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
 				</Avatar.Root>
 				<div class="flex flex-col">
 					<div class="flex items-center gap-2">
-						<p class="font-normal leading-none">{assistant.name}</p>
+						<p class="font-normal leading-none">Mirabel</p>
 					</div>
 					<div class="pb-2 pt-2">
 						<div class="flex items-center">
