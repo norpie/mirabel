@@ -37,6 +37,7 @@ pub enum AcknowledgmentType {
 #[serde(tag = "type")]
 pub enum SessionEventContent {
     Acknowledgment {
+        #[serde(rename = "ackType")]
         ack_type: AcknowledgmentType,
     },
     MessageContent {
