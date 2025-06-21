@@ -11,13 +11,16 @@ import type { User } from '$lib/models/user';
 export const load: LayoutLoad<{
 	user: User;
 	workspaces: Workspace[];
-}> = async ({ params, fetch }) => {
+}> = async ({ fetch }) => {
 	const userResult = await get<Result<User>>('v1/me', fetch);
 	if (!userResult) {
 		error(503, 'Unable to fetch user data');
 	}
 	if (!userResult.data && userResult.error) {
-		error(500, `Failed to load user: ${userResult.error}`);
+        return {
+            user: null,
+            workspaces: []
+        }
 	}
 	if (!userResult.data) {
 		error(404, 'User not found');
