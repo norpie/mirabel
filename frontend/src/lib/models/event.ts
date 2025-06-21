@@ -5,7 +5,8 @@ export interface SessionEvent {
     content: SessionContent ; // Content of the event, can vary based on type
 }
 
-export type SessionContent = 
+export type SessionContent =
+    | (AcknowledgmentContent & { type: 'AcknowledgmentContent' })
     | (MessageContent & { type: 'MessageContent' })
     | (AgentActionContent & { type: 'AgentActionContent' })
     | (AgentPromptContent & { type: 'AgentPromptContent' })
@@ -14,6 +15,10 @@ export type SessionContent =
     | (AgentTaskEvent & { type: 'AgentTaskEvent' })
     | (AgentSpecUpdateEvent & { type: 'AgentSpecUpdateEvent' })
     | (AgentTerminalContentEvent & { type: 'AgentTerminalContentEvent' });
+
+export interface AcknowledgmentContent {
+    ackType: 'delivered' | 'seen' | 'thinking' | 'typing' | 'error';
+}
 
 export interface MessageContent {
     message: string;

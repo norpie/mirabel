@@ -1,8 +1,9 @@
-import type { SessionEvent, SessionContent, MessageContent, AgentActionContent, AgentPromptContent, UserPromptResponseContent, AgentNewTaskEvent, AgentTaskEvent, AgentSpecUpdateEvent, AgentTerminalContentEvent } from "./models/event";
+import type { SessionEvent, SessionContent, MessageContent, AgentActionContent, AgentPromptContent, UserPromptResponseContent, AgentNewTaskEvent, AgentTaskEvent, AgentSpecUpdateEvent, AgentTerminalContentEvent, AcknowledgmentContent } from "./models/event";
 import { toast } from 'svelte-sonner';
 
 // Type mapping from event type strings to their corresponding content types
 type EventTypeMap = {
+    'AcknowledgmentContent': AcknowledgmentContent;
     'MessageContent': MessageContent;
     'AgentActionContent': AgentActionContent;
     'AgentPromptContent': AgentPromptContent;
