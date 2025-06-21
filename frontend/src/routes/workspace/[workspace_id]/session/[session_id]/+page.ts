@@ -1,6 +1,5 @@
 import type { PageLoad } from './$types';
 
-import { load as loadWorkspace } from "../../+page";
 import { connectWebSocket, get } from '$lib/request';
 import type { Session, ShallowSession } from '$lib/models/session';
 import type { Workspace } from '$lib/models/workspace';
@@ -16,7 +15,7 @@ export async function load({params, fetch}: PageLoad): Promise<
     session: Session;
     socket: SessionSocketHandler;
 }>{
-    let workspaceLoad = await loadWorkspace({params, fetch});
+    const parentData = await parent();
     const session = await get(`v1/workspace/${params.workspace_id}/sessions/${params.session_id}`, fetch);
     if (!session) {
         error(503, 'Could not connect to the server');
@@ -29,9 +28,8 @@ export async function load({params, fetch}: PageLoad): Promise<
     }
     const socket = connectWebSocket('v1/' + 'session/' + params.session_id, undefined);
     return {
+        ...parentData,
         workspace_id: params.workspace_id,
-        workspace: workspaceLoad.workspace,
-        sessions: workspaceLoad.sessions,
         session_id: params.session_id,
         session: session.data,
         socket: socket,

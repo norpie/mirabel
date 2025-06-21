@@ -1,6 +1,4 @@
-import type { PageLoad } from './$types';
-
-import { load as parent } from "../../+layout";
+import type { LayoutLoad } from './$types';
 
 import { error } from '@sveltejs/kit';
 import { get } from '$lib/request';
@@ -9,14 +7,14 @@ import type Result from '$lib/models/result';
 import type { ShallowSession } from '$lib/models/session';
 import type { User } from '$lib/models/user';
 
-export const load: PageLoad<{
+export const load: LayoutLoad<{
     user: User;
     workspaces: Workspace[];
     workspaceId: string;
     sessions: ShallowSession[];
     workspace: Workspace;
-}> = async ({ params, fetch }) => {
-    const parentData = await parent({params, fetch});
+}> = async ({ params, fetch, parent }) => {
+    const parentData = await parent();
 	const page = { page: 1, size: 10 };
     const workspace = await get<Result<Workspace>>(`v1/workspace/${params.workspace_id}`, fetch);
     if (!workspace) {
