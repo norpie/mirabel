@@ -35,7 +35,9 @@
 
         localStorage.setItem('accessToken', response.data.access_token);
         toast.success('Logged in successfully');
-        goto('/');
+        goto('/', {
+            invalidateAll: true
+        });
     }
 
     let username = $state();

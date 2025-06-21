@@ -8,7 +8,7 @@
 
     import { post } from '$lib/request';
 
-    import { goto } from '$app/navigation';
+    import { goto, invalidate } from '$app/navigation';
 	import type Result from '$lib/models/result';
 
     async function login() {
@@ -29,7 +29,9 @@
 
         localStorage.setItem('accessToken', response.data.access_token);
         toast.success('Logged in successfully');
-        goto('/');
+        goto('/', {
+            invalidateAll: true
+        });
     }
 
     let email = $state();
