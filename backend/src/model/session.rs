@@ -19,6 +19,7 @@ pub struct Session {
     pub plan: Option<Plan>,
     pub chat: Chat,
     pub terminal: Option<Vec<String>>,
+    pub archived: bool,
 }
 
 impl Entity for Session {
@@ -38,6 +39,7 @@ impl Session {
             chat: Chat::default(),
             participants: Vec::new(),
             terminal: None,
+            archived: false,
         }
     }
 

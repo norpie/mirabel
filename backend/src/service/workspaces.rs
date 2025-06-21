@@ -117,11 +117,19 @@ impl WorkspaceService {
 
     pub async fn delete_user_session(
         &self,
-        _user_id: String,
-        _workspace_id: String,
+        user_id: String,
+        workspace_id: String,
         id: String,
     ) -> Result<()> {
-        self.repository.session_repo().delete(&id).await
+        let session_opt = self
+            .get_user_session_by_id(user_id, workspace_id, id)
+            .await?;
+        let Some(mut session) = session_opt else {
+            return Err(Error::NotFound);
+        };
+        session.archived = true;
+        self.repository.session_repo().save(session).await?;
+        Ok(())
     }
 
     pub async fn get_user_workspace_sessions(

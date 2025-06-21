@@ -28,7 +28,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
             .service(get_user_workspace_sessions)
             .service(create_workspace_session)
             .service(get_workspace_session)
-            .service(delete_user_session)
+            .service(archive_user_session)
             .service(update_user_session),
     );
 }
@@ -60,7 +60,7 @@ pub async fn set_workspace_avatar(
     ))
 }
 
-#[get("/{id}/sessions")]
+#[get("/{id}/session")]
 pub async fn get_user_workspace_sessions(
     workspace_service: Data<WorkspaceService>,
     user: User,
@@ -80,7 +80,7 @@ struct SessionInput {
     input: String,
 }
 
-#[post("/{id}/sessions")]
+#[post("/{id}/session")]
 pub async fn create_workspace_session(
     workspace_service: Data<WorkspaceService>,
     user: User,
@@ -94,20 +94,20 @@ pub async fn create_workspace_session(
     )))
 }
 
-#[delete("/{id}/sessions/{session_id}")]
-pub async fn delete_user_session(
+#[delete("/{id}/session/{session_id}")]
+pub async fn archive_user_session(
     workspace_service: Data<WorkspaceService>,
     user: User,
-    id: Path<String>,
-    session_id: Path<String>,
+    ids: Path<(String, String)>,
 ) -> Result<impl Responder> {
+    let (workspace_id, session_id) = ids.into_inner();
     workspace_service
-        .delete_user_session(user.id().unwrap(), id.to_string(), session_id.to_string())
+        .delete_user_session(user.id().unwrap(), workspace_id, session_id)
         .await?;
     Ok(ApiResponse::ok(()))
 }
 
-#[patch("/{id}/sessions/{session_id}")]
+#[patch("/{id}/session/{session_id}")]
 pub async fn update_user_session(
     workspace_service: Data<WorkspaceService>,
     _id: Path<String>,
@@ -121,7 +121,7 @@ pub async fn update_user_session(
     ))
 }
 
-#[get("/{id}/sessions/{session_id}")]
+#[get("/{id}/session/{session_id}")]
 pub async fn get_workspace_session(
     workspace_service: Data<WorkspaceService>,
     user: User,

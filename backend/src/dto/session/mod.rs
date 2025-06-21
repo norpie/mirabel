@@ -12,6 +12,7 @@ pub struct FullSession {
     pub chat: Chat,
     pub plan: Option<Plan>,
     pub terminal: Option<Vec<String>>,
+    pub archived: bool,
     // pub actions: Vec<Action>,
 }
 
@@ -24,6 +25,7 @@ impl From<Session> for FullSession {
             chat: session.chat,
             plan: session.plan,
             terminal: session.terminal,
+            archived: session.archived,
         }
     }
 }
