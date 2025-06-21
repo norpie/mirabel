@@ -23,10 +23,12 @@
 
 	let { data, children }: LayoutProps = $props();
 
-	user.set(data.user);
-	workspaces.set(data.workspaces);
-	selectedWorkspace.set(null);
-	selectedSession.set(null);
+	$effect(() => {
+		user.set(data.user);
+		workspaces.set(data.workspaces);
+	    selectedWorkspace.set(null);
+	    selectedSession.set(null);
+	});
 
 	let items = $state([
 		{
