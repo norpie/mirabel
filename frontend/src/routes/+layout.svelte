@@ -24,11 +24,8 @@
 
 	let { data, children }: LayoutProps = $props();
 
-	$effect(() => {
-        console.log('Layout data updated:', data);
-		user.set(data.user);
-		workspaces.set(data.workspaces);
-	});
+	user.set(data.user);
+	workspaces.set(data.workspaces);
 
 	let items = $state([
 		{
