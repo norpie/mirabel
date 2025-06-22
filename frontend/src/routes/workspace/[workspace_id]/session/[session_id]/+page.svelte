@@ -9,13 +9,12 @@
 
 	import type { PaneAPI } from 'paneforge';
 	import type { PageProps } from './$types';
-	import { sessions, selectedSession, selectedWorkspace } from '$lib/store';
 
-	import { onDestroy, onMount } from 'svelte';
-	import { connectWebSocket } from '$lib/request';
 	import { SessionSocketHandler } from '$lib/socket';
 	import type { Chat as ChatModel, Plan } from '$lib/models/session';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
+
+    import { selectedWorkspace, selectedSession, sessions } from '$lib/store';
+	import { onMount } from 'svelte';
 
 	let { data }: PageProps = $props();
 
@@ -39,10 +38,10 @@
 
 	let tab = $state('spec');
 
-	let spec: string | undefined = $state();
-	let chat: ChatModel | undefined = $state();
-	let plan: Plan | undefined = $state();
-	let terminal: string[] | undefined = $state([]);
+	let spec: string | undefined = $derived(data.session?.plan?.spec);
+	let chat: ChatModel | undefined = $state(data.session?.chat);
+	let plan: Plan | undefined = $derived(data.session?.plan);
+	let terminal: string[] | undefined = $derived(data.session?.terminal);
 
 	function handleResize() {
 		if (!inset) return;
@@ -72,39 +71,30 @@
 		}
 	}
 
-	let socket: SessionSocketHandler | undefined = $state();
-	let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state('closed');
+	let socket: SessionSocketHandler | undefined = $state(data.socket);
+	let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state(socket.status);
 
-	afterNavigate(async () => {
+    let session = $state(data.session);
+
+	$effect(() => {
 		window.addEventListener('resize', handleResize);
-		sessions.set(data.sessions);
-		selectedWorkspace.set(data.workspace);
-		selectedSession.set(data.session);
-        socket = data.socket;
-        socket.setStateHandler((status) => { socketStatus = status; });
-        socketStatus = socket.status;
-
-		if ($selectedSession) {
-			plan = $selectedSession.plan;
-			if (plan) {
-				spec = plan.spec;
-			}
-			terminal = $selectedSession.terminal;
-			chat = $selectedSession.chat;
-		}
+        selectedWorkspace.set(data.workspace);
+        selectedSession.set(data.session);
+        sessions.set(data.sessions);
+        socket.setStateHandler((state) => {
+            socketStatus = state;
+        })
+        return () => {
+		    window.removeEventListener('resize', handleResize);
+            if (!data.session || data.session.id != session.id) {
+                socket?.close();
+            }
+        };
 	});
-
-	function cleanup() {
-		window.removeEventListener('resize', handleResize);
-        socket?.close();
-	}
-
-	beforeNavigate(cleanup);
-    onDestroy(cleanup);
 </script>
 
 <div bind:this={inset} class="h-full rounded-xl bg-primary md:min-h-min">
-	{#if $selectedSession}
+	{#if session}
 		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane
 				id="chat"
