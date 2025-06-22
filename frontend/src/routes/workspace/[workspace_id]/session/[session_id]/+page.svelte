@@ -14,7 +14,6 @@
 	import type { Chat as ChatModel, Plan } from '$lib/models/session';
 
     import { selectedWorkspace, selectedSession, sessions } from '$lib/store';
-	import { onMount } from 'svelte';
 
 	let { data }: PageProps = $props();
 
@@ -24,6 +23,9 @@
 	let inset: HTMLDivElement | undefined = $state();
 
     const user = data.user;
+	let socket: SessionSocketHandler | undefined = $state(data.socket);
+	let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state(socket.status);
+    let session = $state(data.session);
 
 	const minSize = 5;
 	const maxSize = 100 - minSize;
@@ -40,8 +42,8 @@
 
 	let spec: string | undefined = $derived(data.session?.plan?.spec);
 	let chat: ChatModel | undefined = $state(data.session?.chat);
-	let plan: Plan | undefined = $derived(data.session?.plan);
-	let terminal: string[] | undefined = $derived(data.session?.terminal);
+	let plan: Plan | undefined = $state(data.session?.plan);
+	let terminal: string[] | undefined = $state(data.session?.terminal);
 
 	function handleResize() {
 		if (!inset) return;
@@ -70,11 +72,6 @@
 			monitorPane?.resize(monitorSize);
 		}
 	}
-
-	let socket: SessionSocketHandler | undefined = $state(data.socket);
-	let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state(socket.status);
-
-    let session = $state(data.session);
 
 	$effect(() => {
 		window.addEventListener('resize', handleResize);
