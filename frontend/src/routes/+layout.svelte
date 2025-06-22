@@ -13,10 +13,11 @@
 
 	import { page } from '$app/state';
 
-	let hideSidebar = $state(true);
-	$effect(() => {
-		hideSidebar = ['/login', '/register'].includes(page.url.pathname);
-	});
+	let hideSidebar: boolean = $derived(isExcluded(page.url.pathname));
+
+    function isExcluded(path: string): boolean {
+        return ['/login', '/register'].includes(path);
+    }
 
 	import { user, workspaces, selectedWorkspace, selectedSession } from '$lib/store';
 	import type { LayoutProps } from './$types';
@@ -24,10 +25,9 @@
 	let { data, children }: LayoutProps = $props();
 
 	$effect(() => {
+        console.log('Layout data updated:', data);
 		user.set(data.user);
 		workspaces.set(data.workspaces);
-	    selectedWorkspace.set(null);
-	    selectedSession.set(null);
 	});
 
 	let items = $state([
