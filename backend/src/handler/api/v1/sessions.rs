@@ -36,6 +36,7 @@ pub async fn session_socket(
     let (res, mut socket, mut msg_stream) = actix_ws::handle(&req, stream)?;
 
     let alive = Arc::new(Mutex::new(Instant::now()));
+    let session_open = Arc::new(Mutex::new(true));
 
     let mut socket2 = socket.clone();
     let socket3 = socket.clone();
@@ -46,6 +47,7 @@ pub async fn session_socket(
         .add_socket(&session_id, (socket_id, Mutex::new(socket3)))
         .await?;
     let alive2 = alive.clone();
+    let session_open2 = session_open.clone();
     let session_id2 = session_id.clone();
     actix_web::rt::spawn(async move {
         let session_id = session_id2;
@@ -53,6 +55,13 @@ pub async fn session_socket(
 
         loop {
             interval.tick().await;
+
+            // Check if session is still open before pinging
+            if !*session_open2.lock().await {
+                debug!("Session {} is closed, stopping ping loop", &session_id);
+                break;
+            }
+
             debug!("Pinging WebSocket for session: {}", &session_id);
             if socket2.ping(b"").await.is_err() {
                 debug!("WebSocket ping failed for session: {}", &session_id);
@@ -109,6 +118,9 @@ pub async fn session_socket(
                 _ => {}
             }
         }
+
+        // Mark session as closed
+        *session_open.lock().await = false;
 
         session_service
             .write()
