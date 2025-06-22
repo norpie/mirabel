@@ -269,6 +269,7 @@
 
 		<!-- Display thinking/typing/paused status as a chat message -->
 		{#if isTypingStatus(lastChatStatus)}
+            <Separator class="my-4" />
 			<div class="mb-4 flex space-x-4">
 				<Avatar.Root class="h-8 w-8 rounded-lg">
 					<Avatar.Image src={Mirabel} alt={`Mirabel's avatar`} />
