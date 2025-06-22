@@ -22,7 +22,7 @@ export function formatTime(iso8601: string): string {
 }
 
 export function formatElapsedTime(startTime: Date): string {
-	const elapsed = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+	const elapsed = Math.ceil((new Date().getTime() - startTime.getTime()) / 1000);
 
 	const hours = Math.floor(elapsed / 3600);
 	const minutes = Math.floor((elapsed % 3600) / 60);

@@ -17,10 +17,14 @@
 	import type { Chat as ChatModel, Plan } from '$lib/models/session';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 
+	let { data }: PageProps = $props();
+
 	let chatPane: PaneAPI | undefined = $state();
 	let monitorPane: PaneAPI | undefined = $state();
 
 	let inset: HTMLDivElement | undefined = $state();
+
+    const user = data.user;
 
 	const minSize = 5;
 	const maxSize = 100 - minSize;
@@ -68,7 +72,6 @@
 		}
 	}
 
-	let { data }: PageProps = $props();
 	let socket: SessionSocketHandler | undefined = $state();
 	let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state('closed');
 
@@ -117,7 +120,7 @@
 						<ChevronsRight />
 					</button>
 				{:else}
-					<Chat {socket} {socketStatus} {chat} />
+					<Chat {user} {socket} {socketStatus} bind:chat />
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle={enableHandle} disabled={disableResize} />

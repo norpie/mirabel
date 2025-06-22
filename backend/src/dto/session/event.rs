@@ -41,6 +41,8 @@ pub enum SessionEventContent {
         ack_type: AcknowledgmentType,
     },
     MessageContent {
+        #[serde(rename = "authorId")]
+        author_id: String,
         message: String,
     },
     AgentActionContent {

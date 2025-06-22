@@ -46,16 +46,24 @@ pub async fn session_socket(
         .add_socket(&session_id, (socket_id, Mutex::new(socket3)))
         .await?;
     let alive2 = alive.clone();
+    let session_id2 = session_id.clone();
     actix_web::rt::spawn(async move {
+        let session_id = session_id2;
         let mut interval = actix_web::rt::time::interval(Duration::from_secs(5));
 
         loop {
             interval.tick().await;
+            debug!("Pinging WebSocket for session: {}", &session_id);
             if socket2.ping(b"").await.is_err() {
+                debug!("WebSocket ping failed for session: {}", &session_id);
                 break;
             }
 
             if Instant::now().duration_since(*alive2.lock().await) > Duration::from_secs(10) {
+                debug!(
+                    "WebSocket session {} is inactive, closing connection",
+                    session_id
+                );
                 let _ = socket2.close(None).await;
                 break;
             }
@@ -84,16 +92,18 @@ pub async fn session_socket(
                     }
                 }
                 Message::Ping(bytes) => {
+                    debug!("Received ping for session: {}", &session_id);
                     if let Err(e) = socket.pong(&bytes).await {
                         error!("Error responding to ping: {:?}", e);
                         break;
                     }
                 }
                 Message::Pong(_) => {
+                    debug!("Received pong for session: {}", &session_id);
                     *alive.lock().await = Instant::now();
                 }
                 Message::Close(_reason) => {
-                    debug!("WebSocket connection closed for session: {}", session_id);
+                    debug!("WebSocket connection closed for session: {}", &session_id);
                     break;
                 }
                 _ => {}

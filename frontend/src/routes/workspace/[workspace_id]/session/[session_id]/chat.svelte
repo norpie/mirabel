@@ -11,25 +11,39 @@
 	import { selectedSession } from '$lib/store';
 	import { formatTime, formatElapsedTime } from '$lib/time';
 	import { SessionSocketHandler } from '$lib/socket';
-	import type { AcknowledgmentContent, SessionEvent } from '$lib/models/event';
+	import type { AcknowledgmentContent, MessageContent, SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
 	import { Separator } from '$lib/components/ui/separator';
+	import type { User } from '$lib/models/user';
 
 	let {
-		socket = $bindable(),
-        socketStatus = $bindable(),
-		chat,
-        events
+		socket,
+        socketStatus,
+        user,
+		chat = $bindable(),
 	}: {
 		socket: SessionSocketHandler | undefined;
-        socketStatus: 'open' | 'closed' | 'connecting' | 'error';
+        user: User,
+        socketStatus: 'open' | 'closed' | 'connecting' | 'error'
 		chat: Chat | undefined;
-        events: SessionEvent[] | undefined;
 	} = $props();
 
     $effect(() => {
-        socket?.addHandler('AcknowledgmentContent', (content: AcknowledgmentContent) => {
-            acknowledgementEvents = [...acknowledgementEvents, content];
+        socket?.addHandler('AcknowledgmentContent', (event: SessionEvent) => {
+            lastChatStatus = event.content.ackType;
+            statusStartTime = new Date(event.timestamp);
+        });
+        socket?.addHandler("MessageContent", (event: SessionEvent) => {
+            if (!chat) {
+                console.error('Chat is undefined when receiving message content');
+                return;
+            }
+            chat.messages = [...chat.messages, {
+                timestamp: event.timestamp,
+                authorId: event.content.authorId,
+                message: event.content.message
+            }];
+            lastChatStatus = 'sent';
         });
     });
 
@@ -41,25 +55,20 @@
 	let previousMessageCount = $state(0);
 	let chatInput = $state('');
 
-    let acknowledgementEvents: AcknowledgmentContent[] = $state([]);
-    let lastChatStatus: 'sent' | 'delivered' | 'read' | 'thinking' | 'writing' | 'paused' = $derived.by(() => {
-        if (!acknowledgementEvents || acknowledgementEvents.length === 0) return 'sent';
-        const lastEvent = acknowledgementEvents[acknowledgementEvents.length - 1];
-        return lastEvent.ackType || 'sent';
-    });
+    let lastChatStatus: 'sent' | 'delivered' | 'seen' | 'thinking' | 'typing' | 'paused' | 'error' = $state("sent");
 
     // Track when the current status started
     let statusStartTime = $state(new Date());
     let elapsedTime = $state('');
 
-    function formatLastChatStatus(status: 'sent' | 'delivered' | 'read'): string {
+    function formatLastChatStatus(status: 'sent' | 'delivered' | 'seen'): string {
         switch (status) {
             case 'sent':
                 return 'Sent';
             case 'delivered':
                 return 'Delivered';
-            case 'read':
-                return 'Read';
+            case 'seen':
+                return 'Seen';
             default:
                 return '';
         }
@@ -117,6 +126,13 @@
 	}
 
 	function messageAuthor(participantId: string): Participant {
+        if (participantId === 'mirabel') {
+            return {
+                id: 'mirabel',
+                name: 'Mirabel',
+                avatar: Mirabel
+            };
+        }
 		return (
 			$selectedSession?.participants.find((p) => p.id === participantId) ?? {
 				id: participantId,
@@ -140,16 +156,28 @@
 
 	// Helper function to determine if status should be shown as a message
 	function isTypingStatus(status: string): boolean {
-		return status === 'thinking' || status === 'writing' || status === 'paused';
+		return status === 'thinking' || status === 'typing' || status === 'paused';
 	}
+
+    $inspect(user);
 
 	async function sendMessage() {
 		if (!chatInput.trim()) return;
+
+        if (!chat) {
+            toast.error('Chat is not initialized');
+            return;
+        }
 
 		if (!socket) {
 			toast.error('WebSocket connection is not established');
 			return;
 		}
+
+        if (!user || !user.id) {
+            toast.error('User is not authenticated');
+            return;
+        }
 
 		const message: SessionEvent = {
 			id: 'laskjdhflasdhflk',
@@ -157,10 +185,15 @@
 			timestamp: new Date().toISOString(),
 			content: {
 				type: 'MessageContent',
+                authorId: user.id,
 				message: chatInput
 			}
 		};
-		console.log('Sending message:', message);
+        chat.messages = [...chat.messages, {
+            timestamp: new Date().toISOString(),
+            authorId: user.id,
+            message: chatInput
+        }];
 
 		socket.send(message);
 
@@ -212,13 +245,8 @@
             {/if}
 			<div class="mb-4 flex space-x-4">
 				<Avatar.Root class="h-8 w-8 rounded-lg">
-					{#if msg.authorId != "mirabel"}
-						<Avatar.Image src={participant.avatar} alt={`${participant.name}'s avatar`} />
-						<Avatar.Fallback class="rounded-lg">{participant.name[0]}</Avatar.Fallback>
-					{:else}
-						<Avatar.Image src={Mirabel} alt={`${participant.name}'s avatar`} />
-						<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
-					{/if}
+					<Avatar.Image src={participant.avatar} alt={`${participant.name}'s avatar`} />
+					<Avatar.Fallback class="rounded-lg">{participant.name[0]}</Avatar.Fallback>
 				</Avatar.Root>
 				<div class="flex flex-col">
 					<div class="flex items-center gap-2">
@@ -239,7 +267,7 @@
 			</div>
 		{/each}
 
-		<!-- Display thinking/writing/paused status as a chat message -->
+		<!-- Display thinking/typing/paused status as a chat message -->
 		{#if isTypingStatus(lastChatStatus)}
 			<div class="mb-4 flex space-x-4">
 				<Avatar.Root class="h-8 w-8 rounded-lg">
@@ -260,8 +288,8 @@
 										<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 									</svg>
 								</div>
-							{:else if lastChatStatus === 'writing'}
-								<!-- Bouncing dots animation for writing status -->
+							{:else if lastChatStatus === 'typing'}
+								<!-- Bouncing dots animation for typing status -->
 								<div class="flex space-x-1">
 									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 0ms;"></div>
 									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 150ms;"></div>
@@ -276,8 +304,8 @@
 							<span class="ml-3 text-sm text-muted-foreground">
 								{#if lastChatStatus === 'thinking'}
 									Thinking for {elapsedTime}...
-								{:else if lastChatStatus === 'writing'}
-									Writing for {elapsedTime}...
+								{:else if lastChatStatus === 'typing'}
+									typing for {elapsedTime}...
 								{:else if lastChatStatus === 'paused'}
 									Paused for {elapsedTime}
 								{/if}

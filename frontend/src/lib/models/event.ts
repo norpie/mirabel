@@ -21,6 +21,7 @@ export interface AcknowledgmentContent {
 }
 
 export interface MessageContent {
+    authorId: string;
     message: string;
 }
 

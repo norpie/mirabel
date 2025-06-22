@@ -30,7 +30,7 @@ export class SessionSocketHandler {
     private isLeavingPage = false;
     private hasConnectedBefore = false;
 
-    handlers: { [K in EventType]?: ((data: EventTypeMap[K]) => void)[] } = {};
+    handlers: { [T in EventType]?: ((event: SessionEvent) => void)[] } = {};
 
     constructor(
         url: string,
@@ -83,9 +83,9 @@ export class SessionSocketHandler {
         }, 3000);
     }
 
-    addHandler<T extends EventType>(event: T, handler: (data: EventTypeMap[T]) => void): void {
+    addHandler<T extends EventType>(event: T, handler: (event: SessionEvent) => void): void {
         this.handlers[event] ??= [];
-        (this.handlers[event] as ((data: EventTypeMap[T]) => void)[]).push(handler);
+        (this.handlers[event] as ((event: SessionEvent) => void)[]).push(handler);
     }
 
     setStateHandler(handler: (status: ConnectionStatus) => void): void {
@@ -110,7 +110,7 @@ export class SessionSocketHandler {
 
             this.handlers[eventType]?.forEach(handler => {
                 try {
-                    handler(event.content as any);
+                    handler(event as any);
                 } catch (error) {
                     console.error(`Error in handler for ${eventType}:`, error);
                 }

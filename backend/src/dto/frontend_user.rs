@@ -1,10 +1,11 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::model::user::User;
+use crate::{model::user::User, repository::traits::Entity};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FrontendUser {
+    id: String,
     username: String,
     email: String,
     #[serde(rename = "createdAt")]
@@ -14,6 +15,7 @@ pub struct FrontendUser {
 impl From<User> for FrontendUser {
     fn from(user: User) -> Self {
         FrontendUser {
+            id: user.id().unwrap(),
             username: user.username,
             email: user.email,
             created_at: user.created_at,
