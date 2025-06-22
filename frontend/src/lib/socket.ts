@@ -1,5 +1,6 @@
 import type { SessionEvent, SessionContent, MessageContent, AgentActionContent, AgentPromptContent, UserPromptResponseContent, AgentNewTaskEvent, AgentTaskEvent, AgentSpecUpdateEvent, AgentTerminalContentEvent, AcknowledgmentContent } from "./models/event";
 import { toast } from 'svelte-sonner';
+import { goto } from "$app/navigation";
 
 // Type mapping from event type strings to their corresponding content types
 type EventTypeMap = {
@@ -29,6 +30,8 @@ export class SessionSocketHandler {
     public isReconnecting = false;
     private isLeavingPage = false;
     private hasConnectedBefore = false;
+    private authRetryCount = 0;
+    private maxAuthRetries = 1;
 
     handlers: { [T in EventType]?: ((event: SessionEvent) => void)[] } = {};
 
@@ -66,13 +69,63 @@ export class SessionSocketHandler {
         }
     }
 
+    private async refreshToken(): Promise<boolean> {
+        try {
+            const response = await fetch('/api/v1/auth/refresh', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+
+            if (response.status === 401) {
+                return false;
+            }
+
+            const result = await response.json();
+            if (result.data?.access_token) {
+                localStorage.setItem("accessToken", result.data.access_token);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("Token refresh failed:", error);
+            return false;
+        }
+    }
+
+    private async handleAuthFailure(): Promise<boolean> {
+        if (this.authRetryCount >= this.maxAuthRetries) {
+            goto("/login");
+            return false;
+        }
+
+        this.authRetryCount++;
+        const refreshSuccess = await this.refreshToken();
+        
+        if (refreshSuccess) {
+            // Update URL with new token
+            const url = new URL(this.url);
+            const accessToken = localStorage.getItem("accessToken");
+            if (accessToken) {
+                url.searchParams.set("access_token", accessToken);
+                this.url = url.toString();
+            }
+            return true;
+        } else {
+            goto("/login");
+            return false;
+        }
+    }
+
     private reconnect(): void {
         if (!this.shouldReconnect) return;
 
         this.isReconnecting = true;
         this.setState("connecting");
 
-        this.reconnectTimeout = setTimeout(() => {
+        this.reconnectTimeout = setTimeout(async () => {
             try {
                 this.socket = new WebSocket(this.url);
                 this.listen();
@@ -95,14 +148,32 @@ export class SessionSocketHandler {
     listen(): void {
         this.setState("connecting");
 
-        this.socket.onopen = () => this.setState("open");
-
-        this.socket.onclose = (event) => {
-            this.setState("closed");
-            if (event.code !== 1000) this.reconnect();
+        this.socket.onopen = () => {
+            this.authRetryCount = 0; // Reset auth retry count on successful connection
+            this.setState("open");
         };
 
-        this.socket.onerror = () => this.setState("error");
+        this.socket.onclose = async (event) => {
+            this.setState("closed");
+            
+            // Handle authentication errors (typically code 1002 or 1008 for auth failures)
+            if (event.code === 1002 || event.code === 1008 || event.code === 4001) {
+                const authSuccess = await this.handleAuthFailure();
+                if (authSuccess) {
+                    this.reconnect();
+                }
+                return;
+            }
+            
+            if (event.code !== 1000) {
+                this.reconnect();
+            }
+        };
+
+        this.socket.onerror = async (error) => {
+            console.error("WebSocket error:", error);
+            this.setState("error");
+        };
 
         this.socket.onmessage = (e: MessageEvent) => {
             const event: SessionEvent = JSON.parse(e.data);
