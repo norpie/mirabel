@@ -43,7 +43,7 @@ pub enum Error {
     #[error("A reqwest_streams error occurred: {0}")]
     StreamBody(#[from] reqwest_streams::error::StreamBodyError),
     #[error("A surrealdb error occurred: {0}")]
-    SurrealDB(#[from] surrealdb::Error),
+    SurrealDB(Box<surrealdb::Error>),
     #[error("An eyre report occurred: {0}")]
     EyreReport(#[from] eyre::Report),
     #[error("A jsonwebtoken error occurred: {0}")]
@@ -94,6 +94,12 @@ impl From<fantoccini::error::NewSessionError> for Error {
 impl From<fantoccini::error::CmdError> for Error {
     fn from(e: fantoccini::error::CmdError) -> Self {
         Error::FantocciniCmd(Box::new(e))
+    }
+}
+
+impl From<surrealdb::Error> for Error {
+    fn from(e: surrealdb::Error) -> Self {
+        Error::SurrealDB(Box::new(e))
     }
 }
 
