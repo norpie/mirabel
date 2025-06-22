@@ -5,6 +5,7 @@
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import Markdown from '$lib/components/markdown.svelte';
 
+    import { type Plan as PlanModel } from '$lib/models/session';
 	import Plan from '$lib/components/plan/plan.svelte';
 	import Terminal from './terminal.svelte';
 	import File from './file.svelte';
@@ -24,7 +25,7 @@
 		terminal
 	}: {
 		tab: string;
-		plan: Plan | undefined;
+		plan: PlanModel | undefined;
 		spec: string | undefined;
 		terminal: string[] | undefined;
 	} = $props();
