@@ -96,6 +96,7 @@
 
 	function cleanup() {
 		window.removeEventListener('resize', handleResize);
+        socket?.close();
 	}
 
 	beforeNavigate(cleanup);
