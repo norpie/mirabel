@@ -1,6 +1,9 @@
 use miette::Diagnostic;
 use scraper::error::SelectorErrorKind;
 use thiserror::Error;
+use tokio::sync::mpsc::error::SendError;
+
+use crate::dto::session::event::SessionEvent;
 
 #[derive(Debug, Error, Diagnostic)]
 pub enum Error {
@@ -74,6 +77,13 @@ pub enum Error {
     Parse(#[from] std::num::ParseIntError),
     #[error("Environment variable error: {0}")]
     Var(#[from] std::env::VarError),
+
+    #[error("Channel error")]
+    Channel(Box<SendError<SessionEvent>>),
+    #[error("Double subscription error")]
+    DoubleSubscription,
+    #[error("A socket was closed unexpectedly")]
+    SocketClosed,
 }
 
 unsafe impl Send for Error {}
@@ -94,6 +104,12 @@ impl From<fantoccini::error::NewSessionError> for Error {
 impl From<fantoccini::error::CmdError> for Error {
     fn from(e: fantoccini::error::CmdError) -> Self {
         Error::FantocciniCmd(Box::new(e))
+    }
+}
+
+impl From<SendError<SessionEvent>> for Error {
+    fn from(e: SendError<SessionEvent>) -> Self {
+        Error::Channel(Box::new(e))
     }
 }
 

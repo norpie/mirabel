@@ -16,7 +16,6 @@ use actix_web::{
     web::{self, Data},
 };
 use log::info;
-use tokio::sync::RwLock;
 
 mod api;
 pub(crate) mod extractors;
@@ -28,7 +27,7 @@ pub async fn run(db: Data<RepositoryProvider>) -> Result<()> {
 
     let auth_service = Data::new(AuthService::from(db.clone())?);
     let user_service = Data::new(UserService::from(db.clone())?);
-    let session_service = Data::new(RwLock::new(SessionService::from(db.clone())?));
+    let session_service = Data::new(SessionService::from(db.clone())?);
     let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
 
     info!("Listening on {}:{}", host, port);

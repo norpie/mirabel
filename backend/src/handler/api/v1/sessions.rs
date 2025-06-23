@@ -1,7 +1,7 @@
-use std::{sync::Arc, time::Duration};
+use std::{rc::Rc, sync::Arc, time::Duration};
 
 use crate::{
-    dto::session::event::SessionEvent, model::user::User, prelude::*,
+    session::WorkerEvent, dto::session::event::SessionEvent, model::user::User, prelude::*,
     service::sessions::SessionService,
 };
 
@@ -9,12 +9,11 @@ use actix_web::{
     HttpRequest, HttpResponse, Scope, get,
     web::{self, Data, Path},
 };
-use actix_ws::Message;
-use futures_util::StreamExt;
-use log::{debug, error, warn};
-use surrealdb::Uuid;
+use actix_ws::{Message, Session};
+use futures::StreamExt;
+use log::{debug, warn};
 use tokio::{
-    sync::{Mutex, RwLock},
+    sync::{Mutex, mpsc},
     time::Instant,
 };
 
@@ -24,17 +23,6 @@ use crate::handler::middleware::auth_middleware::Auth;
 const PING_INTERVAL_SECS: u64 = 5;
 const INACTIVE_TIMEOUT_SECS: u64 = 10;
 
-struct MessageHandlerContext {
-    socket: actix_ws::Session,
-    msg_stream: actix_ws::MessageStream,
-    session_service: Data<RwLock<SessionService>>,
-    session_id: String,
-    user: User,
-    socket_id: Uuid,
-    alive: Arc<Mutex<Instant>>,
-    session_open: Arc<Mutex<bool>>,
-}
-
 pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(Scope::new("/session").wrap(Auth).service(session_socket));
 }
@@ -43,201 +31,165 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 pub async fn session_socket(
     req: HttpRequest,
     stream: web::Payload,
-    session_service: Data<RwLock<SessionService>>,
+    session_service: Data<SessionService>,
     user: User,
     session_id: Path<String>,
 ) -> Result<HttpResponse> {
     debug!("WebSocket connection for session: {}", session_id);
-
-    let (res, socket, msg_stream) = actix_ws::handle(&req, stream)?;
-    let socket_id = Uuid::new_v4();
-
-    // Register socket with session service
-    session_service
-        .write()
-        .await
-        .add_socket(&session_id, (socket_id, Mutex::new(socket.clone())))
+    let (res, session, stream) = actix_ws::handle(&req, stream)?;
+    let handler = session_service
+        .get_handler(user, session_id.into_inner())
         .await?;
 
+    let (sender, receiver) = mpsc::unbounded_channel();
+    let (id, sender) = handler.subscribe(sender).await?;
+
+    let session = Arc::new(Mutex::new(session));
+    let stream = Rc::new(Mutex::new(stream));
+    let open = Arc::new(Mutex::new(true));
     let alive = Arc::new(Mutex::new(Instant::now()));
-    let session_open = Arc::new(Mutex::new(true));
 
-    // Spawn ping task
-    spawn_ping_task(
-        socket.clone(),
-        session_id.clone(),
-        alive.clone(),
-        session_open.clone(),
-    );
+    // Start handling outgoing events (from receiver to WebSocket)
+    let session_clone = session.clone();
+    let open_clone = open.clone();
+    let mut receiver = receiver;
+    actix_web::rt::spawn(async move {
+        while let Some(event) = receiver.recv().await {
+            if !*open_clone.lock().await {
+                break;
+            }
 
-    // Spawn message handling task
-    let context = MessageHandlerContext {
-        socket: socket.clone(),
-        msg_stream,
-        session_service: session_service.clone(),
-        session_id: session_id.to_string(),
-        user,
-        socket_id,
-        alive,
-        session_open,
-    };
-    spawn_message_handler(context);
+            match serde_json::to_string(&event) {
+                Ok(serialized_event) => {
+                    if session_clone
+                        .lock()
+                        .await
+                        .text(serialized_event)
+                        .await
+                        .is_err()
+                    {
+                        *open_clone.lock().await = false;
+                        break;
+                    }
+                }
+                Err(e) => {
+                    warn!("Error serializing event: {:?}", e);
+                }
+            }
+        }
+        debug!("Outgoing event handler stopped");
+    });
 
-    Ok(res)
-}
+    // Start handling incoming messages (from WebSocket to sender)
+    let session_clone = session.clone();
+    let stream_clone = stream.clone();
+    let open_clone = open.clone();
+    let alive_clone = alive.clone();
+    let sender_clone = sender.clone();
+    actix_web::rt::spawn(async move {
+        while let Some(msg) = stream_clone.lock().await.next().await {
+            match msg {
+                Ok(msg) => {
+                    if let Err(e) = handle_message(
+                        session_clone.clone(),
+                        msg,
+                        open_clone.clone(),
+                        alive_clone.clone(),
+                        sender_clone.clone(),
+                    )
+                    .await
+                    {
+                        warn!("Error handling WebSocket message: {:?}", e);
+                        break;
+                    }
+                }
+                Err(e) => {
+                    warn!("Error receiving WebSocket message: {:?}", e);
+                    break;
+                }
+            }
 
-fn spawn_ping_task(
-    mut socket: actix_ws::Session,
-    session_id: String,
-    alive: Arc<Mutex<Instant>>,
-    session_open: Arc<Mutex<bool>>,
-) {
+            if !*open_clone.lock().await {
+                break;
+            }
+        }
+        debug!("Incoming message handler stopped");
+
+        let _ = sender_clone.send(WorkerEvent::Unsubscribe(id));
+    });
+
+    // Start keep-alive handler
+    let session_clone = session.clone();
+    let open_clone = open.clone();
+    let alive_clone = alive.clone();
     actix_web::rt::spawn(async move {
         let mut interval = actix_web::rt::time::interval(Duration::from_secs(PING_INTERVAL_SECS));
 
         loop {
             interval.tick().await;
 
-            if !*session_open.lock().await {
-                debug!("Session {} is closed, stopping ping loop", session_id);
+            if !*open_clone.lock().await {
                 break;
             }
 
-            // debug!("Pinging WebSocket for session: {}", session_id);
-            if socket.ping(b"").await.is_err() {
-                warn!("WebSocket ping failed for session: {}", session_id);
+            if session_clone.lock().await.ping(b"").await.is_err() {
+                *open_clone.lock().await = false;
                 break;
             }
 
-            let last_alive = *alive.lock().await;
-            if Instant::now().duration_since(last_alive) > Duration::from_secs(INACTIVE_TIMEOUT_SECS) {
-                warn!("WebSocket session {} is inactive, closing connection", session_id);
-                let _ = socket.close(None).await;
-                break;
-            }
-        }
-    });
-}
-
-fn spawn_message_handler(mut context: MessageHandlerContext) {
-    actix_web::rt::spawn(async move {
-        while let Some(msg_result) = context.msg_stream.next().await {
-            let msg = match msg_result {
-                Ok(msg) => msg,
-                Err(e) => {
-                    error!("Error receiving WebSocket message: {:?}", e);
-                    break;
-                }
-            };
-
-            if !handle_websocket_message(
-                &mut context.socket,
-                &context.session_service,
-                &context.session_id,
-                &context.user,
-                &context.alive,
-                msg,
-            ).await {
+            let last_alive = *alive_clone.lock().await;
+            if Instant::now().duration_since(last_alive)
+                > Duration::from_secs(INACTIVE_TIMEOUT_SECS)
+            {
+                let session = session_clone.lock().await.clone();
+                let _ = session.close(None).await;
+                *open_clone.lock().await = false;
                 break;
             }
         }
-
-        cleanup_session(
-            &context.session_service,
-            &context.session_id,
-            context.socket_id,
-            &context.session_open,
-            &mut context.socket,
-        ).await;
+        debug!("Keep-alive handler stopped");
     });
+
+    Ok(res)
 }
 
-async fn handle_websocket_message(
-    socket: &mut actix_ws::Session,
-    session_service: &Data<RwLock<SessionService>>,
-    session_id: &str,
-    user: &User,
-    alive: &Arc<Mutex<Instant>>,
+async fn handle_message(
+    session: Arc<Mutex<Session>>,
     msg: Message,
-) -> bool {
+    open: Arc<Mutex<bool>>,
+    alive: Arc<Mutex<Instant>>,
+    sender: mpsc::UnboundedSender<WorkerEvent>,
+) -> Result<()> {
     match msg {
-        Message::Text(text) => {
-            if let Err(e) = handle_json_message(
-                session_service.clone(),
-                &Path::from(session_id.to_string()),
-                user,
-                text.to_string(),
-            ).await {
-                error!("Error handling message for session {}: {:?}", session_id, e);
-                send_error_response(socket).await;
-                return false;
+        Message::Text(text) => match serde_json::from_str::<SessionEvent>(&text) {
+            Ok(event) => {
+                if sender.send(WorkerEvent::SessionEvent(event)).is_err() {
+                    *open.lock().await = false;
+                    return Err(Error::SocketClosed);
+                }
             }
-        }
+            Err(e) => {
+                warn!("Error parsing SessionEvent: {:?}", e);
+            }
+        },
         Message::Ping(bytes) => {
-            debug!("Received ping for session: {}", session_id);
-            if let Err(e) = socket.pong(&bytes).await {
-                error!("Error responding to ping for session {}: {:?}", session_id, e);
-                return false;
+            if session.lock().await.pong(&bytes).await.is_err() {
+                *open.lock().await = false;
+                return Err(Error::SocketClosed);
             }
         }
         Message::Pong(_) => {
-            // debug!("Received pong for session: {}", session_id);
             *alive.lock().await = Instant::now();
         }
         Message::Close(reason) => {
-            debug!("WebSocket connection closed for session {}: {:?}", session_id, reason);
-            return false;
+            *open.lock().await = false;
+            if let Some(reason) = reason {
+                warn!("WebSocket connection closed: {:?}", reason);
+            }
         }
         _ => {
-            debug!("Received unhandled message type for session: {}", session_id);
+            warn!("Received unhandled message type: {:?}", msg);
         }
     }
-    true
-}
-
-async fn send_error_response(socket: &mut actix_ws::Session) {
-    let error_event = SessionEvent::error();
-    if let Ok(json_error) = serde_json::to_string(&error_event) {
-        if let Err(e) = socket.text(json_error).await {
-            error!("Error sending error message: {:?}", e);
-        }
-    }
-}
-
-async fn cleanup_session(
-    session_service: &Data<RwLock<SessionService>>,
-    session_id: &str,
-    socket_id: Uuid,
-    session_open: &Arc<Mutex<bool>>,
-    socket: &mut actix_ws::Session,
-) {
-    debug!("Cleaning up WebSocket session: {}", session_id);
-
-    *session_open.lock().await = false;
-
-    if let Err(e) = session_service
-        .write()
-        .await
-        .remove_socket(session_id, socket_id)
-        .await
-    {
-        error!("Error removing socket for session {}: {:?}", session_id, e);
-    }
-
-    let _ = socket.clone().close(None).await;
-    debug!("WebSocket cleanup completed for session: {}", session_id);
-}
-
-pub async fn handle_json_message(
-    session_service: Data<RwLock<SessionService>>,
-    session_id: &Path<String>,
-    user: &User,
-    json: String,
-) -> Result<()> {
-    let parsed = serde_json::from_str::<SessionEvent>(&json)?;
-    session_service
-        .read()
-        .await
-        .handle_event(session_id, user, parsed)
-        .await
+    Ok(())
 }

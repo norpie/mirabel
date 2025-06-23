@@ -14,6 +14,7 @@ use crate::prelude::*;
 pub(crate) mod error;
 pub(crate) mod prelude;
 
+pub(crate) mod session;
 pub(crate) mod driver;
 pub(crate) mod dto;
 pub(crate) mod handler;
