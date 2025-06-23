@@ -11,6 +11,24 @@ pub struct SessionEvent {
 }
 
 impl SessionEvent {
+    pub fn new(content: SessionEventContent) -> Self {
+        SessionEvent {
+            id: Uuid::new_v4().to_string(),
+            source: "system".to_string(),
+            timestamp: Utc::now(),
+            content,
+        }
+    }
+
+    pub fn acknowledgment(ack_type: AcknowledgmentType) -> Self {
+        SessionEvent {
+            id: Uuid::new_v4().to_string(),
+            source: "system".to_string(),
+            timestamp: Utc::now(),
+            content: SessionEventContent::AcknowledgmentContent { ack_type },
+        }
+    }
+
     pub fn error() -> Self {
         SessionEvent {
             id: Uuid::new_v4().to_string(),
