@@ -189,11 +189,6 @@
 				message: chatInput
 			}
 		};
-        chat.messages = [...chat.messages, {
-            timestamp: new Date().toISOString(),
-            authorId: user.id,
-            message: chatInput
-        }];
 
 		socket.send(message);
 
