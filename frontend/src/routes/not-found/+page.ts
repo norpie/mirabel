@@ -1,8 +1,8 @@
 import type { PageLoad } from './$types';
 
-import { load as loadRoot } from "../+page";
-
-export async function load({ params }: PageLoad) {
-    await loadRoot({ params });
-    return {};
+export async function load({ params, parent }: PageLoad) {
+    let parentData = await parent();
+    return {
+        ...parentData,
+    };
 }
