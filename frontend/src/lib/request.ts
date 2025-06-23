@@ -85,7 +85,9 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
         const tokenResult = await refresh();
 
         if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
-            goto("/login");
+            goto("/login", {
+                invalidateAll: true,
+            });
             return {
                 data: null,
                 error: "Token expired",
