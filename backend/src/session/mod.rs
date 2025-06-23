@@ -1,13 +1,19 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use crate::prelude::*;
+use crate::{
+    dto::session::event::{AcknowledgmentType, SessionEventContent},
+    prelude::*,
+};
 
 use actix_web::web::Data;
 use log::warn;
 use surrealdb::Uuid;
-use tokio::sync::{
-    Mutex,
-    mpsc::{UnboundedReceiver, UnboundedSender, unbounded_channel},
+use tokio::{
+    sync::{
+        Mutex,
+        mpsc::{UnboundedReceiver, UnboundedSender, unbounded_channel},
+    },
+    time::sleep,
 };
 
 use crate::{dto::session::event::SessionEvent, repository::RepositoryProvider};
@@ -54,7 +60,10 @@ impl SessionWorker {
         actix_web::rt::spawn(async move {
             while let Some(event) = receiver.lock().await.recv().await {
                 if let Err(err) = self.handle_event(event).await {
-                    warn!("Failed to handle event in session ({}) worker: {}", self.session_id, err);
+                    warn!(
+                        "Failed to handle event in session ({}) worker: {}",
+                        self.session_id, err
+                    );
                 };
             }
             log::info!("Session handler stopped for session: {}", self.session_id);
@@ -80,6 +89,24 @@ impl SessionWorker {
         match event {
             WorkerEvent::SessionEvent(event) => {
                 self.broadcast(&event).await?;
+                sleep(Duration::from_secs(1)).await;
+                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Delivered))
+                    .await?;
+                sleep(Duration::from_secs(1)).await;
+                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Seen))
+                    .await?;
+                sleep(Duration::from_secs(1)).await;
+                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Thinking))
+                    .await?;
+                sleep(Duration::from_secs(1)).await;
+                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Typing))
+                    .await?;
+                sleep(Duration::from_secs(1)).await;
+                self.broadcast(&SessionEvent::new(SessionEventContent::MessageContent {
+                    author_id: "mirabel".into(),
+                    message: "This is a test reply.".into(),
+                }))
+                .await?;
             }
             WorkerEvent::Unsubscribe(id) => {
                 let sub = self.subscribers.lock().await.remove(&id);
