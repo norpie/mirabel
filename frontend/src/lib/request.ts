@@ -113,19 +113,19 @@ async function get<T>(path: string, body?: any, fetchFunction: typeof fetch = fe
             query = query.slice(0, -1);
         }
     }
-    return request("GET", formatEndpoint(`${path}${query}`), fetch);
+    return request("GET", formatEndpoint(`${path}${query}`), fetchFunction);
 }
 
 async function post<T>(path: string, body: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    return request("POST", formatEndpoint(path), body, fetch);
+    return request("POST", formatEndpoint(path), body, fetchFunction);
 }
 
 async function put<T>(path: string, body: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    return request("PUT", formatEndpoint(path), body, fetch);
+    return request("PUT", formatEndpoint(path), body, fetchFunction);
 }
 
 async function del<T>(path: string, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    return request("DELETE", formatEndpoint(path), fetch);
+    return request("DELETE", formatEndpoint(path), fetchFunction);
 }
 
 async function refresh(fetchFunction: typeof fetch = fetch): Promise<Result<{ access_token: string }> | null> {
