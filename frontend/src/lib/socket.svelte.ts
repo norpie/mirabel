@@ -82,7 +82,7 @@ export class SocketHandler<T> {
         if (!this.socket) return;
         this.socket.onopen = () => this.onOpen();
         this.socket.onclose = () => this.onClose();
-        this.socket.onerror = () => this.onError();
+        this.socket.onerror = (event: Event) => this.onError(event);
         this.socket.onmessage = (event: MessageEvent) => this.onMessage(event);
     }
 
@@ -151,6 +151,7 @@ export class SocketHandler<T> {
             this.messageHandler(json as T);
         } catch (error) {
             this.genericErrorToast('Failed to process message.', error instanceof Error ? error.message : 'Unknown error');
+            console.trace(error);
         }
     }
 
