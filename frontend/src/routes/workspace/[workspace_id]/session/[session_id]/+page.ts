@@ -3,7 +3,6 @@ import type { PageLoad } from './$types';
 import { connectWebSocket, get } from '$lib/request';
 import type { Session, ShallowSession } from '$lib/models/session';
 import type { Workspace } from '$lib/models/workspace';
-import type { SessionSocketHandler } from '$lib/socket';
 import { error } from '@sveltejs/kit';
 import type { SocketHandler } from '$lib/socket.svelte';
 import type { SessionEvent } from '$lib/models/event';

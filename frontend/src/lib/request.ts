@@ -1,6 +1,5 @@
 import { goto } from "$app/navigation";
-import type Result from "../models/result";
-import { SessionSocketHandler, type ConnectionStatus } from "./socket";
+import type Result from "./models/result";
 import { SocketHandler } from "./socket.svelte";
 
 // TODO: Get the URL from the environment
