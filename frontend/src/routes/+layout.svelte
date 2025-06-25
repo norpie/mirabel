@@ -24,8 +24,10 @@
 
 	let { data, children }: LayoutProps = $props();
 
-	user.set(data.user);
-	workspaces.set(data.workspaces);
+    $effect(() => {
+	    user.set(data.user);
+	    workspaces.set(data.workspaces);
+    });
 
 	let items = $state([
 		{
