@@ -161,8 +161,6 @@
 		return status === 'thinking' || status === 'typing' || status === 'paused';
 	}
 
-    $inspect(user);
-
 	async function sendMessage() {
 		if (!chatInput.trim()) return;
 
