@@ -97,13 +97,15 @@ export class SessionSocketHandler {
 
     private async handleAuthFailure(): Promise<boolean> {
         if (this.authRetryCount >= this.maxAuthRetries) {
-            goto("/login");
+            goto("/login", {
+                invalidateAll: true,
+            });
             return false;
         }
 
         this.authRetryCount++;
         const refreshSuccess = await this.refreshToken();
-        
+
         if (refreshSuccess) {
             // Update URL with new token
             const url = new URL(this.url);
@@ -114,7 +116,9 @@ export class SessionSocketHandler {
             }
             return true;
         } else {
-            goto("/login");
+            goto("/login", {
+                invalidateAll: true,
+            });
             return false;
         }
     }
@@ -155,7 +159,7 @@ export class SessionSocketHandler {
 
         this.socket.onclose = async (event) => {
             this.setState("closed");
-            
+
             // Handle authentication errors (typically code 1002 or 1008 for auth failures)
             if (event.code === 1002 || event.code === 1008 || event.code === 4001) {
                 const authSuccess = await this.handleAuthFailure();
@@ -164,7 +168,7 @@ export class SessionSocketHandler {
                 }
                 return;
             }
-            
+
             if (event.code !== 1000) {
                 this.reconnect();
             }
