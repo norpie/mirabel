@@ -5,6 +5,8 @@ import type { Session, ShallowSession } from '$lib/models/session';
 import type { Workspace } from '$lib/models/workspace';
 import type { SessionSocketHandler } from '$lib/socket';
 import { error } from '@sveltejs/kit';
+import type { SocketHandler } from '$lib/socket.svelte';
+import type { SessionEvent } from '$lib/models/event';
 
 export async function load({params, fetch, parent}: PageLoad): Promise<
 {
@@ -13,7 +15,7 @@ export async function load({params, fetch, parent}: PageLoad): Promise<
     sessions: ShallowSession[];
     session_id: string;
     session: Session;
-    socket: SessionSocketHandler;
+    socket: SocketHandler<SessionEvent>;
 }>{
     const session = await get(`v1/workspace/${params.workspace_id}/session/${params.session_id}`, fetch);
     if (!session) {
@@ -26,6 +28,8 @@ export async function load({params, fetch, parent}: PageLoad): Promise<
         error(404, 'Session not found');
     }
     const socket = connectWebSocket('v1/' + 'session/' + params.session_id, undefined);
+    socket.connect();
+    // const socket = new SocketHandler("")
     const parentData = await parent();
     return {
         ...parentData,

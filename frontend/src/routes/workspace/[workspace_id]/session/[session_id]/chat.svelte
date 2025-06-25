@@ -24,28 +24,28 @@
 	}: {
 		socket: SessionSocketHandler | undefined;
         user: User,
-        socketStatus: 'open' | 'closed' | 'connecting' | 'error'
+        socketStatus: 'connecting' | 'open' | 'closing' | 'closed' | 'error'
 		chat: Chat | undefined;
 	} = $props();
 
-    $effect(() => {
-        socket?.addHandler('AcknowledgmentContent', (event: SessionEvent) => {
-            lastChatStatus = event.content.ackType;
-            statusStartTime = new Date(event.timestamp);
-        });
-        socket?.addHandler("MessageContent", (event: SessionEvent) => {
-            if (!chat) {
-                console.error('Chat is undefined when receiving message content');
-                return;
-            }
-            chat.messages = [...chat.messages, {
-                timestamp: event.timestamp,
-                authorId: event.content.authorId,
-                message: event.content.message
-            }];
-            lastChatStatus = 'sent';
-        });
-    });
+    // $effect(() => {
+    //     socket?.addHandler('AcknowledgmentContent', (event: SessionEvent) => {
+    //         lastChatStatus = event.content.ackType;
+    //         statusStartTime = new Date(event.timestamp);
+    //     });
+    //     socket?.addHandler("MessageContent", (event: SessionEvent) => {
+    //         if (!chat) {
+    //             console.error('Chat is undefined when receiving message content');
+    //             return;
+    //         }
+    //         chat.messages = [...chat.messages, {
+    //             timestamp: event.timestamp,
+    //             authorId: event.content.authorId,
+    //             message: event.content.message
+    //         }];
+    //         lastChatStatus = 'sent';
+    //     });
+    // });
 
 	let socketStatusStyle = $derived(getSocketStatusStyle(socketStatus));
 
@@ -107,7 +107,7 @@
 		}
 	});
 
-	function getSocketStatusStyle(status: 'open' | 'closed' | 'connecting' | 'error'): {
+	function getSocketStatusStyle(status: 'connecting' | 'open' | 'closing' | 'closed' | 'error'): {
 		color: string;
 		title: string;
 	} {
@@ -116,6 +116,8 @@
 				return { color: 'bg-green-500', title: 'Connection established' };
 			case 'connecting':
 				return { color: 'bg-amber-500', title: 'Connecting...' };
+			case 'closing':
+				return { color: 'bg-orange-500', title: 'Closing connection...' };
 			case 'closed':
 				return { color: 'bg-red-500', title: 'Connection closed' };
 			case 'error':

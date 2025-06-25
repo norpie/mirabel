@@ -14,6 +14,8 @@
 	import type { Chat as ChatModel, Plan } from '$lib/models/session';
 
     import { selectedWorkspace, selectedSession, sessions } from '$lib/store';
+	import type { SocketHandler } from '$lib/socket.svelte';
+	import type { SessionEvent } from '$lib/models/event';
 
 	let { data }: PageProps = $props();
 
@@ -23,8 +25,8 @@
 	let inset: HTMLDivElement | undefined = $state();
 
     const user = data.user;
-	let socket: SessionSocketHandler | undefined = $state(data.socket);
-	let socketStatus: 'open' | 'closed' | 'connecting' | 'error' = $state(socket.status);
+	let socket: SocketHandler<SessionEvent> | undefined = $state(data.socket);
+	let socketStatus:  'connecting' | 'open' | 'closing' | 'closed' | 'error' = $derived(socket?.status ? socket.status : 'closed');
     let session = $state(data.session);
 
 	const minSize = 5;
@@ -78,13 +80,13 @@
         selectedWorkspace.set(data.workspace);
         selectedSession.set(data.session);
         sessions.set(data.sessions);
-        socket.setStateHandler((state) => {
-            socketStatus = state;
-        })
+        // socket.setStateHandler((state) => {
+            // socketStatus = state;
+        // })
         return () => {
 		    window.removeEventListener('resize', handleResize);
             if (!data.session || data.session.id != session.id) {
-                socket?.close();
+                socket?.disconnect();
             }
         };
 	});
