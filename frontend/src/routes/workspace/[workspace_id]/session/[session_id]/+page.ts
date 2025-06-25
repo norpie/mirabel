@@ -17,7 +17,7 @@ export async function load({params, fetch, parent}: PageLoad): Promise<
     session: Session;
     socket: SocketHandler<SessionEvent>;
 }>{
-    const session = await get(`v1/workspace/${params.workspace_id}/session/${params.session_id}`, fetch);
+    const session = await get(`v1/workspace/${params.workspace_id}/session/${params.session_id}`, undefined, fetch);
     if (!session) {
         error(503, 'Could not connect to the server');
     }

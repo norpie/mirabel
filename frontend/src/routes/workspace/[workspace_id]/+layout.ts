@@ -15,7 +15,7 @@ export const load: LayoutLoad<{
     workspace: Workspace;
 }> = async ({ params, fetch, parent }) => {
 	const page = { page: 1, size: 10 };
-    const workspace = await get<Result<Workspace>>(`v1/workspace/${params.workspace_id}`, fetch);
+    const workspace = await get<Result<Workspace>>(`v1/workspace/${params.workspace_id}`, undefined, fetch);
     if (!workspace) {
         error(503, 'Could not connect to the server');
     }
