@@ -10,8 +10,7 @@
 	import type { Chat, Participant } from '$lib/models/session';
 	import { selectedSession } from '$lib/store';
 	import { formatTime, formatElapsedTime } from '$lib/time';
-	import { SessionSocketHandler } from '$lib/socket';
-	import type { AcknowledgmentContent, MessageContent, SessionEvent } from '$lib/models/event';
+	import type { SessionEvent } from '$lib/models/event';
 	import { toast } from 'svelte-sonner';
 	import { Separator } from '$lib/components/ui/separator';
 	import type { User } from '$lib/models/user';
@@ -23,24 +22,41 @@
     let chat: Chat | undefined = $derived(sessionState.session?.chat ?? undefined);
     let socket: SocketHandler<SessionEvent> | undefined = $derived(sessionState.socket);
 
-    // $effect(() => {
-    //     socket?.addHandler('AcknowledgmentContent', (event: SessionEvent) => {
-    //         lastChatStatus = event.content.ackType;
-    //         statusStartTime = new Date(event.timestamp);
-    //     });
-    //     socket?.addHandler("MessageContent", (event: SessionEvent) => {
-    //         if (!chat) {
-    //             console.error('Chat is undefined when receiving message content');
-    //             return;
-    //         }
-    //         chat.messages = [...chat.messages, {
-    //             timestamp: event.timestamp,
-    //             authorId: event.content.authorId,
-    //             message: event.content.message
-    //         }];
-    //         lastChatStatus = 'sent';
-    //     });
-    // });
+    $effect(() => {
+        socket?.setMessageHandler(handleMessage);
+    });
+
+    function handleMessage(event: SessionEvent) {
+        if (event.content.type === 'AcknowledgmentContent') {
+            handleAcknowledgment(event);
+        } else if (event.content.type === 'MessageContent') {
+            handleMessageContent(event);
+        } else {
+            console.warn('Unhandled event content type:', event.content.type);
+        }
+    }
+
+    function handleAcknowledgment(event: SessionEvent) {
+        if (event.content.type === 'AcknowledgmentContent') {
+            lastChatStatus = event.content.ackType;
+            statusStartTime = new Date(event.timestamp);
+        } else if (event.content.type === 'MessageContent') {
+            handleMessageContent(event);
+        }
+    }
+
+    function handleMessageContent(event: SessionEvent) {
+        if (!chat) {
+            console.error('Chat is undefined when receiving message content');
+            return;
+        }
+        chat.messages = [...chat.messages, {
+            timestamp: event.timestamp,
+            authorId: event.content.authorId,
+            message: event.content.message
+        }];
+        lastChatStatus = 'sent';
+    }
 
 	let socketStatusStyle = $derived(getSocketStatusStyle(socket?.status ?? 'closed'));
 
