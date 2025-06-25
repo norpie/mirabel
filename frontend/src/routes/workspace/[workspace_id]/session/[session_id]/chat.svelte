@@ -18,65 +18,36 @@
 	import type { SocketHandler } from '$lib/socket.svelte';
 
     const sessionState = getSessionState();
+    // Ground truth for the selected session
     let user: User | undefined = $derived(sessionState.user);
     let chat: Chat | undefined = $derived(sessionState.session?.chat ?? undefined);
     let socket: SocketHandler<SessionEvent> | undefined = $derived(sessionState.socket);
 
-    $effect(() => {
-        socket?.setMessageHandler(handleMessage);
-    });
+    // Status observables
+    let lastChatStatus: 'sent' | 'delivered' | 'seen' | 'thinking' | 'typing' | 'paused' | 'error' | undefined = $derived(sessionState.lastAcknowledgementType);
+    let statusStartTime: Date | undefined = $derived(sessionState.lastAcknowledgementTime);
+    let elapsedTime: string = $state('');
 
-    function handleMessage(event: SessionEvent) {
-        if (event.content.type === 'AcknowledgmentContent') {
-            handleAcknowledgment(event);
-        } else if (event.content.type === 'MessageContent') {
-            handleMessageContent(event);
-        } else {
-            console.warn('Unhandled event content type:', event.content.type);
-        }
-    }
-
-    function handleAcknowledgment(event: SessionEvent) {
-        if (event.content.type != "AcknowledgmentContent") {
-            console.error('Received acknowledgment event with incorrect type:', event.content.type);
-            return;
-        }
-        lastChatStatus = event.content.ackType;
-        statusStartTime = new Date(event.timestamp);
-    }
-
-    function handleMessageContent(event: SessionEvent) {
-        if (!chat) {
-            console.error('Chat is undefined when receiving message content');
-            return;
-        }
-        if (event.content.type !== 'MessageContent') {
-            console.error('Received message event with incorrect type:', event.content.type);
-            return;
-        }
-        chat.messages = [...chat.messages, {
-            timestamp: event.timestamp,
-            authorId: event.content.authorId,
-            message: event.content.message
-        }];
-        lastChatStatus = 'sent';
-    }
-
+    // Indicators
 	let socketStatusStyle = $derived(getSocketStatusStyle(socket?.status ?? 'closed'));
 
-	let initialLoad = $state(true);
+	let timer: number;
+	$effect(() => {
+		timer = window.setInterval(() => {
+			if (isTypingStatus(lastChatStatus) && statusStartTime) {
+				elapsedTime = formatElapsedTime(statusStartTime);
+			}
+		}, 1000);
+
+		return () => {
+			clearInterval(timer);
+		};
+	});
 
 	let scrollArea: HTMLElement | null = $state(null);
 	let previousMessageCount = $state(0);
-	let chatInput = $state('');
 
-    let lastChatStatus: 'sent' | 'delivered' | 'seen' | 'thinking' | 'typing' | 'paused' | 'error' = $state("sent");
-
-    // Track when the current status started
-    let statusStartTime = $state(new Date());
-    let elapsedTime = $state('');
-
-    function formatLastChatStatus(status: 'sent' | 'delivered' | 'seen'): string {
+    function formatLastChatStatus(status: 'sent' | 'delivered' | 'seen' | undefined): string {
         switch (status) {
             case 'sent':
                 return 'Sent';
@@ -89,34 +60,24 @@
         }
     }
 
-	// Function to check if we're near the bottom of the scroll area
+    let initialLoad = $state(true);
+
 	function isNearBottom(): boolean {
 		if (!scrollArea) return true;
-
 		const { scrollTop, scrollHeight, clientHeight } = scrollArea;
-		// If we're within half a viewport of the bottom
 		return scrollTop + clientHeight >= scrollHeight - clientHeight / 2;
 	}
 
-	// Effect to handle auto-scrolling when new messages arrive
 	$effect(() => {
 		if (!chat || !scrollArea) return;
-
 		const currentMessageCount = chat.messages.length;
-
-		// If we have new messages
 		if (currentMessageCount > previousMessageCount || currentMessageCount > 0) {
-			// Always scroll on initial load, otherwise check position
 			const shouldScroll = initialLoad || isNearBottom();
-
 			if (shouldScroll) {
-				// Use setTimeout to ensure DOM is updated before scrolling
 				setTimeout(() => {
 					scrollArea?.scrollTo(0, scrollArea.scrollHeight);
 				}, 0);
 			}
-
-			// Update the message count and mark initial load as complete
 			previousMessageCount = currentMessageCount;
 			initialLoad = false;
 		}
@@ -172,10 +133,12 @@
 	}
 
 	// Helper function to determine if status should be shown as a message
-	function isTypingStatus(status: string): boolean {
+	function isTypingStatus(status: string | undefined): boolean {
+        if (!status) return false;
 		return status === 'thinking' || status === 'typing' || status === 'paused';
 	}
 
+	let chatInput = $state('');
 	async function sendMessage() {
 		if (!chatInput.trim()) return;
 
@@ -209,26 +172,6 @@
 
 		chatInput = '';
 	}
-
-	// Update status start time when status changes
-	$effect(() => {
-		statusStartTime = new Date();
-	});
-
-	// Update elapsed time every second
-	let timer: number;
-
-	$effect(() => {
-		timer = window.setInterval(() => {
-			if (isTypingStatus(lastChatStatus)) {
-				elapsedTime = formatElapsedTime(statusStartTime);
-			}
-		}, 1000);
-
-		return () => {
-			clearInterval(timer);
-		};
-	});
 </script>
 
 <style>
