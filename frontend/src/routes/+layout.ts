@@ -12,7 +12,7 @@ export const load: LayoutLoad<{
 	user: User;
 	workspaces: Workspace[];
 }> = async ({ fetch }) => {
-	const userResult = await get<Result<User>>('v1/me', fetch);
+	const userResult = await get<Result<User>>('v1/me', undefined, fetch);
 	if (!userResult) {
 		error(503, 'Unable to fetch user data');
 	}
