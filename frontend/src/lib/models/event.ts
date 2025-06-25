@@ -16,6 +16,42 @@ export type SessionContent =
     | AgentSpecUpdateEvent
     | AgentTerminalContentEvent;
 
+export type SessionAcknowledgmentEvent = SessionEvent & {
+    content: AcknowledgmentContent;
+};
+
+export type SessionMessageEvent = SessionEvent & {
+    content: MessageContent;
+};
+
+export type SessionAgentActionEvent = SessionEvent & {
+    content: AgentActionContent;
+};
+
+export type SessionAgentPromptEvent = SessionEvent & {
+    content: AgentPromptContent;
+};
+
+export type SessionUserPromptResponseEvent = SessionEvent & {
+    content: UserPromptResponseContent;
+};
+
+export type SessionAgentNewTaskEvent = SessionEvent & {
+    content: AgentNewTaskEvent;
+};
+
+export type SessionAgentTaskEvent = SessionEvent & {
+    content: AgentTaskEvent;
+};
+
+export type SessionAgentSpecUpdateEvent = SessionEvent & {
+    content: AgentSpecUpdateEvent;
+};
+
+export type SessionAgentTerminalContentEvent = SessionEvent & {
+    content: AgentTerminalContentEvent;
+};
+
 export interface AcknowledgmentContent {
     type: 'AcknowledgmentContent';
     ackType: 'delivered' | 'seen' | 'thinking' | 'typing' | 'error';
