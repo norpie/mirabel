@@ -8,7 +8,7 @@
 	let {
 		lines
 	}: {
-		lines: string[] | undefined;
+		lines: string[] | null;
 	} = $props();
 
 	const theme = {

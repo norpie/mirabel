@@ -17,18 +17,18 @@
 	import FileStack from 'lucide-svelte/icons/file-stack';
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
+	import { getSessionState } from '$lib/session-state.svelte';
 
 	let {
 		tab = $bindable(),
-		plan,
-		spec,
-		terminal
 	}: {
 		tab: string;
-		plan: PlanModel | undefined;
-		spec: string | undefined;
-		terminal: string[] | undefined;
 	} = $props();
+
+    const sessionState = getSessionState();
+    let spec: string | null = $state(sessionState.session?.plan?.spec ?? null);
+    let plan: PlanModel | null = $state(sessionState.session?.plan ?? null);
+    let terminal: string[] | null = $state(sessionState.session?.terminal ?? null);
 
 	let auto = $state(false);
 

@@ -15,18 +15,13 @@
 	import { toast } from 'svelte-sonner';
 	import { Separator } from '$lib/components/ui/separator';
 	import type { User } from '$lib/models/user';
+	import { getSessionState } from '$lib/session-state.svelte';
+	import type { SocketHandler } from '$lib/socket.svelte';
 
-	let {
-		socket,
-        socketStatus,
-        user,
-		chat = $bindable(),
-	}: {
-		socket: SessionSocketHandler | undefined;
-        user: User,
-        socketStatus: 'connecting' | 'open' | 'closing' | 'closed' | 'error'
-		chat: Chat | undefined;
-	} = $props();
+    const sessionState = getSessionState();
+    let user: User | undefined = $derived(sessionState.user);
+    let chat: Chat | undefined = $derived(sessionState.session?.chat ?? undefined);
+    let socket: SocketHandler<SessionEvent> | undefined = $derived(sessionState.socket);
 
     // $effect(() => {
     //     socket?.addHandler('AcknowledgmentContent', (event: SessionEvent) => {
@@ -47,7 +42,7 @@
     //     });
     // });
 
-	let socketStatusStyle = $derived(getSocketStatusStyle(socketStatus));
+	let socketStatusStyle = $derived(getSocketStatusStyle(socket?.status ?? 'closed'));
 
 	let initialLoad = $state(true);
 
@@ -315,7 +310,7 @@
 </ScrollArea>
 
 <div id="chat-input" class="relative m-2 mt-2 flex flex-row rounded-lg bg-secondary p-2">
-	{#if socket}
+	{#if sessionState.socket}
 		<div
 			class="absolute left-1 top-1 h-3 w-3 rounded-full border border-secondary {socketStatusStyle.color}"
 			title={socketStatusStyle.title}

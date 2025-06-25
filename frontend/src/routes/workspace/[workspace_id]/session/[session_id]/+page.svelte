@@ -10,12 +10,10 @@
 	import type { PaneAPI } from 'paneforge';
 	import type { PageProps } from './$types';
 
-	import { SessionSocketHandler } from '$lib/socket';
-	import type { Chat as ChatModel, Plan } from '$lib/models/session';
-
     import { selectedWorkspace, selectedSession, sessions } from '$lib/store';
 	import type { SocketHandler } from '$lib/socket.svelte';
 	import type { SessionEvent } from '$lib/models/event';
+	import { getSessionState, setSessionState } from '$lib/session-state.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -24,7 +22,6 @@
 
 	let inset: HTMLDivElement | undefined = $state();
 
-    const user = data.user;
 	let socket: SocketHandler<SessionEvent> | undefined = $state(data.socket);
 	let socketStatus:  'connecting' | 'open' | 'closing' | 'closed' | 'error' = $derived(socket?.status ? socket.status : 'closed');
     let session = $state(data.session);
@@ -42,10 +39,8 @@
 
 	let tab = $state('spec');
 
-	let spec: string | undefined = $derived(data.session?.plan?.spec);
-	let chat: ChatModel | undefined = $state(data.session?.chat);
-	let plan: Plan | undefined = $state(data.session?.plan);
-	let terminal: string[] | undefined = $state(data.session?.terminal);
+    setSessionState(data.user, data.session, data.socket);
+    const sessionState = getSessionState();
 
 	function handleResize() {
 		if (!inset) return;
@@ -80,9 +75,6 @@
         selectedWorkspace.set(data.workspace);
         selectedSession.set(data.session);
         sessions.set(data.sessions);
-        // socket.setStateHandler((state) => {
-            // socketStatus = state;
-        // })
         return () => {
 		    window.removeEventListener('resize', handleResize);
             if (!data.session || data.session.id != session.id) {
@@ -110,7 +102,7 @@
 						<ChevronsRight />
 					</button>
 				{:else}
-					<Chat {user} {socket} {socketStatus} bind:chat />
+					<Chat />
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle={enableHandle} disabled={disableResize} />
@@ -128,7 +120,7 @@
 						<ChevronsLeft />
 					</button>
 				{:else}
-					<Monitor bind:tab {plan} {spec} {terminal} />
+					<Monitor bind:tab />
 				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>

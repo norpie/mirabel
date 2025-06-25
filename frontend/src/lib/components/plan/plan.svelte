@@ -10,7 +10,7 @@
 	import Elk from 'elkjs/lib/elk.bundled.js';
 	import { getEdges, getNodes } from './planToFlow';
 
-	let { plan = $bindable() }: { plan: Plan | undefined } = $props();
+	let { plan = $bindable() }: { plan: Plan | null } = $props();
 
 	let nodes: Writable<any[]> = writable([]);
 	let edges: Writable<any[]> = writable([]);
