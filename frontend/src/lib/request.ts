@@ -113,7 +113,7 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
             if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
                 // Clear tokens and redirect to login
                 localStorage.removeItem("accessToken");
-                goto("/login", {
+                await goto("/login", {
                     invalidateAll: true,
                 });
                 return {
