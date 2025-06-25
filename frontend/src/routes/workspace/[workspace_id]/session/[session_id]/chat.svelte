@@ -37,17 +37,21 @@
     }
 
     function handleAcknowledgment(event: SessionEvent) {
-        if (event.content.type === 'AcknowledgmentContent') {
-            lastChatStatus = event.content.ackType;
-            statusStartTime = new Date(event.timestamp);
-        } else if (event.content.type === 'MessageContent') {
-            handleMessageContent(event);
+        if (event.content.type != "AcknowledgmentContent") {
+            console.error('Received acknowledgment event with incorrect type:', event.content.type);
+            return;
         }
+        lastChatStatus = event.content.ackType;
+        statusStartTime = new Date(event.timestamp);
     }
 
     function handleMessageContent(event: SessionEvent) {
         if (!chat) {
             console.error('Chat is undefined when receiving message content');
+            return;
+        }
+        if (event.content.type !== 'MessageContent') {
+            console.error('Received message event with incorrect type:', event.content.type);
             return;
         }
         chat.messages = [...chat.messages, {

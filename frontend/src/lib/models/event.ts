@@ -6,31 +6,35 @@ export interface SessionEvent {
 }
 
 export type SessionContent =
-    | (AcknowledgmentContent & { type: 'AcknowledgmentContent' })
-    | (MessageContent & { type: 'MessageContent' })
-    | (AgentActionContent & { type: 'AgentActionContent' })
-    | (AgentPromptContent & { type: 'AgentPromptContent' })
-    | (UserPromptResponseContent & { type: 'UserPromptResponseContent' })
-    | (AgentNewTaskEvent & { type: 'AgentNewTaskEvent' })
-    | (AgentTaskEvent & { type: 'AgentTaskEvent' })
-    | (AgentSpecUpdateEvent & { type: 'AgentSpecUpdateEvent' })
-    | (AgentTerminalContentEvent & { type: 'AgentTerminalContentEvent' });
+    | AcknowledgmentContent
+    | MessageContent
+    | AgentActionContent
+    | AgentPromptContent
+    | UserPromptResponseContent
+    | AgentNewTaskEvent
+    | AgentTaskEvent
+    | AgentSpecUpdateEvent
+    | AgentTerminalContentEvent;
 
 export interface AcknowledgmentContent {
+    type: 'AcknowledgmentContent';
     ackType: 'delivered' | 'seen' | 'thinking' | 'typing' | 'error';
 }
 
 export interface MessageContent {
+    type: 'MessageContent';
     authorId: string;
     message: string;
 }
 
 export interface AgentActionContent {
+    type: 'AgentActionContent';
     action: string;
     description?: string;
 }
 
 export interface AgentPromptContent {
+    type: 'AgentPromptContent';
     promptId: string;
     prompt: string;
     options: string[];
@@ -38,25 +42,30 @@ export interface AgentPromptContent {
 }
 
 export interface UserPromptResponseContent {
+    type: 'UserPromptResponseContent';
     promptId: string;
     response: string;
 }
 
 export interface AgentNewTaskEvent {
+    type: 'AgentNewTaskEvent';
     taskId: string;
     parentId: string;
     description: string;
 }
 
 export interface AgentTaskEvent {
+    type: 'AgentTaskEvent';
     taskId: string;
     status: string;
 }
 
 export interface AgentSpecUpdateEvent {
+    type: 'AgentSpecUpdateEvent';
     spec: string;
 }
 
 export interface AgentTerminalContentEvent {
+    type: 'AgentTerminalContentEvent';
     content: string;
 }
