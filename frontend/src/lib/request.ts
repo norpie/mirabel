@@ -14,6 +14,10 @@ const publicPaths = [
   // Add other public endpoints
 ];
 
+// Global state to prevent multiple refresh attempts
+let isRefreshing = false;
+let refreshPromise: Promise<Result<{ access_token: string }> | null> | null = null;
+
 function formatEndpoint(path: string): string {
     return `${url}/${path}`;
 }
@@ -82,20 +86,48 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
             };
         }
 
-        const tokenResult = await refresh();
+        // If already refreshing, wait for the existing refresh attempt
+        if (isRefreshing && refreshPromise) {
+            const tokenResult = await refreshPromise;
 
-        if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
-            goto("/login", {
-                invalidateAll: true,
-            });
-            return {
-                data: null,
-                error: "Token expired",
-            };
+            if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
+                return {
+                    data: null,
+                    error: "Token expired",
+                };
+            }
+
+            // Retry with the new token
+            localStorage.setItem("accessToken", tokenResult.data.access_token);
+            return request(method, endpoint, body, fetchFunction);
         }
 
-        localStorage.setItem("accessToken", tokenResult.data.access_token);
-        return request(method, endpoint, body);
+        // Start a new refresh attempt
+        isRefreshing = true;
+        refreshPromise = refresh(fetchFunction);
+
+        try {
+            const tokenResult = await refreshPromise;
+
+            if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
+                // Clear tokens and redirect to login
+                localStorage.removeItem("accessToken");
+                goto("/login", {
+                    invalidateAll: true,
+                });
+                return {
+                    data: null,
+                    error: "Token expired",
+                };
+            }
+
+            localStorage.setItem("accessToken", tokenResult.data.access_token);
+            return request(method, endpoint, body, fetchFunction);
+        } finally {
+            // Reset refresh state
+            isRefreshing = false;
+            refreshPromise = null;
+        }
     }
 
     return await response.json();
@@ -113,7 +145,7 @@ async function get<T>(path: string, body?: any, fetchFunction: typeof fetch = fe
             query = query.slice(0, -1);
         }
     }
-    return request("GET", formatEndpoint(`${path}${query}`), fetchFunction);
+    return request("GET", formatEndpoint(`${path}${query}`), null, fetchFunction);
 }
 
 async function post<T>(path: string, body: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
@@ -125,7 +157,7 @@ async function put<T>(path: string, body: any, fetchFunction: typeof fetch = fet
 }
 
 async function del<T>(path: string, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    return request("DELETE", formatEndpoint(path), fetchFunction);
+    return request("DELETE", formatEndpoint(path), null, fetchFunction);
 }
 
 async function refresh(fetchFunction: typeof fetch = fetch): Promise<Result<{ access_token: string }> | null> {
@@ -144,4 +176,4 @@ async function refresh(fetchFunction: typeof fetch = fetch): Promise<Result<{ ac
     return await response.json();
 }
 
-export { get, post, put, del, connectWebSocket };
+export { isPublicPath, get, post, put, del, connectWebSocket };
