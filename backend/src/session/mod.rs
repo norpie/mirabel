@@ -58,13 +58,17 @@ impl SessionWorker {
     pub async fn run(self: Arc<Self>) {
         let receiver = self.receiver.clone();
         actix_web::rt::spawn(async move {
+            let worker = self.clone();
             while let Some(event) = receiver.lock().await.recv().await {
-                if let Err(err) = self.handle_event(event).await {
-                    warn!(
-                        "Failed to handle event in session ({}) worker: {}",
-                        self.session_id, err
-                    );
-                };
+                let worker = worker.clone();
+                actix_web::rt::spawn(async move {
+                    if let Err(err) = worker.handle_event(event).await {
+                        warn!(
+                            "Failed to handle event in session ({}) worker: {}",
+                            worker.session_id, err
+                        );
+                    };
+                });
             }
             log::info!("Session handler stopped for session: {}", self.session_id);
         });
@@ -84,24 +88,25 @@ impl SessionWorker {
     }
 
     async fn handle_event(&self, event: WorkerEvent) -> Result<()> {
-        // Start by broadcasting the event to all subscribers, so we don't get any client-side
-        // out-of-sync issues.
         match event {
             WorkerEvent::SessionEvent(event) => {
+                // Start by broadcasting the event to all subscribers, so we don't get any client-side
+                // out-of-sync issues.
                 self.broadcast(&event).await?;
+                // Start a predefined sequence for testing purposes.
                 sleep(Duration::from_secs(1)).await;
                 self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Delivered))
                     .await?;
-                sleep(Duration::from_secs(1)).await;
+                sleep(Duration::from_secs(2)).await;
                 self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Seen))
                     .await?;
-                sleep(Duration::from_secs(1)).await;
+                sleep(Duration::from_secs(3)).await;
                 self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Thinking))
                     .await?;
-                sleep(Duration::from_secs(1)).await;
+                sleep(Duration::from_secs(5)).await;
                 self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Typing))
                     .await?;
-                sleep(Duration::from_secs(1)).await;
+                sleep(Duration::from_secs(5)).await;
                 self.broadcast(&SessionEvent::new(SessionEventContent::MessageContent {
                     author_id: "mirabel".into(),
                     message: "This is a test reply.".into(),
