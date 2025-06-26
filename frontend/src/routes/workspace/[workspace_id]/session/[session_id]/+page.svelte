@@ -29,7 +29,7 @@
 	const minSize = 5;
 	const maxSize = 100 - minSize;
 	const hideSize = 15;
-	const chatSize = 40;
+	const chatSize = 35;
 	const monitorSize = 100 - chatSize;
 	const smallScreenSize = 768;
 
