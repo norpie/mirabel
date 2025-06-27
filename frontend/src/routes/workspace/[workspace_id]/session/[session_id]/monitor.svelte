@@ -8,13 +8,14 @@
     import { type Plan as PlanModel } from '$lib/models/session';
 	import Plan from '$lib/components/plan/plan.svelte';
 	import Terminal from './terminal.svelte';
-	import File from './file.svelte';
+	import Code from './file.svelte';
 	import Browser from './browser.svelte';
 
 	import SquareChartGantt from 'lucide-svelte/icons/square-chart-gantt';
 	import ListTree from 'lucide-svelte/icons/list-tree';
 	import SquareTerminal from 'lucide-svelte/icons/square-terminal';
 	import FileStack from 'lucide-svelte/icons/file-stack';
+    import Braces from 'lucide-svelte/icons/braces';
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 	import { getSessionState } from '$lib/session-state.svelte';
@@ -68,8 +69,8 @@
 						<p>Terminal</p>
 					</Tabs.Trigger>
 					<Tabs.Trigger value="file" class="gap-2">
-						<FileStack class="h-4 w-4" />
-						<p>File</p>
+						<Braces class="h-4 w-4" />
+						<p>Code</p>
 					</Tabs.Trigger>
 					<Tabs.Trigger value="browser" class="gap-2">
 						<Globe class="h-4 w-4" />
@@ -114,12 +115,12 @@
 		</Tabs.Content>
 	{/if}
 
-	{#if tab === 'file'}
+	{#if tab === 'code'}
 		<Tabs.Content
-			value="file"
+			value="code"
 			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 		>
-			<File />
+			<Code />
 		</Tabs.Content>
 	{/if}
 
