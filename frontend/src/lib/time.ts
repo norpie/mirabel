@@ -21,8 +21,8 @@ export function formatTime(iso8601: string): string {
 	return `${hours}:${minutes}`;
 }
 
-export function formatElapsedTime(startTime: Date): string {
-	const elapsed = Math.ceil((new Date().getTime() - startTime.getTime()) / 1000);
+export function formatElapsedTime(startTime: Date, endTime: Date): string {
+	const elapsed = Math.ceil((endTime.getTime() - startTime.getTime()) / 1000);
 
 	const hours = Math.floor(elapsed / 3600);
 	const minutes = Math.floor((elapsed % 3600) / 60);

@@ -4,8 +4,8 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import Mirabel from '$lib/assets/mirabel.png';
-	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
-	import Paperclip from 'lucide-svelte/icons/paperclip';
+	import ArrowUp from 'lucide-svelte/icons/arrow-up';
+	import Plus from 'lucide-svelte/icons/plus';
 	import Pause from 'lucide-svelte/icons/pause';
 	import type { Chat, Participant } from '$lib/models/session';
 	import { selectedSession } from '$lib/store';
@@ -17,26 +17,38 @@
 	import { getSessionState } from '$lib/session-state.svelte';
 	import type { SocketHandler } from '$lib/socket.svelte';
 
-    const sessionState = getSessionState();
-    // Ground truth for the selected session
-    let user: User | undefined = $derived(sessionState.user);
-    let chat: Chat | undefined = $derived(sessionState.session?.chat ?? undefined);
-    let socket: SocketHandler<SessionEvent> | undefined = $derived(sessionState.socket);
+	const sessionState = getSessionState();
+	// Ground truth for the selected session
+	let user: User | undefined = $derived(sessionState.user);
+	let chat: Chat | undefined = $derived(sessionState.session?.chat ?? undefined);
+	let socket: SocketHandler<SessionEvent> | undefined = $derived(sessionState.socket);
 
-    // Status observables
-    let lastChatStatus: 'sent' | 'delivered' | 'seen' | 'thinking' | 'typing' | 'paused' | 'error' | undefined = $derived(sessionState.lastAcknowledgementType);
-    let statusStartTime: Date | undefined = $derived(sessionState.lastAcknowledgementTime);
-    let elapsedTime: string = $state('');
+	// Status observables
+	let lastChatStatus:
+		| 'sent'
+		| 'delivered'
+		| 'seen'
+		| 'thinking'
+		| 'typing'
+		| 'paused'
+		| 'error'
+		| undefined = $derived(sessionState.lastAcknowledgementType);
+	let statusStartTime: Date | undefined = $derived(sessionState.lastAcknowledgementTime);
+    let currentTime: Date = $state(new Date());
+    let elapsedTime: string = $derived.by(() => {
+        if (isTypingStatus(lastChatStatus) && statusStartTime) {
+			return formatElapsedTime(statusStartTime, currentTime);
+		}
+        return '';
+    });
 
-    // Indicators
+	// Indicators
 	let socketStatusStyle = $derived(getSocketStatusStyle(socket?.status ?? 'closed'));
 
 	let timer: number;
 	$effect(() => {
 		timer = window.setInterval(() => {
-			if (isTypingStatus(lastChatStatus) && statusStartTime) {
-				elapsedTime = formatElapsedTime(statusStartTime);
-			}
+            currentTime = new Date();
 		}, 1000);
 
 		return () => {
@@ -47,20 +59,20 @@
 	let scrollArea: HTMLElement | null = $state(null);
 	let previousMessageCount = $state(0);
 
-    function formatLastChatStatus(status: 'sent' | 'delivered' | 'seen' | undefined): string {
-        switch (status) {
-            case 'sent':
-                return 'Sent';
-            case 'delivered':
-                return 'Delivered';
-            case 'seen':
-                return 'Seen';
-            default:
-                return '';
-        }
-    }
+	function formatLastChatStatus(status: 'sent' | 'delivered' | 'seen' | undefined): string {
+		switch (status) {
+			case 'sent':
+				return 'Sent';
+			case 'delivered':
+				return 'Delivered';
+			case 'seen':
+				return 'Seen';
+			default:
+				return '';
+		}
+	}
 
-    let initialLoad = $state(true);
+	let initialLoad = $state(true);
 
 	function isNearBottom(): boolean {
 		if (!scrollArea) return true;
@@ -104,37 +116,37 @@
 	}
 
 	function messageAuthor(participantId: string): Participant {
-        if (participantId === 'mirabel') {
-            return {
-                id: 'mirabel',
-                name: 'Mirabel',
-                avatar: Mirabel
-            };
-        }
+		if (participantId === 'mirabel') {
+			return {
+				id: 'mirabel',
+				name: 'Mirabel',
+				avatar: Mirabel
+			};
+		}
 		return (
 			$selectedSession?.participants.find((p) => p.id === participantId) ?? {
 				id: participantId,
-				name: 'Anon',
+				name: 'Anon'
 			}
 		);
 	}
 
-    function isUser(participant: Participant): boolean {
-        return participant.id != 'mirabel';
-    }
+	function isUser(participant: Participant): boolean {
+		return participant.id != 'mirabel';
+	}
 
 	// Function to find the last user message
 	function isLastUserMessage(index: number): boolean {
 		if (!chat || chat.messages.length === 0) return false;
-        if (chat.messages.length - 1 !== index) return false;
-        const message = chat.messages[chat.messages.length - 1];
-        if (!isUser(messageAuthor(message.authorId))) return false;
-        return true;
+		if (chat.messages.length - 1 !== index) return false;
+		const message = chat.messages[chat.messages.length - 1];
+		if (!isUser(messageAuthor(message.authorId))) return false;
+		return true;
 	}
 
 	// Helper function to determine if status should be shown as a message
 	function isTypingStatus(status: string | undefined): boolean {
-        if (!status) return false;
+		if (!status) return false;
 		return status === 'thinking' || status === 'typing' || status === 'paused';
 	}
 
@@ -142,20 +154,20 @@
 	async function sendMessage() {
 		if (!chatInput.trim()) return;
 
-        if (!chat) {
-            toast.error('Chat is not initialized');
-            return;
-        }
+		if (!chat) {
+			toast.error('Chat is not initialized');
+			return;
+		}
 
 		if (!socket) {
 			toast.error('WebSocket connection is not established');
 			return;
 		}
 
-        if (!user || !user.id) {
-            toast.error('User is not authenticated');
-            return;
-        }
+		if (!user || !user.id) {
+			toast.error('User is not authenticated');
+			return;
+		}
 
 		const message: SessionEvent = {
 			id: 'laskjdhflasdhflk',
@@ -163,7 +175,7 @@
 			timestamp: new Date().toISOString(),
 			content: {
 				type: 'MessageContent',
-                authorId: user.id,
+				authorId: user.id,
 				message: chatInput
 			}
 		};
@@ -174,129 +186,170 @@
 	}
 </script>
 
-<style>
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    .spinner {
-        animation: spin 1.5s linear infinite;
-    }
-</style>
-
-<ScrollArea
-	id="chat-messages"
-	class="m-2 flex h-[1px] flex-grow flex-col rounded-lg p-2 pb-0"
-	bind:viewportRef={scrollArea}
->
-	{#if chat}
-		{#each chat.messages as msg, index}
-			{@const participant = messageAuthor(msg.authorId)}
-            {#if index > 0}
-                <Separator class="my-4" />
-            {/if}
-			<div class="mb-4 flex space-x-4">
-				<Avatar.Root class="h-8 w-8 rounded-lg">
-					<Avatar.Image src={participant.avatar} alt={`${participant.name}'s avatar`} />
-					<Avatar.Fallback class="rounded-lg">{participant.name[0]}</Avatar.Fallback>
-				</Avatar.Root>
-				<div class="flex flex-col">
-					<div class="flex items-center gap-2">
-						<p class="font-normal leading-none">{participant.name}</p>
-						<p
-							class="overflow-hidden whitespace-nowrap text-xs font-light leading-none text-muted-foreground"
+<div id="chat" class="flex h-full flex-col">
+	<ScrollArea
+		id="chat-messages"
+		class="m-2 h-[1px] flex flex-grow flex-col rounded-lg p-0"
+		bind:viewportRef={scrollArea}
+	>
+		{#if chat}
+			{#each chat.messages as msg, index}
+				{@const participant = messageAuthor(msg.authorId)}
+				{#if index > 0}
+					<Separator class="mb-2 mt-4" />
+				{/if}
+				<div class="flex items-start space-x-2 pt-2">
+					<div class="flex h-[1lh] items-center justify-center">
+						<Avatar.Root
+							class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg"
 						>
-							{formatTime(msg.timestamp)}
-						</p>
+							<Avatar.Image
+								src={participant.avatar}
+								alt={`${participant.name}'s avatar`}
+								class="h-full w-full object-cover"
+							/>
+							<Avatar.Fallback class="flex h-full w-full items-center justify-center rounded-lg">
+								{participant.name[0]}
+							</Avatar.Fallback>
+						</Avatar.Root>
 					</div>
-					<div class="pb-2 pt-2">
-						<p class="font-light">{msg.message}</p>
+					<div>
+						<p class="[overflow-wrap:anywhere] font-normal">{msg.message}</p>
 						{#if isLastUserMessage(index) && !isTypingStatus(lastChatStatus)}
-							<p class="text-xs text-muted-foreground mt-1">{formatLastChatStatus(lastChatStatus)}</p>
+							<p class="text-muted-foreground mt-1 text-xs">
+								{formatLastChatStatus(lastChatStatus)}
+							</p>
 						{/if}
 					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
 
-		<!-- Display thinking/typing/paused status as a chat message -->
-		{#if isTypingStatus(lastChatStatus)}
-            <Separator class="my-4" />
-			<div class="mb-4 flex space-x-4">
-				<Avatar.Root class="h-8 w-8 rounded-lg">
-					<Avatar.Image src={Mirabel} alt={`Mirabel's avatar`} />
-					<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
-				</Avatar.Root>
-				<div class="flex flex-col">
-					<div class="flex items-center gap-2">
-						<p class="font-normal leading-none">Mirabel</p>
-					</div>
-					<div class="pb-2 pt-2">
-						<div class="flex items-center">
-							{#if lastChatStatus === 'thinking'}
-								<!-- Spinning animation for thinking status -->
-								<div class="flex h-5 w-5 items-center justify-center">
-									<svg class="spinner h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-										<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-										<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-									</svg>
-								</div>
-							{:else if lastChatStatus === 'typing'}
-								<!-- Bouncing dots animation for typing status -->
-								<div class="flex space-x-1">
-									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 0ms;"></div>
-									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 150ms;"></div>
-									<div class="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style="animation-delay: 300ms;"></div>
-								</div>
-							{:else if lastChatStatus === 'paused'}
-								<!-- Pause icon for paused status -->
-								<div class="flex h-5 w-5 items-center justify-center">
-									<Pause class="h-4 w-4 text-muted-foreground" />
-								</div>
-							{/if}
-							<span class="ml-3 text-sm text-muted-foreground">
+			<!-- Display thinking/typing/paused status as a chat message -->
+			{#if isTypingStatus(lastChatStatus)}
+				<Separator class="my-4" />
+				<div class="mb-4 flex space-x-4">
+					<Avatar.Root class="h-8 w-8 rounded-lg">
+						<Avatar.Image src={Mirabel} alt={`Mirabel's avatar`} />
+						<Avatar.Fallback class="rounded-lg">M</Avatar.Fallback>
+					</Avatar.Root>
+					<div class="flex flex-col justify-center">
+						<div>
+							<div class="flex items-center">
 								{#if lastChatStatus === 'thinking'}
-									Thinking for {elapsedTime}...
+									<!-- Spinning animation for thinking status -->
+									<div class="flex h-5 w-5 items-center justify-center">
+										<svg
+											class="spinner text-muted-foreground h-4 w-4"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+										>
+											<circle
+												class="opacity-25"
+												cx="12"
+												cy="12"
+												r="10"
+												stroke="currentColor"
+												stroke-width="4"
+											></circle>
+											<path
+												class="opacity-75"
+												fill="currentColor"
+												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+											></path>
+										</svg>
+									</div>
 								{:else if lastChatStatus === 'typing'}
-									typing for {elapsedTime}...
+									<!-- Bouncing dots animation for typing status -->
+									<div class="flex space-x-1">
+										<div
+											class="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
+											style="animation-delay: 0ms;"
+										></div>
+										<div
+											class="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
+											style="animation-delay: 150ms;"
+										></div>
+										<div
+											class="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
+											style="animation-delay: 300ms;"
+										></div>
+									</div>
 								{:else if lastChatStatus === 'paused'}
-									Paused for {elapsedTime}
+									<!-- Pause icon for paused status -->
+									<div class="flex h-5 w-5 items-center justify-center">
+										<Pause class="text-muted-foreground h-4 w-4" />
+									</div>
 								{/if}
-							</span>
+								<span class="text-muted-foreground ml-3 text-sm">
+									{#if lastChatStatus === 'thinking'}
+										Thinking for {elapsedTime}...
+									{:else if lastChatStatus === 'typing'}
+										typing for {elapsedTime}...
+									{:else if lastChatStatus === 'paused'}
+										Paused for {elapsedTime}
+									{/if}
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			{/if}
 		{/if}
-	{/if}
-</ScrollArea>
+	</ScrollArea>
 
-<div id="chat-input" class="relative m-2 mt-2 flex flex-row rounded-lg bg-secondary p-2">
-	{#if sessionState.socket}
-		<div
-			class="absolute left-1 top-1 h-3 w-3 rounded-full border border-secondary {socketStatusStyle.color}"
-			title={socketStatusStyle.title}
-		></div>
-	{/if}
+	<div
+		id="chat-input"
+		class="bg-secondary relative m-2 rounded-lg p-2 justify-between flex flex-col"
+	>
+		{#if sessionState.socket}
+			<span
+				class="border-secondary absolute right-1 top-1 h-3 w-3 rounded-full border {socketStatusStyle.color} z-50"
+				title={socketStatusStyle.title}
+			></span>
+		{/if}
 
-	<Textarea
-		class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-		placeholder="Type your message here..."
-		bind:value={chatInput}
-		onkeydown={(e) => {
-			if (e.key === 'Enter' && !e.shiftKey) {
-				sendMessage();
-                e.preventDefault();
-			}
-		}}
-	/>
-	<div id="buttons" class="flex flex-col gap-1 pl-2">
-		<Button onclick={() => sendMessage()}>
-			<SendHorizontal class="pointer-events-none" />
-		</Button>
-		<Button>
-			<Paperclip />
-		</Button>
+		<Textarea
+			class="m-0 w-full rounded-lg border-none bg-transparent p-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+			placeholder="How can I help you today?"
+            bind:value={chatInput}
+            maxRows={22}
+            minRows={3}
+            autoResize
+			onkeydown={(e) => {
+				if (e.key === 'Enter' && !e.shiftKey) {
+					sendMessage();
+					e.preventDefault();
+				}
+			}}
+		/>
+		<div class="flex items-center justify-between pt-2">
+			<button
+				class="hover:bg-muted/10 flex h-5 w-5 items-center justify-center rounded bg-transparent transition-colors"
+			>
+				<Plus class="h-5 w-5" />
+			</button>
+			<button
+				class="hover:bg-muted/10 flex h-5 w-5 items-center justify-center rounded bg-transparent transition-colors"
+				onclick={() => sendMessage()}
+			>
+				<ArrowUp class="h-5 w-5" />
+			</button>
+		</div>
 	</div>
 </div>
+
+<style>
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+	.spinner {
+		animation: spin 1.5s linear infinite;
+	}
+</style>
