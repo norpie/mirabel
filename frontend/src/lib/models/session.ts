@@ -12,6 +12,17 @@ export interface Session {
     terminal: string[] | undefined;
 }
 
+export function emptySession(): Session {
+    return {
+        id: '',
+        title: '',
+        participants: [],
+        chat: { messages: [] },
+        plan: undefined,
+        terminal: undefined
+    };
+}
+
 export interface Plan {
     goal: string;
     spec: string;

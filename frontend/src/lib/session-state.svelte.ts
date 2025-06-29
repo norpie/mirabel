@@ -1,22 +1,32 @@
 import { getContext, setContext } from "svelte";
-import type { Session } from "./models/session";
+import { emptySession, type Session } from "./models/session";
 import type { SocketHandler } from "./socket.svelte";
 import type { SessionAcknowledgmentEvent, SessionEvent, SessionMessageEvent } from "./models/event";
-import type { User } from "./models/user";
+import { emptyUser, type User } from "./models/user";
 
 export class SessionState {
-    user: User | undefined = $state();
-    session: Session | undefined = $state();
+    user: User = $state(emptyUser());
+    session: Session = $state(emptySession());
     socket: SocketHandler<SessionEvent> | undefined = $state();
 
+    newMessageCallback: () => void = () => {};
+
     lastAcknowledgementTime: Date | undefined = $state();
-    lastAcknowledgementType: 'sent' | 'delivered' | 'seen' | 'thinking' | 'typing' | 'error' | undefined = $state();
+    lastAcknowledgementType: 'sent' | 'delivered' | 'seen' | 'thinking' | 'typing' | 'paused' | 'error' | undefined = $state();
 
     constructor(user: User, session: Session, socket: SocketHandler<SessionEvent>) {
         this.user = user;
         this.session = session;
         this.socket = socket;
         this.socket.setMessageHandler(this.onEvent.bind(this));
+    }
+
+    public setNewMessageCallback(callback: () => void): void {
+        this.newMessageCallback = callback;
+    }
+
+    public removeNewMessageCallback(): void {
+        this.newMessageCallback = () => {};
     }
 
     private onEvent(event: SessionEvent): void {

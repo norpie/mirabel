@@ -4,3 +4,12 @@ export interface User {
     username: string;
     avatar: string;
 }
+
+export function emptyUser(): User {
+    return {
+        id: '',
+        email: '',
+        username: '',
+        avatar: ''
+    };
+}
