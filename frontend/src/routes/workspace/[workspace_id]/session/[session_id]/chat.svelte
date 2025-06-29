@@ -51,7 +51,7 @@
 			};
 		}
 		return (
-			$selectedSession?.participants.find((p) => p.id === participantId) ?? {
+			sessionState.session.participants.find((p) => p.id === participantId) ?? {
 				id: participantId,
 				name: 'Anon'
 			}
