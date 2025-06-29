@@ -26,12 +26,12 @@ impl WorkspaceService {
         &self,
         user_id: String,
         workspace: NewWorkspace,
-    ) -> Result<Workspace> {
-        let workspace = Workspace::new(workspace.name);
-        self.repository
+    ) -> Result<FrontendWorkspace> {
+        let workspace = self.repository
             .user_workspace_repo()
-            .create_child(workspace, &user_id)
-            .await
+            .create_child(Workspace::new(workspace.name), &user_id)
+            .await?;
+        Ok(workspace.into())
     }
 
     pub async fn get_user_workspaces(

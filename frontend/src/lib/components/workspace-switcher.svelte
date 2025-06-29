@@ -17,6 +17,7 @@
 	import { toast } from 'svelte-sonner';
 	import { post } from '$lib/request';
 	import { goto } from '$app/navigation';
+	import { type Workspace } from '$lib/models/workspace';
 
 	let localSelectedWorkspace = $derived($selectedWorkspace);
 
@@ -32,19 +33,23 @@
 			toast.error('Workspace name is required');
 			return;
 		}
-		let result = await post<{
-			name: string;
-		}>('v1/me/workspaces', {
+		let result = await post<Workspace>('v1/me/workspace', {
 			name: workspaceName
 		});
 		if (result.error) {
 			toast.error(result.error);
 			return;
 		}
-		if ($workspaces) {
-			$workspaces.push(result.data);
-		}
+        if (!result.data) {
+            toast.error('Failed to create workspace');
+            return;
+        }
 		workspaceDialogOpen = false;
+		$workspaces.push(result.data);
+        $selectedWorkspace = result.data;
+		goto(`/workspace/${result.data.id}`, {
+			invalidateAll: true
+		});
 	}
 
 	async function joinWorkspace() {
@@ -96,7 +101,7 @@
 							<Avatar.Image src={$selectedWorkspace.logo} alt={$selectedWorkspace.name} />
 							<Avatar.Fallback class="rounded-lg">{$selectedWorkspace.name[0]}</Avatar.Fallback>
 						</Avatar.Root>
-                    {:else}
+					{:else}
 						<Avatar.Root class="h-8 w-8 rounded-lg">
 							<Avatar.Fallback class="rounded-lg">?</Avatar.Fallback>
 						</Avatar.Root>
@@ -121,7 +126,10 @@
 			>
 				<DropdownMenu.Label class="text-xs text-muted-foreground">Workspaces</DropdownMenu.Label>
 				{#each $workspaces as workspace (workspace.name)}
-					<DropdownMenu.Item onSelect={() => goto(`/workspace/${workspace.id}`)} class="gap-2 p-2">
+					<DropdownMenu.Item onSelect={() => {
+                            $selectedWorkspace = workspace;
+                            goto(`/workspace/${workspace.id}`)
+                        }} class="gap-2 p-2">
 						<Avatar.Root class="h-8 w-8 rounded-lg">
 							<Avatar.Image src={workspace.logo} alt={workspace.name} />
 							<Avatar.Fallback class="rounded-lg">{workspace.name[0]}</Avatar.Fallback>
@@ -139,7 +147,11 @@
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	{:else if $workspaces && $workspaces.length === 0}
-		<Button variant="ghost" onclick={() => (workspaceDialogOpen = true)} class="w-full justify-start">
+		<Button
+			variant="ghost"
+			onclick={() => (workspaceDialogOpen = true)}
+			class="w-full justify-start"
+		>
 			<div class="grid flex-1 text-left text-sm leading-tight">
 				<span class="truncate font-semibold">Create a workspace</span>
 			</div>
