@@ -14,8 +14,12 @@
 	import type { SocketHandler } from '$lib/socket.svelte';
 	import type { SessionEvent } from '$lib/models/event';
 	import { getSessionState, setSessionState } from '$lib/session-state.svelte';
+	import { untrack } from 'svelte';
 
 	let { data }: PageProps = $props();
+
+    setSessionState(data.user, data.session, data.socket);
+    let sessionState = $state(getSessionState());
 
 	let chatPane: PaneAPI | undefined = $state();
 	let monitorPane: PaneAPI | undefined = $state();
@@ -23,7 +27,6 @@
 	let inset: HTMLDivElement | undefined = $state();
 
 	let socket: SocketHandler<SessionEvent> | undefined = $state(data.socket);
-	let socketStatus:  'connecting' | 'open' | 'closing' | 'closed' | 'error' = $derived(socket?.status ? socket.status : 'closed');
     let session = $state(data.session);
 
 	const minSize = 5;
@@ -38,9 +41,6 @@
 	let enableHandle = $derived(!disableResize);
 
 	let tab = $state('spec');
-
-    setSessionState(data.user, data.session, data.socket);
-    const sessionState = getSessionState();
 
 	function handleResize() {
 		if (!inset) return;
@@ -71,10 +71,14 @@
 	}
 
 	$effect(() => {
-		window.addEventListener('resize', handleResize);
         selectedWorkspace.set(data.workspace);
         selectedSession.set(data.session);
         sessions.set(data.sessions);
+        untrack(() => {
+            setSessionState(data.user, data.session, data.socket);
+            sessionState = getSessionState();
+        });
+		window.addEventListener('resize', handleResize);
         return () => {
 		    window.removeEventListener('resize', handleResize);
             if (!data.session || data.session.id != session.id) {
@@ -102,7 +106,7 @@
 						<ChevronsRight />
 					</button>
 				{:else}
-					<Chat />
+					<Chat {sessionState}/>
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle={enableHandle} disabled={disableResize} />

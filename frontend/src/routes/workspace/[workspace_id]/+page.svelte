@@ -1,27 +1,30 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { PageProps } from './$types';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+    import { ChatInput } from '$lib/components/chat/index';
 	import SendHorizontal from 'lucide-svelte/icons/send-horizontal';
 	import Paperclip from 'lucide-svelte/icons/paperclip';
     import MoveRight from 'lucide-svelte/icons/move-right';
 	import { toast } from 'svelte-sonner';
 	import { sessions, selectedSession, selectedWorkspace } from '$lib/store';
 	import { page } from '$app/state';
-	import { createNewSession } from '$lib/api/session';
 	import { goto } from '$app/navigation';
+	import { post } from '$lib/request';
+	import type { Session } from '$lib/models/session';
 
 	let { data }: PageProps = $props();
-	selectedWorkspace.set(data.workspace);
-	sessions.set(data.sessions);
 
 	let chatInput = $state('');
 	let workspaceId = $derived(page.params.workspace_id);
 
-	onMount(() => {
+	$effect(() => {
 		selectedSession.set(null);
+	    selectedWorkspace.set(data.workspace);
+	    sessions.set(data.sessions);
 	});
+
+    $inspect(data);
 
 	async function sendMessage() {
         if (!$selectedWorkspace) {
@@ -29,7 +32,17 @@
             return;
         }
 		if (!chatInput.trim()) return;
-        const session = await createNewSession($selectedWorkspace.id, chatInput.trim());
+        const session = await post<Session>(`v1/workspace/${workspaceId}/session`, {
+            "input": chatInput,
+        });
+        if (!session || !session.data) {
+            toast.error('Failed to create session. Please try again.');
+            return;
+        }
+        if (session.error) {
+            toast.error(`Error: ${session.error}`);
+            return;
+        }
         goto(`/workspace/${$selectedWorkspace.id}/session/${session.data.id}`);
 	}
 </script>
@@ -58,27 +71,9 @@
             </div>
         {/if}
 
-        <!-- Chat input section -->
-        <div class="flex items-center flex-row bg-secondary rounded-lg p-2 mx-auto">
-            <Textarea
-                class="flex-1 resize-none border-none bg-transparent focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                placeholder="Type your message here..."
-                bind:value={chatInput}
-                onkeydown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        sendMessage();
-                        e.preventDefault();
-                    }
-                }}
+        <ChatInput
+            bind:value={chatInput}
+            send={sendMessage}
             />
-            <div class="flex flex-col gap-1 pl-2">
-                <Button onclick={() => sendMessage()}>
-                    <SendHorizontal class="pointer-events-none" />
-                </Button>
-                <Button>
-                    <Paperclip />
-                </Button>
-            </div>
-        </div>
     </div>
 </div>

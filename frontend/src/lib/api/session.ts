@@ -488,9 +488,3 @@ terminal: [
         }
     ]
 };
-
-export async function createNewSession(workspaceId: string, input: string): Promise<Result<Session>> {
-    return await post(`v1/workspace/${workspaceId}/session`, {
-        "input": input,
-    });
-}

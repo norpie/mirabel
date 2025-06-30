@@ -7,18 +7,19 @@
 	import { toast } from 'svelte-sonner';
 	import { Separator } from '$lib/components/ui/separator';
 	import type { User } from '$lib/models/user';
-	import { getSessionState } from '$lib/session-state.svelte';
+	import { getSessionState, SessionState } from '$lib/session-state.svelte';
 	import type { SocketHandler } from '$lib/socket.svelte';
 
-	const sessionState = getSessionState();
+    let { sessionState }: {
+        sessionState: SessionState;
+    } = $props();
+
 	// Ground truth for the selected session
 	let user: User = $derived(sessionState.user);
 	let chat: ChatModel = $derived(sessionState.session?.chat ?? undefined);
 	let messageCount: number = $derived(chat?.messages.length ?? 0);
 	let socket: SocketHandler<SessionEvent> | undefined = $derived(sessionState.socket);
 	let lastAcknowledgementTime: Date = $derived(sessionState.lastAcknowledgementTime ?? new Date());
-
-	let log: Chat.Log | undefined = $state(undefined);
 
 	let mirabelStatus: 'thinking' | 'typing' | 'paused' | undefined = $derived.by(() => {
 		switch (sessionState.lastAcknowledgementType) {
