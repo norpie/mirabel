@@ -128,7 +128,9 @@
 				{#each $workspaces as workspace (workspace.name)}
 					<DropdownMenu.Item onSelect={() => {
                             $selectedWorkspace = workspace;
-                            goto(`/workspace/${workspace.id}`)
+                            goto(`/workspace/${workspace.id}`, {
+                                invalidateAll: true
+                            })
                         }} class="gap-2 p-2">
 						<Avatar.Root class="h-8 w-8 rounded-lg">
 							<Avatar.Image src={workspace.logo} alt={workspace.name} />
