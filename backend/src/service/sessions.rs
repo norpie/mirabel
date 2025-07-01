@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::{session::SessionWorker, prelude::*, repository::RepositoryProvider};
+use crate::{session::models::SessionWorker, prelude::*, repository::RepositoryProvider};
 
 use actix_web::web::Data;
 use log::debug;
