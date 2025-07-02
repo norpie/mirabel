@@ -17,7 +17,6 @@ use crate::{
 };
 
 use super::{
-    relationships::{associates_with_rel_name, has_child_rel_name, owns_rel_name},
     SurrealDB,
 };
 
@@ -268,10 +267,10 @@ impl<T: Entity> PublicEntityRepository<T> for SurrealDB {
 #[async_trait]
 impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     // One-to-One relationship methods
-    async fn find_related(&self, owner_id: &T::ID) -> Result<Option<R>> {
+    async fn find_related(&self, owner_id: &T::ID, relationship_name: &str) -> Result<Option<R>> {
         let query = format!(
             "SELECT ->{}->{} as result FROM type::thing($owner_table, $owner_id) FETCH result",
-            owns_rel_name(R::singular_name()),
+            relationship_name,
             R::singular_name()
         );
         let owner_id_str = owner_id.to_string();
@@ -298,10 +297,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(related)
     }
 
-    async fn exists_related(&self, owner_id: &T::ID) -> Result<bool> {
+    async fn exists_related(&self, owner_id: &T::ID, relationship_name: &str) -> Result<bool> {
         let query = format!(
             "SELECT ->{}->{} as result FROM type::thing($owner_table, $owner_id) FETCH result",
-            owns_rel_name(R::singular_name()),
+            relationship_name,
             R::singular_name()
         );
         let owner_id_str = owner_id.to_string();
@@ -329,11 +328,11 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(exists)
     }
 
-    async fn create_owned(&self, subject: R, owner_id: &T::ID) -> Result<R> {
+    async fn create_owned(&self, subject: R, owner_id: &T::ID, relationship_name: &str) -> Result<R> {
         let query1 = "$created = CREATE $table CONTENT $subject";
         let query2 = format!(
             "RELATE $owner->{}->$created",
-            owns_rel_name(R::singular_name())
+            relationship_name
         );
         let query3 = "RETURN $created";
         let owner_bind = Thing::from((T::singular_name(), owner_id.to_string().as_str()));
@@ -365,10 +364,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         created.ok_or(Error::NotFoundRecentUpdate(R::singular_name().into()))
     }
 
-    async fn relate(&self, subject_id: &R::ID, owner_id: &T::ID) -> Result<()> {
+    async fn relate(&self, subject_id: &R::ID, owner_id: &T::ID, relationship_name: &str) -> Result<()> {
         let query_fmt = format!(
             "RELATE ONLY $owner->{}->$subject",
-            owns_rel_name(R::singular_name())
+            relationship_name
         );
         let subject_bind = Thing::from((R::singular_name(), subject_id.to_string().as_str()));
         let owner_bind = Thing::from((T::singular_name(), owner_id.to_string().as_str()));
@@ -395,9 +394,11 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     }
 
     // One-to-Many relationship methods
-    async fn find_children(&self, parent_id: &T::ID, page: PageRequest) -> Result<PageResponse<R>> {
-        let query = format!("SELECT out FROM {} WHERE in = type::thing($parent_table, $parent_id) LIMIT $limit START $start FETCH out",
-                          has_child_rel_name(R::singular_name()));
+    async fn find_children(&self, parent_id: &T::ID, relationship_name: &str, page: PageRequest) -> Result<PageResponse<R>> {
+        let query = format!(
+            "SELECT out FROM {} WHERE in = type::thing($parent_table, $parent_id) LIMIT $limit START $start FETCH out",
+            relationship_name
+        );
         let parent_id_str = parent_id.to_string();
         let limit_str = page.size().to_string();
         let start_str = ((page.page() - 1) * page.size()).to_string();
@@ -425,10 +426,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(PageResponse::from_vec(children_nested, page.page()))
     }
 
-    async fn count_children(&self, parent_id: &T::ID) -> Result<u64> {
+    async fn count_children(&self, parent_id: &T::ID, relationship_name: &str) -> Result<u64> {
         let query = format!(
             "SELECT count(->{}->{}) as count FROM type::thing($parent_table, $parent_id)",
-            has_child_rel_name(R::singular_name()),
+            relationship_name,
             R::singular_name()
         );
         let parent_id_str = parent_id.to_string();
@@ -450,11 +451,11 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(count)
     }
 
-    async fn create_child(&self, entity: R, parent_id: &T::ID) -> Result<R> {
+    async fn create_child(&self, entity: R, parent_id: &T::ID, relationship_name: &str) -> Result<R> {
         let query1 = "$created = CREATE type::table($table) CONTENT $entity";
         let query2 = format!(
             "RELATE $parent->{}->$created",
-            has_child_rel_name(R::singular_name())
+            relationship_name
         );
         let query3 = "RETURN $created";
         let parent_bind = Thing::from((T::singular_name(), parent_id.to_string().as_str()));
@@ -486,13 +487,13 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         created.ok_or(Error::NotFoundRecentUpdate(R::singular_name().into()))
     }
 
-    async fn create_children(&self, entities: Vec<R>, parent_id: &T::ID) -> Result<Vec<R>> {
+    async fn create_children(&self, entities: Vec<R>, parent_id: &T::ID, relationship_name: &str) -> Result<Vec<R>> {
         let entities_len = entities.len();
         let parent_bind = Thing::from((T::singular_name(), parent_id.to_string().as_str()));
 
         debug!(
             "Starting transaction to create {} child entities of type '{}' for parent {} '{}', using relationship '{}'",
-            entities_len, R::singular_name(), T::singular_name(), parent_id, has_child_rel_name(R::singular_name())
+            entities_len, R::singular_name(), T::singular_name(), parent_id, relationship_name
         );
 
         let mut transaction = self.connection.query("true;");
@@ -518,7 +519,7 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
             transaction = transaction.bind((format!("child{i}"), child));
             transaction = transaction.query(format!(
                 "RELATE $parent->{}->$new_child{}",
-                has_child_rel_name(R::singular_name()),
+                relationship_name,
                 i
             ));
             transaction = transaction.bind(("parent", parent_bind.clone()));
@@ -554,10 +555,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(created.into_iter().flatten().collect())
     }
 
-    async fn delete_children(&self, parent_id: &T::ID) -> Result<()> {
+    async fn delete_children(&self, parent_id: &T::ID, relationship_name: &str) -> Result<()> {
         let query = format!(
             "DELETE type::table($child_table) WHERE <-{}<-({} WHERE id = type::thing($parent_table, $parent_id))",
-            has_child_rel_name(R::singular_name()),
+            relationship_name,
             T::singular_name()
         );
 
@@ -589,12 +590,12 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     async fn find_associated(
         &self,
         entity_id: &T::ID,
+        relationship_name: &str,
         page: PageRequest,
     ) -> Result<PageResponse<R>> {
-        let rel_name = associates_with_rel_name(R::singular_name());
         let query = format!(
             "SELECT out AS result FROM {} WHERE in = type::thing($entity_table, $entity_id) LIMIT $limit START $start FETCH result",
-            rel_name
+            relationship_name
         );
         let entity_id_str = entity_id.to_string();
         let limit_str = page.size().to_string();
@@ -627,12 +628,12 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
     async fn find_associated_to(
         &self,
         related_id: &R::ID,
+        relationship_name: &str,
         page: PageRequest,
     ) -> Result<PageResponse<T>> {
-        let rel_name = associates_with_rel_name(R::singular_name());
         let query = format!(
             "SELECT in AS result FROM {} WHERE out = type::thing($related_table, $related_id) LIMIT $limit START $start FETCH result",
-            rel_name
+            relationship_name
         );
         let related_id_str = related_id.to_string();
         let limit_str = page.size().to_string();
@@ -662,10 +663,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(PageResponse::from_vec(associated, page.page()))
     }
 
-    async fn count_associated(&self, entity_id: &T::ID) -> Result<u64> {
+    async fn count_associated(&self, entity_id: &T::ID, relationship_name: &str) -> Result<u64> {
         let query = format!(
             "SELECT count(->{}->{}) as count FROM type::thing($entity_table, $entity_id)",
-            associates_with_rel_name(R::singular_name()),
+            relationship_name,
             R::singular_name()
         );
         let entity_id_str = entity_id.to_string();
@@ -687,10 +688,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(count)
     }
 
-    async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
+    async fn associate(&self, entity_id: &T::ID, related_id: &R::ID, relationship_name: &str) -> Result<()> {
         let query_fmt = format!(
             "RELATE ONLY $entity->{}->$related",
-            associates_with_rel_name(R::singular_name())
+            relationship_name
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
         let related_bind = Thing::from((R::singular_name(), related_id.to_string().as_str()));
@@ -716,10 +717,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(())
     }
 
-    async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()> {
+    async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID, relationship_name: &str) -> Result<()> {
         let query_fmt = format!(
             "DELETE {} WHERE out = $related AND in = $entity",
-            associates_with_rel_name(R::singular_name())
+            relationship_name
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
         let related_bind = Thing::from((R::singular_name(), related_id.to_string().as_str()));
@@ -747,11 +748,11 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(())
     }
 
-    async fn create_associated(&self, entity_id: &T::ID, related: R) -> Result<R> {
+    async fn create_associated(&self, entity_id: &T::ID, related: R, relationship_name: &str) -> Result<R> {
         let query1 = "$created = CREATE type::table($table) CONTENT $related";
         let query2 = format!(
             "RELATE $entity->{}->$created",
-            associates_with_rel_name(R::singular_name())
+            relationship_name
         );
         let query3 = "RETURN $created";
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
@@ -783,10 +784,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         created.ok_or(Error::NotFoundRecentUpdate(R::singular_name().into()))
     }
 
-    async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool> {
+    async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID, relationship_name: &str) -> Result<bool> {
         let query = format!(
             "SELECT * FROM {} WHERE in = $entity AND out = $related",
-            associates_with_rel_name(R::singular_name())
+            relationship_name
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
         let related_bind = Thing::from((R::singular_name(), related_id.to_string().as_str()));
@@ -815,10 +816,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(is_associated)
     }
 
-    async fn dissociate_all(&self, entity_id: &T::ID) -> Result<()> {
+    async fn dissociate_all(&self, entity_id: &T::ID, relationship_name: &str) -> Result<()> {
         let query = format!(
             "DELETE {} WHERE in = $entity",
-            associates_with_rel_name(R::singular_name())
+            relationship_name
         );
         let entity_bind = Thing::from((T::singular_name(), entity_id.to_string().as_str()));
 
@@ -844,10 +845,10 @@ impl<T: Entity, R: Entity> AssociatedEntityRepository<T, R> for SurrealDB {
         Ok(())
     }
 
-    async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<()> {
+    async fn dissociate_from_all(&self, related_id: &R::ID, relationship_name: &str) -> Result<()> {
         let query = format!(
             "DELETE {} WHERE out = $related",
-            associates_with_rel_name(R::singular_name())
+            relationship_name
         );
         let related_bind = Thing::from((R::singular_name(), related_id.to_string().as_str()));
 

@@ -29,7 +29,7 @@ impl WorkspaceService {
     ) -> Result<FrontendWorkspace> {
         let workspace = self.repository
             .user_workspace_repo()
-            .create_child(Workspace::new(workspace.name), &user_id)
+            .create_child(Workspace::new(workspace.name), &user_id, "owns_workspace")
             .await?;
         Ok(workspace.into())
     }
@@ -42,7 +42,7 @@ impl WorkspaceService {
         Ok(self
             .repository
             .user_workspace_repo()
-            .find_children(&user_id, page)
+            .find_children(&user_id, "owns_workspace", page)
             .await?
             .to())
     }
@@ -87,6 +87,7 @@ impl WorkspaceService {
             .create_child(
                 Session::new(format!("New Session: {}", Utc::now().to_rfc2822())),
                 &workspace_id,
+                "owns_session",
             )
             .await?;
         session.add_participant(user.clone());
@@ -140,7 +141,7 @@ impl WorkspaceService {
     ) -> Result<PageResponse<Session>> {
         self.repository
             .workspace_session_repo()
-            .find_children(&workspace_id, page)
+            .find_children(&workspace_id, "owns_session", page)
             .await
     }
 

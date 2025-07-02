@@ -1,7 +1,7 @@
 use std::{rc::Rc, sync::Arc, time::Duration};
 
 use crate::{
-    session::WorkerEvent, dto::session::event::SessionEvent, model::user::User, prelude::*,
+    session::models::WorkerEvent, dto::session::event::SessionEvent, model::user::User, prelude::*,
     service::sessions::SessionService,
 };
 

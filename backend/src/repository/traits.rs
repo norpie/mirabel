@@ -80,36 +80,38 @@ pub trait PublicEntityRepository<T: Entity>: Repository<T> {
 #[async_trait]
 pub trait AssociatedEntityRepository<T: Entity, R: Entity>: Repository<T> {
     // One-to-One relationship methods
-    async fn find_related(&self, owner_id: &T::ID) -> Result<Option<R>>;
-    async fn exists_related(&self, owner_id: &T::ID) -> Result<bool>;
-    async fn create_owned(&self, subject: R, owner_id: &T::ID) -> Result<R>;
-    async fn relate(&self, subject_id: &R::ID, owner_id: &T::ID) -> Result<()>;
+    async fn find_related(&self, owner_id: &T::ID, relationship_name: &str) -> Result<Option<R>>;
+    async fn exists_related(&self, owner_id: &T::ID, relationship_name: &str) -> Result<bool>;
+    async fn create_owned(&self, subject: R, owner_id: &T::ID, relationship_name: &str) -> Result<R>;
+    async fn relate(&self, subject_id: &R::ID, owner_id: &T::ID, relationship_name: &str) -> Result<()>;
 
     // One-to-Many relationship methods
-    async fn find_children(&self, parent_id: &T::ID, page: PageRequest) -> Result<PageResponse<R>>;
-    async fn count_children(&self, parent_id: &T::ID) -> Result<u64>;
-    async fn create_child(&self, entity: R, parent_id: &T::ID) -> Result<R>;
-    async fn create_children(&self, entities: Vec<R>, parent_id: &T::ID) -> Result<Vec<R>>;
-    async fn delete_children(&self, parent_id: &T::ID) -> Result<()>;
+    async fn find_children(&self, parent_id: &T::ID, relationship_name: &str, page: PageRequest) -> Result<PageResponse<R>>;
+    async fn count_children(&self, parent_id: &T::ID, relationship_name: &str) -> Result<u64>;
+    async fn create_child(&self, entity: R, parent_id: &T::ID, relationship_name: &str) -> Result<R>;
+    async fn create_children(&self, entities: Vec<R>, parent_id: &T::ID, relationship_name: &str) -> Result<Vec<R>>;
+    async fn delete_children(&self, parent_id: &T::ID, relationship_name: &str) -> Result<()>;
 
     // Many-to-Many relationship methods
     async fn find_associated(
         &self,
         entity_id: &T::ID,
+        relationship_name: &str,
         page: PageRequest,
     ) -> Result<PageResponse<R>>;
     async fn find_associated_to(
         &self,
         related_id: &R::ID,
+        relationship_name: &str,
         page: PageRequest,
     ) -> Result<PageResponse<T>>;
-    async fn count_associated(&self, entity_id: &T::ID) -> Result<u64>;
-    async fn associate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()>;
-    async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<()>;
-    async fn create_associated(&self, entity_id: &T::ID, related: R) -> Result<R>;
-    async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID) -> Result<bool>;
-    async fn dissociate_all(&self, entity_id: &T::ID) -> Result<()>;
-    async fn dissociate_from_all(&self, related_id: &R::ID) -> Result<()>;
+    async fn count_associated(&self, entity_id: &T::ID, relationship_name: &str) -> Result<u64>;
+    async fn associate(&self, entity_id: &T::ID, related_id: &R::ID, relationship_name: &str) -> Result<()>;
+    async fn dissociate(&self, entity_id: &T::ID, related_id: &R::ID, relationship_name: &str) -> Result<()>;
+    async fn create_associated(&self, entity_id: &T::ID, related: R, relationship_name: &str) -> Result<R>;
+    async fn is_associated(&self, entity_id: &T::ID, related_id: &R::ID, relationship_name: &str) -> Result<bool>;
+    async fn dissociate_all(&self, entity_id: &T::ID, relationship_name: &str) -> Result<()>;
+    async fn dissociate_from_all(&self, related_id: &R::ID, relationship_name: &str) -> Result<()>;
 }
 
 #[async_trait]

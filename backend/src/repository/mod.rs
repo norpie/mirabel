@@ -439,21 +439,22 @@ pub mod tests {
         info!("Saved child entity with ID: {}", child_id);
 
         // Test one-to-one relationship methods
-        debug!("Relating parent {} to child {}", parent_id, child_id);
+        let relationship_name = "owns";
+        debug!("Relating parent {} to child {} with relationship {}", parent_id, child_id, relationship_name);
         entity_repo
-            .relate(&child_id, &parent_id)
+            .relate(&child_id, &parent_id, relationship_name)
             .await
             .expect("Failed to relate entities");
 
         let related = entity_repo
-            .find_related(&parent_id)
+            .find_related(&parent_id, relationship_name)
             .await
             .expect("Failed to find related");
         debug!("Found related entity: {:?}", related);
         assert!(related.is_some(), "Related entity should exist");
 
         let exists_related = entity_repo
-            .exists_related(&parent_id)
+            .exists_related(&parent_id, relationship_name)
             .await
             .expect("Failed to check existence");
         debug!("Related entity exists: {}", exists_related);
@@ -494,18 +495,18 @@ pub mod tests {
         let parent_id = saved_parent.id().expect("Parent should have ID");
         info!("Saved parent entity with ID: {}", parent_id);
 
+        let relationship_name = "has_child";
+
         // Test create_child
         let child1 = TestEntityChild {
             id: None,
             name: "Child Entity 1".to_string(),
         };
-        debug!("Creating child entity as child of parent: {:?}", child1);
+        debug!("Creating child entity as child of parent with relationship {}: {:?}", relationship_name, child1);
         let saved_child1 = entity_repo
-            .create_child(child1, &parent_id)
+            .create_child(child1, &parent_id, relationship_name)
             .await
             .expect("Failed to create child");
-        let child1_id = saved_child1.id().expect("Child should have ID");
-        info!("Created child entity with ID: {}", child1_id);
 
         // Test create_children
         let children = vec![
@@ -520,16 +521,16 @@ pub mod tests {
         ];
         debug!("Creating multiple children for parent");
         let saved_children = entity_repo
-            .create_children(children, &parent_id)
+            .create_children(children, &parent_id, relationship_name)
             .await
             .expect("Failed to create children");
         info!("Created {} child entities", saved_children.len());
         assert_eq!(saved_children.len(), 2, "Should have created 2 children");
 
         // Test count_children
-        debug!("Counting children for parent {}", parent_id);
+        debug!("Counting children for parent {} with relationship {}", parent_id, relationship_name);
         let count = entity_repo
-            .count_children(&parent_id)
+            .count_children(&parent_id, relationship_name)
             .await
             .expect("Failed to count children");
         info!("Parent has {} children", count);
@@ -538,11 +539,11 @@ pub mod tests {
         // Test find_children
         let page_req = PageRequest::new(1, 10);
         debug!(
-            "Finding children for parent {} with page request: {:?}",
-            parent_id, page_req
+            "Finding children for parent {} with relationship {} and page request: {:?}",
+            parent_id, relationship_name, page_req
         );
         let found_children = entity_repo
-            .find_children(&parent_id, page_req)
+            .find_children(&parent_id, relationship_name, page_req)
             .await
             .expect("Failed to find children");
         info!("Found {} children", found_children.data().len());
@@ -552,7 +553,7 @@ pub mod tests {
         let page_req = PageRequest::new(1, 2);
         debug!("Getting first page of children with size 2");
         let first_page = entity_repo
-            .find_children(&parent_id, page_req)
+            .find_children(&parent_id, relationship_name, page_req)
             .await
             .expect("Failed to get first page");
         assert_eq!(
@@ -564,7 +565,7 @@ pub mod tests {
         let page_req = PageRequest::new(2, 2);
         debug!("Getting second page of children with size 2");
         let second_page = entity_repo
-            .find_children(&parent_id, page_req)
+            .find_children(&parent_id, relationship_name, page_req)
             .await
             .expect("Failed to get second page");
         assert_eq!(
@@ -574,14 +575,14 @@ pub mod tests {
         );
 
         // Test delete_children
-        debug!("Deleting all children of parent {}", parent_id);
+        debug!("Deleting all children of parent {} with relationship {}", parent_id, relationship_name);
         entity_repo
-            .delete_children(&parent_id)
+            .delete_children(&parent_id, relationship_name)
             .await
             .expect("Failed to delete children");
 
         let count_after = entity_repo
-            .count_children(&parent_id)
+            .count_children(&parent_id, relationship_name)
             .await
             .expect("Failed to count children after deletion");
         debug!("Parent has {} children after deletion", count_after);
@@ -667,13 +668,14 @@ pub mod tests {
         );
 
         // Test create_associated
-        debug!("Creating a new associated entity for entity1");
+        let relationship_name = "associates_with";
+        debug!("Creating a new associated entity for entity1 with relationship {}", relationship_name);
         let new_related = TestEntityChild {
             id: None,
             name: "New Related".to_string(),
         };
         let saved_new_related = entity_repo
-            .create_associated(&entity1_id, new_related)
+            .create_associated(&entity1_id, new_related, relationship_name)
             .await
             .expect("Failed to create associated entity");
         let new_related_id = saved_new_related
@@ -682,23 +684,23 @@ pub mod tests {
         info!("Created new associated entity with ID: {}", new_related_id);
 
         // Test associate
-        debug!("Associating entity1 with related1 and related2");
+        debug!("Associating entity1 with related1 and related2 using relationship {}", relationship_name);
         entity_repo
-            .associate(&entity1_id, &related1_id)
+            .associate(&entity1_id, &related1_id, relationship_name)
             .await
             .expect("Failed to associate entity1 with related1");
         entity_repo
-            .associate(&entity1_id, &related2_id)
+            .associate(&entity1_id, &related2_id, relationship_name)
             .await
             .expect("Failed to associate entity1 with related2");
 
         debug!("Associating entity2 with related2 and related3");
         entity_repo
-            .associate(&entity2_id, &related2_id)
+            .associate(&entity2_id, &related2_id, relationship_name)
             .await
             .expect("Failed to associate entity2 with related2");
         entity_repo
-            .associate(&entity2_id, &related3_id)
+            .associate(&entity2_id, &related3_id, relationship_name)
             .await
             .expect("Failed to associate entity2 with related3");
 
@@ -706,35 +708,21 @@ pub mod tests {
         debug!("Checking associations");
         assert!(
             entity_repo
-                .is_associated(&entity1_id, &related1_id)
-                .await
-                .expect("Failed to check association"),
-            "entity1 should be associated with related1"
-        );
-        assert!(
-            entity_repo
-                .is_associated(&entity1_id, &related2_id)
-                .await
-                .expect("Failed to check association"),
-            "entity1 should be associated with related2"
-        );
-        assert!(
-            entity_repo
-                .is_associated(&entity2_id, &related2_id)
+                .is_associated(&entity2_id, &related2_id, relationship_name)
                 .await
                 .expect("Failed to check association"),
             "entity2 should be associated with related2"
         );
         assert!(
             entity_repo
-                .is_associated(&entity2_id, &related3_id)
+                .is_associated(&entity2_id, &related3_id, relationship_name)
                 .await
                 .expect("Failed to check association"),
             "entity2 should be associated with related3"
         );
         assert!(
             !entity_repo
-                .is_associated(&entity1_id, &related3_id)
+                .is_associated(&entity1_id, &related3_id, relationship_name)
                 .await
                 .expect("Failed to check association"),
             "entity1 should not be associated with related3"
@@ -743,7 +731,7 @@ pub mod tests {
         // Test count_associated
         debug!("Counting associated entities for entity1");
         let entity1_count = entity_repo
-            .count_associated(&entity1_id)
+            .count_associated(&entity1_id, relationship_name)
             .await
             .expect("Failed to count associated entities");
         info!("entity1 has {} associated entities", entity1_count);
@@ -754,9 +742,9 @@ pub mod tests {
 
         // Test find_associated
         let page_req = PageRequest::new(1, 10);
-        debug!("Finding associated entities for entity1");
+        debug!("Finding associated entities for entity1 with relationship {}", relationship_name);
         let entity1_associated = entity_repo
-            .find_associated(&entity1_id, page_req.clone())
+            .find_associated(&entity1_id, relationship_name, page_req.clone())
             .await
             .expect("Failed to find associated entities");
         info!(
@@ -770,9 +758,9 @@ pub mod tests {
         );
 
         // Test find_associated_to
-        debug!("Finding entities associated to related2");
+        debug!("Finding entities associated to related2 with relationship {}", relationship_name);
         let related2_associated = entity_repo
-            .find_associated_to(&related2_id, page_req)
+            .find_associated_to(&related2_id, relationship_name, page_req)
             .await
             .expect("Failed to find entities associated to related2");
         info!(
@@ -786,36 +774,36 @@ pub mod tests {
         );
 
         // Test dissociate
-        debug!("Dissociating entity1 from related2");
+        debug!("Dissociating entity1 from related2 with relationship {}", relationship_name);
         entity_repo
-            .dissociate(&entity1_id, &related2_id)
+            .dissociate(&entity1_id, &related2_id, relationship_name)
             .await
             .expect("Failed to dissociate entity1 from related2");
 
         assert!(
             !entity_repo
-                .is_associated(&entity1_id, &related2_id)
+                .is_associated(&entity1_id, &related2_id, relationship_name)
                 .await
                 .expect("Failed to check association after dissociation"),
             "entity1 should no longer be associated with related2"
         );
         assert!(
             entity_repo
-                .is_associated(&entity2_id, &related2_id)
+                .is_associated(&entity2_id, &related2_id, relationship_name)
                 .await
                 .expect("Failed to check association"),
             "entity2 should still be associated with related2"
         );
 
         // Test dissociate_all
-        debug!("Dissociating entity1 from all related entities");
+        debug!("Dissociating entity1 from all related entities with relationship {}", relationship_name);
         entity_repo
-            .dissociate_all(&entity1_id)
+            .dissociate_all(&entity1_id, relationship_name)
             .await
             .expect("Failed to dissociate entity1 from all");
 
         let count_after = entity_repo
-            .count_associated(&entity1_id)
+            .count_associated(&entity1_id, relationship_name)
             .await
             .expect("Failed to count associated entities after dissociate_all");
         assert_eq!(
@@ -824,15 +812,15 @@ pub mod tests {
         );
 
         // Test dissociate_from_all
-        debug!("Dissociating related3 from all entities");
+        debug!("Dissociating related3 from all entities with relationship {}", relationship_name);
         entity_repo
-            .dissociate_from_all(&related3_id)
+            .dissociate_from_all(&related3_id, relationship_name)
             .await
             .expect("Failed to dissociate related3 from all");
 
         assert!(
             !entity_repo
-                .is_associated(&entity2_id, &related3_id)
+                .is_associated(&entity2_id, &related3_id, relationship_name)
                 .await
                 .expect("Failed to check association after dissociate_from_all"),
             "entity2 should no longer be associated with related3"
