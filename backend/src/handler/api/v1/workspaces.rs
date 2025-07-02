@@ -110,13 +110,14 @@ pub async fn archive_user_session(
 #[patch("/{id}/session/{session_id}")]
 pub async fn update_user_session(
     workspace_service: Data<WorkspaceService>,
-    _id: Path<String>,
-    session_id: Path<String>,
+    user: User,
+    ids: Path<(String, String)>,
     session: Json<UpdatedSession>,
 ) -> Result<impl Responder> {
+    let (id, session_id) = ids.into_inner();
     Ok(ApiResponse::ok(
         workspace_service
-            .update_user_session(session_id.to_string(), session.into_inner().title)
+            .update_user_session(user, id, session_id, session.into_inner().title)
             .await?,
     ))
 }
@@ -128,9 +129,9 @@ pub async fn get_workspace_session(
     ids: Path<(String, String)>,
 ) -> Result<impl Responder> {
     let (workspace_id, session_id) = ids.into_inner();
-    let session = workspace_service
+    let session: FullSession = workspace_service
         .get_workspace_session_by_id(user.id().unwrap(), workspace_id, session_id)
         .await?
-        .map(Into::<FullSession>::into);
+        .into();
     Ok(ApiResponse::ok(session))
 }

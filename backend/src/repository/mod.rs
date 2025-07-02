@@ -12,6 +12,7 @@ pub struct RepositoryProvider {
     workspace_repo: Arc<dyn Repository<Workspace>>,
     session_repo: Arc<dyn Repository<Session>>,
     user_workspace_repo: Arc<dyn AssociatedEntityRepository<User, Workspace>>,
+    user_session_repo: Arc<dyn AssociatedEntityRepository<User, Session>>,
     workspace_session_repo: Arc<dyn AssociatedEntityRepository<Workspace, Session>>,
 }
 
@@ -22,6 +23,7 @@ impl RepositoryProvider {
             + Repository<Workspace>
             + Repository<Session>
             + AssociatedEntityRepository<User, Workspace>
+            + AssociatedEntityRepository<User, Session>
             + AssociatedEntityRepository<Workspace, Session>
             + Send
             + Sync
@@ -32,6 +34,7 @@ impl RepositoryProvider {
             workspace_repo: db.clone(),
             session_repo: db.clone(),
             user_workspace_repo: db.clone(),
+            user_session_repo: db.clone(),
             workspace_session_repo: db.clone(),
         }
     }
@@ -52,6 +55,12 @@ impl RepositoryProvider {
         self.user_workspace_repo.clone()
     }
 
+    pub fn user_session_repo(
+        &self,
+    ) -> Arc<dyn AssociatedEntityRepository<User, Session>> {
+        self.user_session_repo.clone()
+    }
+
     pub fn workspace_session_repo(
         &self,
     ) -> Arc<dyn AssociatedEntityRepository<Workspace, Session>> {
@@ -62,7 +71,6 @@ impl RepositoryProvider {
 #[cfg(test)]
 pub mod tests {
     use backend_derive::named_struct;
-    use futures::StreamExt;
     use log::{debug, info};
     use serde::{Deserialize, Serialize};
     use surrealdb::sql::Thing;

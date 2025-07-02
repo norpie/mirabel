@@ -1,6 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::{session::models::SessionWorker, prelude::*, repository::RepositoryProvider};
+use crate::{
+    prelude::*,
+    repository::{RepositoryProvider, traits::Entity},
+    session::models::SessionWorker,
+};
 
 use actix_web::web::Data;
 use log::debug;
@@ -22,14 +26,27 @@ impl SessionService {
     }
 
     pub async fn get_handler(&self, user: User, session_id: String) -> Result<Arc<SessionWorker>> {
-        // TODO: is user allowed to access this session?
+        if !self
+            .repository
+            .user_session_repo()
+            .is_associated(&user.id().unwrap(), &session_id, "owns_session")
+            .await?
+        {
+            return Err(Error::NotFound);
+        }
         let mut registry = self.session_handler_registry.lock().await;
+        let session = self
+            .repository
+            .session_repo()
+            .find(&session_id)
+            .await?
+            .ok_or(Error::NotFound)?;
         let opt_handler = registry.get(&session_id);
         let handler = match opt_handler {
             Some(handler) => handler.clone(),
             None => {
                 let new_handler = Arc::new(SessionWorker::new(
-                    session_id.clone(),
+                    session.clone(),
                     self.repository.clone(),
                 ));
                 registry.insert(session_id.clone(), new_handler.clone());
