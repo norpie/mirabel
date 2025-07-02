@@ -2,7 +2,9 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use crate::{
     dto::session::event::{AcknowledgmentType, SessionEventContent},
+    model::{chat::ChatMessage, session::Session},
     prelude::*,
+    repository::traits::Entity,
 };
 
 use actix_web::web::Data;
@@ -22,10 +24,10 @@ use crate::{dto::session::event::SessionEvent, repository::RepositoryProvider};
 pub mod models;
 
 impl SessionWorker {
-    pub fn new(session_id: String, repository: Data<RepositoryProvider>) -> Self {
+    pub fn new(session: Session, repository: Data<RepositoryProvider>) -> Self {
         let (event_sender, event_receiver) = unbounded_channel::<WorkerEvent>();
         Self {
-            session_id,
+            session: Arc::new(Mutex::new(session)),
             repository,
             receiver: Arc::new(Mutex::new(event_receiver)),
             sender: event_sender,
@@ -44,12 +46,16 @@ impl SessionWorker {
                     if let Err(err) = worker.handle_event(event).await {
                         warn!(
                             "Failed to handle event in session ({}) worker: {}",
-                            worker.session_id, err
+                            worker.session.lock().await.id().unwrap(),
+                            err
                         );
                     };
                 });
             }
-            log::info!("Session handler stopped for session: {}", self.session_id);
+            log::info!(
+                "Session handler stopped for session: {}",
+                self.session.lock().await.id().unwrap()
+            );
         });
     }
 
@@ -71,26 +77,7 @@ impl SessionWorker {
             WorkerEvent::SessionEvent(event) => {
                 // Start by broadcasting the event to all subscribers, so we don't get any client-side
                 // out-of-sync issues.
-                self.broadcast(&event).await?;
-                // Start a predefined sequence for testing purposes.
-                sleep(Duration::from_secs(1)).await;
-                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Delivered))
-                    .await?;
-                sleep(Duration::from_secs(2)).await;
-                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Seen))
-                    .await?;
-                sleep(Duration::from_secs(3)).await;
-                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Thinking))
-                    .await?;
-                sleep(Duration::from_secs(5)).await;
-                self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Typing))
-                    .await?;
-                sleep(Duration::from_secs(5)).await;
-                self.broadcast(&SessionEvent::new(SessionEventContent::MessageContent {
-                    author_id: "mirabel".into(),
-                    message: "This is a test reply.".into(),
-                }))
-                .await?;
+                self.handle_session_event(event).await?;
             }
             WorkerEvent::Unsubscribe(id) => {
                 let sub = self.subscribers.lock().await.remove(&id);
@@ -99,6 +86,72 @@ impl SessionWorker {
                 }
             }
         };
+        Ok(())
+    }
+
+    async fn handle_session_event(&self, event: SessionEvent) -> Result<()> {
+        self.broadcast(&event).await?;
+        match event.content {
+            SessionEventContent::AcknowledgmentContent { ack_type } => todo!(),
+            SessionEventContent::MessageContent { author_id, message } => {
+                self.handle_message_content(author_id, message).await?;
+            }
+            SessionEventContent::AgentActionContent {
+                action,
+                description,
+            } => todo!(),
+            SessionEventContent::AgentPromptContent {
+                prompt_id,
+                prompt,
+                options,
+                allow_other,
+            } => todo!(),
+            SessionEventContent::UserPromptResponseContent {
+                prompt_id,
+                response,
+            } => todo!(),
+            SessionEventContent::AgentNewTaskEvent {
+                task_id,
+                parent_id,
+                description,
+            } => todo!(),
+            SessionEventContent::AgentTaskEvent { task_id, status } => todo!(),
+            SessionEventContent::AgentSpecUpdateEvent { spec } => todo!(),
+            SessionEventContent::AgentTerminalContentEvent { content } => todo!(),
+        }
+        Ok(())
+    }
+
+    async fn handle_message_content(&self, author_id: String, message: String) -> Result<()> {
+        let mut session = self.session.lock().await;
+        session
+            .chat
+            .add_message(ChatMessage::new(author_id, message));
+        self.repository.session_repo().save(session.clone()).await?;
+        sleep(Duration::from_secs(1)).await;
+        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Delivered))
+            .await?;
+        sleep(Duration::from_secs(2)).await;
+        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Seen))
+            .await?;
+        sleep(Duration::from_secs(3)).await;
+        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Thinking))
+            .await?;
+        sleep(Duration::from_secs(5)).await;
+        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Typing))
+            .await?;
+        sleep(Duration::from_secs(5)).await;
+        let agent_id = "mirabel".to_string();
+        let agent_message = "This is a test message from the agent.".to_string();
+        session
+            .chat
+            .add_message(ChatMessage::new(agent_id.clone(), agent_message.clone()));
+        self.repository.session_repo().save(session.clone()).await?;
+        self.broadcast(&SessionEvent::new(SessionEventContent::MessageContent {
+            author_id: agent_id,
+            message: agent_message,
+        }))
+        .await?;
         Ok(())
     }
 

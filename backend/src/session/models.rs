@@ -4,7 +4,7 @@ use actix_web::web::Data;
 use tokio::sync::{mpsc::{UnboundedReceiver, UnboundedSender}, Mutex};
 use uuid::Uuid;
 
-use crate::{dto::session::event::SessionEvent, repository::RepositoryProvider};
+use crate::{dto::session::event::SessionEvent, model::session::Session, repository::RepositoryProvider};
 
 pub enum SessionWorkerState {
     Stopped,
@@ -22,7 +22,7 @@ pub enum WorkerEvent {
 }
 
 pub struct SessionWorker {
-    pub session_id: String,
+    pub session: Arc<Mutex<Session>>,
     pub repository: Data<RepositoryProvider>,
     pub state: SessionWorkerState,
     pub receiver: Arc<Mutex<UnboundedReceiver<WorkerEvent>>>,
