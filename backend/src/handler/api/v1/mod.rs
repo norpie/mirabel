@@ -12,7 +12,6 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
             .configure(auth::scope)
             .configure(me::scope)
             // .configure(users::scope),
-            .configure(sessions::scope)
             .configure(workspaces::scope),
     );
 }

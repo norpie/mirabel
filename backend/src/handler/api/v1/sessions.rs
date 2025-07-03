@@ -1,13 +1,21 @@
 use std::{rc::Rc, sync::Arc, time::Duration};
 
 use crate::{
-    session::models::WorkerEvent, dto::session::event::SessionEvent, model::user::User, prelude::*,
-    service::sessions::SessionService,
+    dto::{
+        api_response::ApiResponse,
+        session::{FullSession, event::SessionEvent},
+        updated_session::UpdatedSession,
+    },
+    model::user::User,
+    prelude::*,
+    repository::traits::Entity,
+    service::{sessions::SessionService, workspaces::WorkspaceService},
+    session::models::WorkerEvent,
 };
 
 use actix_web::{
-    HttpRequest, HttpResponse, Scope, get,
-    web::{self, Data, Path},
+    HttpRequest, HttpResponse, Responder, Scope, delete, get, patch,
+    web::{self, Data, Json, Path},
 };
 use actix_ws::{Message, Session};
 use futures::StreamExt;
@@ -17,28 +25,75 @@ use tokio::{
     time::Instant,
 };
 
-use crate::handler::middleware::auth_middleware::Auth;
-
 // Constants
 const PING_INTERVAL_SECS: u64 = 5;
 const INACTIVE_TIMEOUT_SECS: u64 = 10;
 
 pub fn scope(cfg: &mut web::ServiceConfig) {
-    cfg.service(Scope::new("/session").wrap(Auth).service(session_socket));
+    cfg.service(
+        Scope::new("/session/{session_id}")
+            .service(get_workspace_session)
+            .service(archive_user_session)
+            .service(update_user_session)
+            .service(session_socket),
+    );
 }
 
-#[get("/{session_id}")]
+#[delete("")]
+pub async fn archive_user_session(
+    workspace_service: Data<WorkspaceService>,
+    user: User,
+    ids: Path<(String, String)>,
+) -> Result<impl Responder> {
+    let (workspace_id, session_id) = ids.into_inner();
+    workspace_service
+        .delete_user_session(user.id().unwrap(), workspace_id, session_id)
+        .await?;
+    Ok(ApiResponse::ok(()))
+}
+
+#[patch("")]
+pub async fn update_user_session(
+    workspace_service: Data<WorkspaceService>,
+    user: User,
+    ids: Path<(String, String)>,
+    session: Json<UpdatedSession>,
+) -> Result<impl Responder> {
+    let (id, session_id) = ids.into_inner();
+    Ok(ApiResponse::ok(
+        workspace_service
+            .update_user_session(user, id, session_id, session.into_inner().title)
+            .await?,
+    ))
+}
+
+#[get("")]
+pub async fn get_workspace_session(
+    workspace_service: Data<WorkspaceService>,
+    user: User,
+    ids: Path<(String, String)>,
+) -> Result<impl Responder> {
+    let (workspace_id, session_id) = ids.into_inner();
+    let session: FullSession = workspace_service
+        .get_workspace_session_by_id(user.id().unwrap(), workspace_id, session_id)
+        .await?
+        .into();
+    Ok(ApiResponse::ok(session))
+}
+
+#[get("/socket")]
 pub async fn session_socket(
     req: HttpRequest,
     stream: web::Payload,
     session_service: Data<SessionService>,
     user: User,
-    session_id: Path<String>,
+    ids: Path<(String, String)>,
 ) -> Result<HttpResponse> {
+    let (workspace_id, session_id) = ids.into_inner();
     debug!("WebSocket connection for session: {}", session_id);
     let (res, session, stream) = actix_ws::handle(&req, stream)?;
     let handler = session_service
-        .get_handler(user, session_id.into_inner())
+        .get_handler(user, session_id)
         .await?;
 
     let (sender, receiver) = mpsc::unbounded_channel();
