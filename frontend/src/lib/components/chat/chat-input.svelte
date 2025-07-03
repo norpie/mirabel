@@ -61,6 +61,13 @@
 				return 'Unknown status';
 		}
 	}
+
+    function sendMessage() {
+        if (!value.trim()) {
+            return;
+        }
+        send();
+    }
 </script>
 
 <div id="chat-input" class="bg-secondary relative m-2 flex flex-col justify-between rounded-lg p-2">
@@ -79,7 +86,7 @@
 		{disabled}
 		onkeydown={(e) => {
 			if (e.key === 'Enter' && !e.shiftKey) {
-				send();
+				sendMessage();
 				e.preventDefault();
 			}
 		}}
@@ -93,7 +100,7 @@
 		</button>
 		<button
 			class="hover:bg-muted/10 flex h-5 w-5 items-center justify-center rounded bg-transparent transition-colors"
-			onclick={() => send()}
+			onclick={() => sendMessage()}
 			{disabled}
 		>
 			<ArrowUp class="h-5 w-5" />
