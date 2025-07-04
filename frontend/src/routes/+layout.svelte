@@ -9,8 +9,6 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
-	import BrainCircuit from 'lucide-svelte/icons/brain-circuit';
-
 	import { page } from '$app/state';
 
 	let hideSidebar: boolean = $derived(isExcluded(page.url.pathname));
@@ -28,16 +26,6 @@
 	    user.set(data.user);
 	    workspaces.set(data.workspaces);
     });
-
-	let items = $state([
-		{
-			title: 'Knowledge',
-			callback: () => {
-				console.log('Knowledge clicked');
-			},
-			icon: BrainCircuit
-		}
-	]);
 </script>
 
 <ModeWatcher />
@@ -47,7 +35,7 @@
 	{@render children()}
 {:else}
 	<Sidebar.Provider class="h-full">
-		<AppSidebar bind:items />
+		<AppSidebar />
 		<Sidebar.Inset>
 			<header class="flex h-10 shrink-0 items-center gap-2 transition-[width,height] ease-linear">
 				<div class="flex items-center gap-2 px-3">

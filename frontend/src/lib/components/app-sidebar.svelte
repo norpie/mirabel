@@ -6,18 +6,10 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
 	let {
-		items = $bindable(),
-
 		ref = $bindable(null),
 		collapsible = 'icon',
 		...restProps
 	}: {
-		items: {
-			title: string;
-			callback?: () => void;
-			icon: any;
-		}[];
-
 		ref?: any;
 		collapsible?: 'offcanvas' | 'icon' | 'none';
 	} = $props();
@@ -28,7 +20,7 @@
 		<WorkspaceSwitcher />
 	</Sidebar.Header>
 	<Sidebar.Content>
-		<NavSettings {items} />
+		<NavSettings />
 		<NavSessions />
 	</Sidebar.Content>
 	<Sidebar.Footer>
