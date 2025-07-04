@@ -46,7 +46,7 @@
 {#if hideSidebar}
 	{@render children()}
 {:else}
-	<Sidebar.Provider>
+	<Sidebar.Provider class="h-full">
 		<AppSidebar bind:items />
 		<Sidebar.Inset>
 			<header class="flex h-10 shrink-0 items-center gap-2 transition-[width,height] ease-linear">
