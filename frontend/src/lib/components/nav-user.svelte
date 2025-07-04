@@ -2,6 +2,8 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
 
 	import { setMode, mode } from 'mode-watcher';
@@ -12,6 +14,9 @@
 	import LogOut from 'lucide-svelte/icons/log-out';
 	import Sun from 'lucide-svelte/icons/sun';
 	import Moon from 'lucide-svelte/icons/moon';
+	import Settings from 'lucide-svelte/icons/settings';
+
+	import SettingsInsert from '$lib/components/settings.svelte';
 
 	import { user } from '$lib/store';
 	import { del } from '$lib/request';
@@ -19,12 +24,20 @@
 
 	const sidebar = useSidebar();
 
-    async function logout() {
-        await del("v1/auth/logout");
-        localStorage.removeItem('accessToken');
-        goto('/login');
-    }
+	async function logout() {
+		await del('v1/auth/logout');
+		localStorage.removeItem('accessToken');
+		goto('/login');
+	}
+
+	let settingsOpen = $state(false);
 </script>
+
+<Dialog.Root bind:open={settingsOpen}>
+	<Dialog.Content class="min-h-[80%] min-w-[60%]">
+		<SettingsInsert />
+	</Dialog.Content>
+</Dialog.Root>
 
 <Sidebar.Menu>
 	{#if $user}
@@ -68,6 +81,10 @@
 						</div>
 					</DropdownMenu.Label>
 					<DropdownMenu.Separator />
+					<DropdownMenu.Item onclick={() => (settingsOpen = true)}>
+						<Settings />
+						Settings
+					</DropdownMenu.Item>
 					{#if $mode == 'dark'}
 						<DropdownMenu.Item onclick={() => setMode('light')}>
 							<Sun />
