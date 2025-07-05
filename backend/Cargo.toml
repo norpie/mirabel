@@ -43,6 +43,9 @@ tokio = { version = "1.43.0", features = ["full"] }
 qstring = "0.7.2"
 actix-ws = "0.3.0"
 uuid = { version = "1.17.0", features = ["v4"] }
+welds = { version = "0.4.16", features = ["check", "colored", "migrations", "postgres"] }
+nanoid = "0.4.0"
+sqlx = { version = "0.8.6", features = ["chrono", "runtime-tokio"] }
 
 [dev-dependencies]
 anyhow = "1.0.95"
