@@ -32,6 +32,16 @@ pub enum Error {
     #[error("Internal server error")]
     InternalServer,
 
+    // # DB
+    // SurrealDB
+    #[error("A surrealdb error occurred: {0}")]
+    SurrealDB(Box<surrealdb::Error>),
+    // Welds
+    #[error("A welds error occurred: {0}")]
+    Welds(#[from] welds::WeldsError),
+    #[error("A welds connection error occurred: {0}")]
+    WeldsConnection(#[from] welds::errors::ConnError),
+
     // Library error types
     #[error("An actix error occurred: {0}")]
     ActixWeb(#[from] actix_web::Error),
@@ -45,8 +55,6 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error("A reqwest_streams error occurred: {0}")]
     StreamBody(#[from] reqwest_streams::error::StreamBodyError),
-    #[error("A surrealdb error occurred: {0}")]
-    SurrealDB(Box<surrealdb::Error>),
     #[error("An eyre report occurred: {0}")]
     EyreReport(#[from] eyre::Report),
     #[error("A jsonwebtoken error occurred: {0}")]
