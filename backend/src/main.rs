@@ -15,6 +15,7 @@ pub(crate) mod error;
 pub(crate) mod prelude;
 
 pub(crate) mod session;
+#[macro_use]
 pub(crate) mod driver;
 pub(crate) mod dto;
 pub(crate) mod handler;
