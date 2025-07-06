@@ -1,8 +1,9 @@
 use crate::{
-    db::PostgresPool, prelude::*, repository::RepositoryProvider, service::{
+    prelude::*,
+    service::{
         auth::AuthService, sessions::SessionService, users::UserService,
         workspaces::WorkspaceService,
-    }
+    },
 };
 
 use std::env;
@@ -13,18 +14,19 @@ use actix_web::{
     middleware::Logger,
     web::{self, Data},
 };
+use deadpool_diesel::postgres::Pool;
 use log::info;
 
 mod api;
 pub(crate) mod extractors;
 pub(crate) mod middleware;
 
-pub async fn run(db: Data<PostgresPool>)-> Result<()> {
+pub async fn run(db: Data<Pool>) -> Result<()> {
     let host = env::var("BACKEND_HOST")?;
     let port: u16 = env::var("BACKEND_PORT")?.parse()?;
 
     // let auth_service = Data::new(AuthService::from(db.clone())?);
-    // let user_service = Data::new(UserService::from(db.clone())?);
+    let user_service = Data::new(UserService::from(db.clone())?);
     // let session_service = Data::new(SessionService::from(db.clone())?);
     // let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
 
@@ -42,7 +44,7 @@ pub async fn run(db: Data<PostgresPool>)-> Result<()> {
         App::new()
             .app_data(db.clone())
             // .app_data(auth_service.clone())
-            // .app_data(user_service.clone())
+            .app_data(user_service.clone())
             // .app_data(session_service.clone())
             // .app_data(workspace_service.clone())
             .wrap(cors)

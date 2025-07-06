@@ -36,18 +36,11 @@ pub enum Error {
     // SurrealDB
     #[error("A surrealdb error occurred: {0}")]
     SurrealDB(Box<surrealdb::Error>),
-    // Welds
-    #[error("A welds error occurred: {0}")]
-    Welds(#[from] welds::WeldsError),
-    #[error("A welds connection error occurred: {0}")]
-    WeldsConnection(#[from] welds::errors::ConnError),
     // Diesel (async)
     #[error("A diesel error occurred: {0}")]
     Diesel(#[from] diesel::result::Error),
-    #[error("A diesel connection error occurred: {0}")]
-    DieselConnection(#[from] diesel::ConnectionError),
-    #[error("A diesel async connection error occurred: {0}")]
-    DieselAsyncConnection(#[from] diesel_async::pooled_connection::PoolError),
+    #[error("A diesel pool error occurred: {0}")]
+    DieselPool(#[from] diesel::r2d2::PoolError),
 
     // Library error types
     #[error("An actix error occurred: {0}")]

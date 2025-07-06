@@ -1,18 +1,12 @@
 use crate::prelude::*;
 
-use diesel::{Connection, PgConnection};
-use diesel_async::{
-    AsyncPgConnection,
-    pooled_connection::{AsyncDieselConnectionManager, bb8::Pool},
-};
+use deadpool_diesel::postgres::{Manager, Pool, Runtime};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use log::debug;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
-pub type PostgresPool = Pool<AsyncPgConnection>;
-
-pub async fn connect() -> Result<Pool<AsyncPgConnection>> {
+pub async fn connect() -> Result<Pool> {
     let opt_url = std::env::var("DATABASE_URL").ok();
     let url = match opt_url {
         Some(url) => url,
@@ -27,11 +21,9 @@ pub async fn connect() -> Result<Pool<AsyncPgConnection>> {
         }
     };
     debug!("Connecting to database with connection string: {}", url);
-    {
-        let mut conn = PgConnection::establish(&url)?;
-        conn.run_pending_migrations(MIGRATIONS).unwrap();
-    }
-    let config = AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(&url);
-    let pool: Pool<AsyncPgConnection> = Pool::builder().build(config).await?;
+    let manager = Manager::new(&url, Runtime::Tokio1);
+    let pool = Pool::builder(manager).max_size(8).build()?;
+    let conn = pool.get().await?.lock()?;
+    conn.run_pending_migrations(MIGRATIONS)?;
     Ok(pool)
 }

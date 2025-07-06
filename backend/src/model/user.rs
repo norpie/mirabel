@@ -1,60 +1,65 @@
-use backend_derive::named_struct;
+use crate::prelude::*;
+use argon2::password_hash::{PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng};
+use argon2::{Argon2, PasswordHash};
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use surrealdb::sql::Thing;
+use diesel::prelude::Queryable;
+use diesel::{Insertable, Selectable};
 
-use crate::repository::traits::{Entity, FieldFindableStruct};
-
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
-#[named_struct]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
-    id: Option<Thing>,
+    pub id: String,
     pub username: String,
     pub email: String,
     pub password: String,
     pub created_at: DateTime<Utc>,
-    pub avatar: Option<String>,
-}
-
-impl Entity for User {
-    type ID = String;
-
-    fn id(&self) -> Option<Self::ID> {
-        self.id.as_ref().map(|thing| thing.id.to_string())
-    }
-}
-
-impl FieldFindableStruct for User {
-    fn filterable_fields() -> &'static [&'static str] {
-        &["email", "username"]
-    }
+    pub modified_at: DateTime<Utc>,
 }
 
 impl User {
-    pub fn new(username: String, email: String, password: String) -> Self {
-        User {
-            id: None,
+    pub fn new_registered(username: String, email: String, password: String) -> Result<Self> {
+        Ok(User {
+            id: id!(),
             username,
             email,
-            password,
+            password: Argon2::default()
+                .hash_password(password.as_bytes(), &SaltString::generate(&mut OsRng))?
+                .to_string(),
             created_at: Utc::now(),
-            avatar: None,
-        }
+            modified_at: Utc::now(),
+        })
     }
 
-    pub fn set_username(&mut self, username: String) {
-        self.username = username;
+    pub fn is_correct_password(&self, password: &str) -> Result<bool> {
+        Argon2::default()
+            .verify_password(password.as_bytes(), &PasswordHash::new(&self.password)?)
+            .map(|_| true)
+            .map_err(|_| Error::Unauthorized("Wrong email or password".into()))
     }
+}
 
-    pub fn set_email(&mut self, email: String) {
-        self.email = email;
-    }
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::avatars)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Avatar {
+    pub id: String,
+    pub user_id: String,
+}
 
-    pub fn set_password(&mut self, password: String) {
-        self.password = password;
-    }
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::auth_options)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct AuthOptions {
+    pub id: String,
+    pub user_id: String,
+    pub two_factor_encoded: Option<String>,
+}
 
-    pub fn set_avatar(&mut self, avatar: String) {
-        self.avatar = Some(avatar);
-    }
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::deleted_users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct DeletedUser {
+    pub id: String,
+    pub deleted_at: DateTime<Utc>,
 }

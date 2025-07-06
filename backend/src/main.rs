@@ -23,7 +23,6 @@ pub(crate) mod messaging;
 pub(crate) mod model;
 pub(crate) mod repository;
 pub(crate) mod db;
-pub(crate) mod migrations;
 pub(crate) mod security;
 pub(crate) mod service;
 
