@@ -25,7 +25,7 @@ pub async fn run(db: Data<Pool>) -> Result<()> {
     let host = env::var("BACKEND_HOST")?;
     let port: u16 = env::var("BACKEND_PORT")?.parse()?;
 
-    // let auth_service = Data::new(AuthService::from(db.clone())?);
+    let auth_service = Data::new(AuthService::from(db.clone())?);
     let user_service = Data::new(UserService::from(db.clone())?);
     // let session_service = Data::new(SessionService::from(db.clone())?);
     // let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
@@ -43,7 +43,7 @@ pub async fn run(db: Data<Pool>) -> Result<()> {
 
         App::new()
             .app_data(db.clone())
-            // .app_data(auth_service.clone())
+            .app_data(auth_service.clone())
             .app_data(user_service.clone())
             // .app_data(session_service.clone())
             // .app_data(workspace_service.clone())
