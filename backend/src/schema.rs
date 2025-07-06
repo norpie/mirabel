@@ -21,8 +21,8 @@ diesel::table! {
         username -> Text,
         email -> Text,
         password -> Text,
-        created_at -> Timestamp,
-        modified_at -> Timestamp,
+        created_at -> Timestamptz,
+        modified_at -> Timestamptz,
     }
 }
 
