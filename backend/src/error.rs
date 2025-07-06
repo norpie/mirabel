@@ -41,6 +41,13 @@ pub enum Error {
     Welds(#[from] welds::WeldsError),
     #[error("A welds connection error occurred: {0}")]
     WeldsConnection(#[from] welds::errors::ConnError),
+    // Diesel (async)
+    #[error("A diesel error occurred: {0}")]
+    Diesel(#[from] diesel::result::Error),
+    #[error("A diesel connection error occurred: {0}")]
+    DieselConnection(#[from] diesel::ConnectionError),
+    #[error("A diesel async connection error occurred: {0}")]
+    DieselAsyncConnection(#[from] diesel_async::pooled_connection::PoolError),
 
     // Library error types
     #[error("An actix error occurred: {0}")]

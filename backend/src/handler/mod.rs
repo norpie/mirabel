@@ -1,10 +1,8 @@
 use crate::{
-    prelude::*,
-    repository::RepositoryProvider,
-    service::{
+    db::PostgresPool, prelude::*, repository::RepositoryProvider, service::{
         auth::AuthService, sessions::SessionService, users::UserService,
         workspaces::WorkspaceService,
-    },
+    }
 };
 
 use std::env;
@@ -21,14 +19,14 @@ mod api;
 pub(crate) mod extractors;
 pub(crate) mod middleware;
 
-pub async fn run(db: Data<RepositoryProvider>) -> Result<()> {
+pub async fn run(db: Data<PostgresPool>)-> Result<()> {
     let host = env::var("BACKEND_HOST")?;
     let port: u16 = env::var("BACKEND_PORT")?.parse()?;
 
-    let auth_service = Data::new(AuthService::from(db.clone())?);
-    let user_service = Data::new(UserService::from(db.clone())?);
-    let session_service = Data::new(SessionService::from(db.clone())?);
-    let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
+    // let auth_service = Data::new(AuthService::from(db.clone())?);
+    // let user_service = Data::new(UserService::from(db.clone())?);
+    // let session_service = Data::new(SessionService::from(db.clone())?);
+    // let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
 
     info!("Listening on {}:{}", host, port);
     HttpServer::new(move || {
@@ -42,10 +40,11 @@ pub async fn run(db: Data<RepositoryProvider>) -> Result<()> {
             .max_age(3600);
 
         App::new()
-            .app_data(auth_service.clone())
-            .app_data(user_service.clone())
-            .app_data(session_service.clone())
-            .app_data(workspace_service.clone())
+            .app_data(db.clone())
+            // .app_data(auth_service.clone())
+            // .app_data(user_service.clone())
+            // .app_data(session_service.clone())
+            // .app_data(workspace_service.clone())
             .wrap(cors)
             .wrap(logger)
             .configure(api::scope)

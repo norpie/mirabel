@@ -5,7 +5,6 @@ use driver::{
     search::{traits::SearchEngine, SearchEngines},
 };
 use log::{info, warn};
-use repository::{surrealdb::SurrealDB, RepositoryProvider};
 
 extern crate backend_derive;
 
@@ -13,6 +12,7 @@ use crate::prelude::*;
 
 pub(crate) mod error;
 pub(crate) mod prelude;
+pub(crate) mod schema;
 
 pub(crate) mod session;
 #[macro_use]
@@ -22,6 +22,8 @@ pub(crate) mod handler;
 pub(crate) mod messaging;
 pub(crate) mod model;
 pub(crate) mod repository;
+pub(crate) mod db;
+pub(crate) mod migrations;
 pub(crate) mod security;
 pub(crate) mod service;
 
@@ -43,15 +45,16 @@ async fn main() -> Result<()> {
 
 async fn run() -> Result<()> {
     info!("Running setup tasks");
-    let db = SurrealDB::from_env().await?;
-    let repos = RepositoryProvider::new(db.into());
+    // let db = SurrealDB::from_env().await?;
+    let db = db::connect().await?;
+    // let repos = RepositoryProvider::new(db.into());
     let engines = SearchEngines::from_env();
     if !engines.available().await {
         warn!("No search engines are available");
     }
     let browsers = Browsers::new().await?;
     info!("Running lifecycle tasks");
-    handler::run(Data::new(repos)).await?;
+    handler::run(Data::new(db)).await?;
     info!("Running cleanup tasks");
     browsers.close().await?;
     Ok(())
