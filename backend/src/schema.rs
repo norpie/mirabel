@@ -16,6 +16,13 @@ diesel::table! {
 }
 
 diesel::table! {
+    deleted_users (id) {
+        id -> Text,
+        deleted_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Text,
         username -> Text,
@@ -28,9 +35,11 @@ diesel::table! {
 
 diesel::joinable!(auth_options -> users (user_id));
 diesel::joinable!(avatars -> users (user_id));
+diesel::joinable!(deleted_users -> users (id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     auth_options,
     avatars,
+    deleted_users,
     users,
 );
