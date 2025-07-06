@@ -2,12 +2,13 @@ use crate::prelude::*;
 use argon2::password_hash::{PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng};
 use argon2::{Argon2, PasswordHash};
 use chrono::{DateTime, Utc};
-use welds::WeldsModel;
+use diesel::prelude::Queryable;
+use diesel::{Insertable, Selectable};
 
-#[derive(Debug, WeldsModel)]
-#[welds(table = "users")]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
-    #[welds(primary_key)]
     pub id: String,
     pub username: String,
     pub email: String,
@@ -38,31 +39,27 @@ impl User {
     }
 }
 
-#[derive(Debug, WeldsModel)]
-#[welds(table = "avatars")]
-#[welds(BelongsToOne(username, User, "user_id"))]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::avatars)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Avatar {
-    #[welds(primary_key)]
     pub id: String,
     pub user_id: String,
 }
 
-#[derive(Debug, WeldsModel)]
-#[welds(table = "auth_options")]
-#[welds(BelongsToOne(username, User, "user_id"))]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::auth_options)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct AuthOptions {
-    #[welds(primary_key)]
     pub id: String,
     pub user_id: String,
     pub two_factor_encoded: Option<String>,
 }
 
-#[derive(Debug, WeldsModel)]
-#[welds(table = "deleted_users")]
-#[welds(BelongsToOne(username, User, "user_id"))]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[diesel(table_name = crate::schema::deleted_users)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DeletedUser {
-    #[welds(primary_key)]
     pub id: String,
-    pub user_id: String,
     pub deleted_at: DateTime<Utc>,
 }
