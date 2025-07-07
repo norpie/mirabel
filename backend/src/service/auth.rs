@@ -1,15 +1,12 @@
 use actix_web::web::Data;
-use argon2::password_hash::{PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng};
-use argon2::{Argon2, PasswordHash};
 use deadpool_diesel::postgres::Pool;
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
 
 use crate::dto::login_user::LoginUser;
 use crate::dto::register_user::RegisterUser;
 use crate::model::user::User;
 use crate::prelude::*;
 
-use crate::repository::traits::Entity;
 use crate::security::jwt_util::TokenFactory;
 use crate::security::jwt_util::TokenPair;
 
@@ -28,25 +25,44 @@ impl AuthService {
 
     pub async fn login(&self, user: LoginUser) -> Result<TokenPair> {
         use crate::schema::users::dsl::*;
-        let found_user = users
-            .filter(email.eq(user.email))
-            .or_filter(username.eq(user.email))
-            .first::<User>(&mut self.repository.get().await?.lock()?.into())
-            .map_err(|_| Error::Unauthorized("Wrong email or password".into()))?;
-        if !found_user.is_correct_password(&user.password)? {
+        let conn = self.repository.get().await?;
+        let found_user = conn
+            .interact(|conn| {
+                users
+                    .filter(email.eq(user.email.clone()))
+                    .or_filter(username.eq(user.email))
+                    .first::<User>(conn)
+                    .optional()
+            })
+            .await??;
+        let Some(user) = found_user else {
+            return Err(Error::Unauthorized("Wrong email or password".into()));
+        };
+        if !user.is_correct_password(&user.password)? {
             return Err(Error::Unauthorized("Wrong email or password".into()));
         }
-        self.token_factory.generate_token(found_user.id.to_string())
+        self.token_factory.generate_token(user.id.to_string())
     }
 
     pub async fn register(&self, register_user: RegisterUser) -> Result<TokenPair> {
         use crate::schema::users::dsl::*;
-        let found_user = users
-            .filter(email.eq(&register_user.email))
-            .or_filter(username.eq(&register_user.username))
-            .load::<User>(&mut self.repository.get().await?.lock()?.into())?
-            .into_iter()
-            .next();
+        let conn = self.repository.get().await?;
+
+        // Check if user already exists
+        let register_user_clone = register_user.clone();
+        let found_user = conn
+            .interact(|conn| {
+                users
+                    .filter(email.eq(register_user_clone.email))
+                    .or_filter(username.eq(register_user_clone.username))
+                    .first::<User>(conn)
+                    .optional()
+            })
+            .await??;
+
+        if found_user.is_some() {
+            return Err(Error::Conflict("User already exists".into()));
+        }
 
         let user = User::new_registered(
             register_user.username,
@@ -54,11 +70,11 @@ impl AuthService {
             register_user.password,
         )?;
 
-        diesel::insert_into(users)
-            .values(&user)
-            .execute(&mut self.repository.get().await?.lock()?.into())?;
+        let user_id = user.id.clone();
+        conn.interact(move |conn| diesel::insert_into(users).values(&user).execute(conn))
+            .await??;
 
-        self.token_factory.generate_token(user.id)
+        self.token_factory.generate_token(user_id.to_string())
     }
 
     pub fn refresh(&self, token: String) -> Result<TokenPair> {
