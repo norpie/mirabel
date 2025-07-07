@@ -1,11 +1,11 @@
-use std::{error::Error as StdError, sync::PoisonError};
+use std::{error::Error as AStdError, sync::PoisonError};
 
-use diesel::{PgConnection};
+use diesel::PgConnection;
 use miette::Diagnostic;
 use scraper::error::SelectorErrorKind;
-use thiserror::Error;
-use tokio::sync::{mpsc::error::SendError};
 use std::sync::MutexGuard;
+use thiserror::Error;
+use tokio::sync::mpsc::error::SendError;
 
 use crate::dto::session::event::SessionEvent;
 
@@ -35,7 +35,7 @@ pub enum Error {
     AlreadyExists(String),
     #[error("Conflict: {0}")]
     Conflict(String),
-    
+
     // 500.. HTTP error types
     #[error("Internal server error")]
     InternalServer,
@@ -61,7 +61,7 @@ pub enum Error {
     #[error("An actix error occurred: {0}")]
     ActixWeb(#[from] actix_web::Error),
     #[error("An argon2 error occurred: {0}")]
-    Argon2(#[from] argon2::password_hash::Error),
+    Argon2(String),
     #[error("A chrono error occurred: {0}")]
     Chrono(#[from] chrono::ParseError),
     #[error("A serde_json error occurred: {0}")]
@@ -112,9 +112,15 @@ pub enum Error {
 unsafe impl Send for Error {}
 unsafe impl Sync for Error {}
 
-impl From<Box<dyn StdError + std::marker::Send + std::marker::Sync>> for Error {
-    fn from(error: Box<dyn StdError + std::marker::Send + std::marker::Sync>) -> Self {
+impl From<Box<dyn AStdError + std::marker::Send + std::marker::Sync>> for Error {
+    fn from(error: Box<dyn AStdError + std::marker::Send + std::marker::Sync>) -> Self {
         Error::Generic(format!("{:?}", error))
+    }
+}
+
+impl From<argon2::password_hash::Error> for Error {
+    fn from(error: argon2::password_hash::Error) -> Self {
+        Error::Argon2(format!("{:?}", error))
     }
 }
 
@@ -145,12 +151,6 @@ impl From<fantoccini::error::CmdError> for Error {
 impl From<SendError<SessionEvent>> for Error {
     fn from(e: SendError<SessionEvent>) -> Self {
         Error::Channel(Box::new(e))
-    }
-}
-
-impl From<surrealdb::Error> for Error {
-    fn from(e: surrealdb::Error) -> Self {
-        Error::SurrealDB(Box::new(e))
     }
 }
 

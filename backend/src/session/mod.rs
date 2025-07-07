@@ -1,16 +1,13 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use crate::{
-    dto::session::event::{AcknowledgmentType, SessionEventContent},
-    model::{chat::ChatMessage, session::Session},
-    prelude::*,
+    driver::id::id, dto::session::event::{AcknowledgmentType, SessionEventContent}, model::{chat::ChatMessage, session::Session}, prelude::*
 };
 
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
 use log::warn;
 use models::{SessionWorker, SessionWorkerState, WorkerEvent};
-use surrealdb::Uuid;
 use tokio::{
     sync::{
         Mutex,
@@ -19,7 +16,7 @@ use tokio::{
     time::sleep,
 };
 
-use crate::{dto::session::event::SessionEvent};
+use crate::dto::session::event::SessionEvent;
 
 pub mod models;
 
@@ -62,13 +59,13 @@ impl SessionWorker {
     pub async fn subscribe(
         &self,
         sender: UnboundedSender<SessionEvent>,
-    ) -> Result<(Uuid, UnboundedSender<WorkerEvent>)> {
-        let id = Uuid::new_v4();
+    ) -> Result<(String, UnboundedSender<WorkerEvent>)> {
+        let id = id!();
         let mut subscribers = self.subscribers.lock().await;
         if subscribers.contains_key(&id) {
             return Err(Error::DoubleSubscription);
         }
-        subscribers.insert(id, sender);
+        subscribers.insert(id.clone(), sender);
         Ok((id, self.sender.clone()))
     }
 

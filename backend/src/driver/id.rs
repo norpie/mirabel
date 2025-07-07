@@ -23,6 +23,8 @@ macro_rules! id {
     };
 }
 
+pub(crate) use id;
+
 #[cfg(test)]
 mod tests {
     use super::*;

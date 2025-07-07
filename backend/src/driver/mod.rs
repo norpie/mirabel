@@ -2,7 +2,6 @@ pub(crate) mod browser;
 pub(crate) mod container;
 pub(crate) mod converter;
 pub(crate) mod email;
-#[macro_use]
 pub(crate) mod id;
 pub(crate) mod llm;
 pub(crate) mod scraper;

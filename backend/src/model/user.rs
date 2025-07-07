@@ -1,3 +1,4 @@
+use crate::driver::id::id;
 use crate::prelude::*;
 use argon2::password_hash::{PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng};
 use argon2::{Argon2, PasswordHash};

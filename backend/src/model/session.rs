@@ -4,7 +4,7 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{model::workspace::Workspace, schema::sessions};
+use crate::{driver::id::id, model::workspace::Workspace, schema::sessions};
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[diesel(belongs_to(Workspace))]

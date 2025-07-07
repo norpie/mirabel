@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use surrealdb::Uuid;
+
+use crate::driver::id::id;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionEvent {
@@ -13,7 +14,7 @@ pub struct SessionEvent {
 impl SessionEvent {
     pub fn new(content: SessionEventContent) -> Self {
         SessionEvent {
-            id: Uuid::new_v4().to_string(),
+            id: id!(),
             source: "system".to_string(),
             timestamp: Utc::now(),
             content,
@@ -22,7 +23,7 @@ impl SessionEvent {
 
     pub fn acknowledgment(ack_type: AcknowledgmentType) -> Self {
         SessionEvent {
-            id: Uuid::new_v4().to_string(),
+            id: id!(),
             source: "system".to_string(),
             timestamp: Utc::now(),
             content: SessionEventContent::AcknowledgmentContent { ack_type },
@@ -31,7 +32,7 @@ impl SessionEvent {
 
     pub fn error() -> Self {
         SessionEvent {
-            id: Uuid::new_v4().to_string(),
+            id: id!(),
             source: "system".to_string(),
             timestamp: Utc::now(),
             content: SessionEventContent::AcknowledgmentContent {

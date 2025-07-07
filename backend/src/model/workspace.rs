@@ -12,6 +12,8 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::driver::id::id;
+
 #[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::workspaces)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
