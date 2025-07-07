@@ -56,17 +56,17 @@ impl WorkspaceService {
         user: User,
         page: PageRequest,
     ) -> Result<PageResponse<FrontendWorkspace>> {
-        use crate::schema::workspace_members::dsl::*;
-        use crate::schema::workspaces::dsl::*;
+        use crate::schema::workspace_members::dsl as wm;
+        use crate::schema::workspaces::dsl as w;
 
         let conn = self.repository.get().await?;
         let user_id_clone = user.id.clone();
         let page_clone = page.clone();
         let workspace_member_pairs = conn
             .interact(move |conn| {
-                workspace_members
-                    .inner_join(workspaces)
-                    .filter(user_id.eq(user_id_clone))
+                wm::workspace_members
+                    .inner_join(w::workspaces)
+                    .filter(wm::user_id.eq(user_id_clone))
                     .offset(page_clone.offset())
                     .limit(page_clone.size())
                     .select((WorkspaceMember::as_select(), Workspace::as_select()))
@@ -77,10 +77,10 @@ impl WorkspaceService {
         let user_id_clone = user.id.clone();
         let count = conn
             .interact(move |conn| {
-                workspace_members
-                    .inner_join(workspaces)
-                    .filter(user_id.eq(user_id_clone))
-                    .select(count(workspace_id))
+                wm::workspace_members
+                    .inner_join(w::workspaces)
+                    .filter(wm::user_id.eq(user_id_clone))
+                    .select(count(w::id))
                     .first::<i64>(conn)
             })
             .await??;
