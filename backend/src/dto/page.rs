@@ -64,7 +64,7 @@ impl PageRequest {
     }
 
     pub fn offset(&self) -> i64 {
-        self.page * self.size
+        (self.page - 1) * self.size
     }
 }
 
