@@ -2,13 +2,7 @@ use std::io::Write;
 
 use chrono::{DateTime, Utc};
 use diesel::{
-    Selectable,
-    deserialize::{FromSql, FromSqlRow},
-    expression::AsExpression,
-    pg::{Pg, PgValue},
-    prelude::{Insertable, Queryable},
-    serialize::{IsNull, ToSql},
-    sql_types::Integer,
+    deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::{Pg, PgValue}, prelude::{Insertable, Queryable}, serialize::{IsNull, ToSql}, sql_types::Integer, Selectable
 };
 use serde::{Deserialize, Serialize};
 
@@ -64,6 +58,7 @@ impl WorkspaceMember {
     }
 }
 
+#[repr(i32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
 #[diesel(sql_type = Integer)]
 pub enum WorkspaceRole {
@@ -79,15 +74,32 @@ impl WorkspaceRole {
             WorkspaceRole::Member | WorkspaceRole::Admin | WorkspaceRole::Owner
         )
     }
+
+    pub fn from_i32(value: i32) -> Option<Self> {
+        match value {
+            0 => Some(WorkspaceRole::Owner),
+            1 => Some(WorkspaceRole::Admin),
+            2 => Some(WorkspaceRole::Member),
+            _ => None,
+        }
+    }
+
+    pub fn to_i32(&self) -> i32 {
+        match self {
+            WorkspaceRole::Owner => 0,
+            WorkspaceRole::Admin => 1,
+            WorkspaceRole::Member => 2,
+        }
+    }
 }
 
 impl FromSql<Integer, Pg> for WorkspaceRole {
     fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
-        match i32::from_sql(bytes)? {
-            0 => Ok(WorkspaceRole::Owner),
-            1 => Ok(WorkspaceRole::Admin),
-            2 => Ok(WorkspaceRole::Member),
-            _ => Err("Unrecognized workspace role".into()),
+        let value = i32::from_sql(bytes)?;
+        let opt_role = WorkspaceRole::from_i32(value);
+        match opt_role {
+            Some(role) => Ok(role),
+            None => Err(format!("Invalid WorkspaceRole value: {}", value).into()),
         }
     }
 }
@@ -97,11 +109,8 @@ impl ToSql<Integer, Pg> for WorkspaceRole {
         &'b self,
         out: &mut diesel::serialize::Output<'b, '_, Pg>,
     ) -> diesel::serialize::Result {
-        match *self {
-            WorkspaceRole::Owner => out.write_all(&[0])?,
-            WorkspaceRole::Admin => out.write_all(&[1])?,
-            WorkspaceRole::Member => out.write_all(&[2])?,
-        };
+        let value = self.to_i32();
+        out.write_all(&value.to_be_bytes())?;
         Ok(IsNull::No)
     }
 }
