@@ -30,12 +30,12 @@
         devShells.default = with pkgs;
           mkShell {
             buildInputs = [
-              (rust-bin.stable.latest.default.override {
+              (rust-bin.nightly.latest.default.override {
                 extensions = ["rust-src" "rust-analyzer"];
               })
               openssl
               pkg-config
-              ra-multiplex
+              postgresql
 
               geckodriver
 
@@ -48,8 +48,6 @@
             ];
 
             shellHook = ''
-              # Start `ra-multiplex server` as a background process which dies when the shell exits
-              # systemd-run --user --same-dir --service-type=exec --setenv=PATH --setenv=CARGO_HOME --setenv=RUSTUP_HOME "$SHELL" ra-multiplex server
               export LD_LIBRARY_PATH=${libs}
             '';
           };
