@@ -18,11 +18,15 @@ impl<T> PageResponse<T> {
         }
     }
 
-    pub fn from_vec(data: Vec<T>, page: i32) -> Self {
+    pub fn new(page_info: PageInfo, data: Vec<T>) -> Self {
+        Self { page_info, data }
+    }
+
+    pub fn from_vec(data: Vec<T>, page: i64) -> Self {
         let page_info = PageInfo {
             page,
-            size: data.len() as i32,
-            total: data.len() as i32,
+            size: data.len() as i64,
+            total: data.len() as i64,
         };
         Self { page_info, data }
     }
@@ -34,12 +38,12 @@ impl<T> PageResponse<T> {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageRequest {
-    page: i32,
-    size: i32,
+    page: i64,
+    size: i64,
 }
 
 impl PageRequest {
-    pub fn new(page: i32, size: i32) -> Self {
+    pub fn new(page: i64, size: i64) -> Self {
         Self { page, size }
     }
 }
@@ -51,18 +55,40 @@ impl Default for PageRequest {
 }
 
 impl PageRequest {
-    pub fn page(&self) -> i32 {
+    pub fn page(&self) -> i64 {
         self.page
     }
 
-    pub fn size(&self) -> i32 {
+    pub fn size(&self) -> i64 {
         self.size
+    }
+
+    pub fn offset(&self) -> i64 {
+        self.page * self.size
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageInfo {
-    page: i32,
-    size: i32,
-    total: i32,
+    page: i64,
+    size: i64,
+    total: i64,
+}
+
+impl PageInfo {
+    pub fn new(page: i64, size: i64, total: i64) -> Self {
+        Self { page, size, total }
+    }
+
+    pub fn page(&self) -> i64 {
+        self.page
+    }
+
+    pub fn size(&self) -> i64 {
+        self.size
+    }
+
+    pub fn total(&self) -> i64 {
+        self.total
+    }
 }

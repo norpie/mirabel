@@ -1,15 +1,13 @@
 use crate::{
-    dto::{api_response::ApiResponse, page::PageRequest},
-    model::{user::User, workspace::NewWorkspace},
+    dto::{api_response::ApiResponse, page::PageRequest, workspace::NewWorkspace},
+    model::user::User,
     prelude::*,
-    repository::traits::Entity,
     service::workspaces,
 };
 
 use actix_web::{
-    get, post,
+    Responder, Scope, get, post,
     web::{self, Data, Json, Query},
-    Responder, Scope,
 };
 
 use self::workspaces::WorkspaceService;
@@ -30,7 +28,7 @@ pub async fn get_user_workspaces(
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
         workspace_service
-            .get_user_workspaces(user.id().unwrap(), page.into_inner())
+            .get_user_workspaces(user, page.into_inner())
             .await?,
     ))
 }
@@ -43,7 +41,7 @@ pub async fn new_user_workspace(
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
         workspace_service
-            .create_user_workspace(user.id().unwrap(), new_workspace.into_inner())
+            .create_user_workspace(user, new_workspace.into_inner())
             .await?,
     ))
 }

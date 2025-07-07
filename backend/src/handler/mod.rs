@@ -27,8 +27,8 @@ pub async fn run(db: Data<Pool>) -> Result<()> {
 
     let auth_service = Data::new(AuthService::from(db.clone())?);
     let user_service = Data::new(UserService::from(db.clone())?);
+    let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
     // let session_service = Data::new(SessionService::from(db.clone())?);
-    // let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
 
     info!("Listening on {}:{}", host, port);
     HttpServer::new(move || {

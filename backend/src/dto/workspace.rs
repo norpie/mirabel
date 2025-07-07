@@ -1,6 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{model::workspace::Workspace, repository::traits::Entity};
+use crate::model::workspace::Workspace;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NewWorkspace {
+    pub name: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FrontendWorkspace {
@@ -12,9 +17,9 @@ pub struct FrontendWorkspace {
 impl From<Workspace> for FrontendWorkspace {
     fn from(value: Workspace) -> Self {
         Self {
-            id: value.id().unwrap(),
-            name: value.name().to_owned(),
-            avatar: value.avatar().cloned(),
+            id: value.id,
+            name: value.name,
+            avatar: value.avatar,
         }
     }
 }

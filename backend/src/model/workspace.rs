@@ -65,6 +65,12 @@ pub enum WorkspaceRole {
     Member = 2,
 }
 
+impl WorkspaceRole {
+    pub fn is_at_least_member(&self) -> bool {
+        matches!(self, WorkspaceRole::Member | WorkspaceRole::Admin | WorkspaceRole::Owner)
+    }
+}
+
 impl FromSql<Integer, Pg> for WorkspaceRole {
     fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
         match i32::from_sql(bytes)? {
