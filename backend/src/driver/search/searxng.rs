@@ -5,7 +5,7 @@ use log::{debug, info};
 use reqwest::Client;
 use serde::Deserialize;
 
-use super::{models::SearchResult, SearchEngine, SearchPage};
+use super::{SearchEngine, SearchPage, models::SearchResult};
 
 #[derive(Default)]
 pub struct SearxNG {
@@ -15,7 +15,7 @@ pub struct SearxNG {
 
 impl SearxNG {
     pub fn new(base_url: String) -> Self {
-        info!("Starting SearxNG search engine with base URL: {}", base_url);
+        info!("Starting SearxNG search engine with base URL: {base_url}");
         SearxNG {
             base_url,
             client: Client::new(),

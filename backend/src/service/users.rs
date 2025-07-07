@@ -17,13 +17,14 @@ impl UserService {
         use crate::schema::users::dsl::*;
         let conn = self.repository.get().await?;
         let user_id = user_id.clone();
-        Ok(conn.interact(move |conn| {
-            users
-                .filter(id.eq(user_id))
-                .select(User::as_select())
-                .first::<User>(conn)
-                .optional()
-        })
-        .await??)
+        Ok(conn
+            .interact(move |conn| {
+                users
+                    .filter(id.eq(user_id))
+                    .select(User::as_select())
+                    .first::<User>(conn)
+                    .optional()
+            })
+            .await??)
     }
 }

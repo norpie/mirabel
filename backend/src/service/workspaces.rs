@@ -12,7 +12,10 @@ use crate::{
 
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
-use diesel::{dsl::count, Connection, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper};
+use diesel::{
+    Connection, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper,
+    dsl::count,
+};
 
 pub struct WorkspaceService {
     repository: Data<Pool>,
@@ -43,7 +46,8 @@ impl WorkspaceService {
                     .execute(t)?;
                 Ok(())
             })
-        }).await??;
+        })
+        .await??;
         Ok(workspace.into())
     }
 
@@ -54,29 +58,33 @@ impl WorkspaceService {
     ) -> Result<PageResponse<FrontendWorkspace>> {
         use crate::schema::workspace_members::dsl::*;
         use crate::schema::workspaces::dsl::*;
-        
+
         let conn = self.repository.get().await?;
         let user_id_clone = user.id.clone();
         let page_clone = page.clone();
-        let workspace_member_pairs = conn.interact(move |conn| {
-            workspace_members
-                .inner_join(workspaces)
-                .filter(user_id.eq(user_id_clone))
-                .offset(page_clone.offset())
-                .limit(page_clone.size())
-                .select((WorkspaceMember::as_select(), Workspace::as_select()))
-                .load::<(WorkspaceMember, Workspace)>(conn)
-        }).await??;
-        
+        let workspace_member_pairs = conn
+            .interact(move |conn| {
+                workspace_members
+                    .inner_join(workspaces)
+                    .filter(user_id.eq(user_id_clone))
+                    .offset(page_clone.offset())
+                    .limit(page_clone.size())
+                    .select((WorkspaceMember::as_select(), Workspace::as_select()))
+                    .load::<(WorkspaceMember, Workspace)>(conn)
+            })
+            .await??;
+
         let user_id_clone = user.id.clone();
-        let count = conn.interact(move |conn| {
-            workspace_members
-                .inner_join(workspaces)
-                .filter(user_id.eq(user_id_clone))
-                .select(count(workspace_id))
-                .first::<i64>(conn)
-        }).await??;
-        
+        let count = conn
+            .interact(move |conn| {
+                workspace_members
+                    .inner_join(workspaces)
+                    .filter(user_id.eq(user_id_clone))
+                    .select(count(workspace_id))
+                    .first::<i64>(conn)
+            })
+            .await??;
+
         Ok(PageResponse::new(
             PageInfo::new(page.page(), page.size(), count),
             workspace_member_pairs
@@ -93,18 +101,20 @@ impl WorkspaceService {
     ) -> Result<Option<FrontendWorkspace>> {
         use crate::schema::workspace_members::dsl as wm;
         use crate::schema::workspaces::dsl as w;
-        
+
         let conn = self.repository.get().await?;
-        let result = conn.interact(move |conn| {
-            wm::workspace_members
-                .inner_join(w::workspaces)
-                .filter(wm::user_id.eq(&user_id))
-                .filter(w::id.eq(&workspace_id))
-                .select(Workspace::as_select())
-                .first::<Workspace>(conn)
-                .optional()
-        }).await??;
-            
+        let result = conn
+            .interact(move |conn| {
+                wm::workspace_members
+                    .inner_join(w::workspaces)
+                    .filter(wm::user_id.eq(&user_id))
+                    .filter(w::id.eq(&workspace_id))
+                    .select(Workspace::as_select())
+                    .first::<Workspace>(conn)
+                    .optional()
+            })
+            .await??;
+
         Ok(result.map(|w| w.into()))
     }
 }

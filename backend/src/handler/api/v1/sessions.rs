@@ -8,7 +8,7 @@ use crate::{
     },
     model::user::User,
     prelude::*,
-    service::{sessions::SessionService},
+    service::sessions::SessionService,
     session::models::WorkerEvent,
 };
 
@@ -76,7 +76,9 @@ pub async fn get_workspace_session(
     let session: FullSession = session_service
         .get_user_session_by_id(user, workspace_id, session_id)
         .await?
-        .ok_or(Error::Unauthorized("You are You are not authorized to view this session.".into()))?
+        .ok_or(Error::Unauthorized(
+            "You are You are not authorized to view this session.".into(),
+        ))?
         .into();
     Ok(ApiResponse::ok(session))
 }
@@ -90,7 +92,7 @@ pub async fn session_socket(
     ids: Path<(String, String)>,
 ) -> Result<HttpResponse> {
     let (workspace_id, session_id) = ids.into_inner();
-    debug!("WebSocket connection for session: {}", session_id);
+    debug!("WebSocket connection for session: {session_id}");
     let (res, session, stream) = actix_ws::handle(&req, stream)?;
     let handler = session_service
         .get_handler(user, workspace_id, session_id)
@@ -128,7 +130,7 @@ pub async fn session_socket(
                     }
                 }
                 Err(e) => {
-                    warn!("Error serializing event: {:?}", e);
+                    warn!("Error serializing event: {e:?}");
                 }
             }
         }
@@ -154,12 +156,12 @@ pub async fn session_socket(
                     )
                     .await
                     {
-                        warn!("Error handling WebSocket message: {:?}", e);
+                        warn!("Error handling WebSocket message: {e:?}");
                         break;
                     }
                 }
                 Err(e) => {
-                    warn!("Error receiving WebSocket message: {:?}", e);
+                    warn!("Error receiving WebSocket message: {e:?}");
                     break;
                 }
             }
@@ -224,7 +226,7 @@ async fn handle_message(
                 }
             }
             Err(e) => {
-                warn!("Error parsing SessionEvent: {:?}", e);
+                warn!("Error parsing SessionEvent: {e:?}");
             }
         },
         Message::Ping(bytes) => {
@@ -239,11 +241,11 @@ async fn handle_message(
         Message::Close(reason) => {
             *open.lock().await = false;
             if let Some(reason) = reason {
-                warn!("WebSocket connection closed: {:?}", reason);
+                warn!("WebSocket connection closed: {reason:?}");
             }
         }
         _ => {
-            warn!("Received unhandled message type: {:?}", msg);
+            warn!("Received unhandled message type: {msg:?}");
         }
     }
     Ok(())

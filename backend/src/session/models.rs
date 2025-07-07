@@ -2,7 +2,10 @@ use std::{collections::HashMap, sync::Arc};
 
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
-use tokio::sync::{mpsc::{UnboundedReceiver, UnboundedSender}, Mutex};
+use tokio::sync::{
+    Mutex,
+    mpsc::{UnboundedReceiver, UnboundedSender},
+};
 
 use crate::{dto::session::event::SessionEvent, model::session::Session};
 
@@ -29,4 +32,3 @@ pub struct SessionWorker {
     pub sender: UnboundedSender<WorkerEvent>,
     pub subscribers: Arc<Mutex<HashMap<String, UnboundedSender<SessionEvent>>>>,
 }
-

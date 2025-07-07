@@ -4,7 +4,7 @@ use std::io::{BufWriter, Write};
 
 use pdf_extract::{Document, HTMLOutput};
 
-use super::{html::Html, Converter};
+use super::{Converter, html::Html};
 
 pub struct Pdf(pub(super) Vec<u8>);
 

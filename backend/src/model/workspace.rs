@@ -14,7 +14,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::driver::id::id;
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
+)]
 #[diesel(table_name = crate::schema::workspaces)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Workspace {
@@ -37,7 +39,9 @@ impl Workspace {
     }
 }
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
+)]
 #[diesel(table_name = crate::schema::workspace_members)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct WorkspaceMember {
@@ -50,12 +54,12 @@ pub struct WorkspaceMember {
 
 impl WorkspaceMember {
     pub fn new(workspace_id: String, user_id: String, role: WorkspaceRole) -> Self {
-        Self { 
+        Self {
             id: id!(),
             workspace_id,
             user_id,
             role,
-            created_at: Utc::now()
+            created_at: Utc::now(),
         }
     }
 }
@@ -70,7 +74,10 @@ pub enum WorkspaceRole {
 
 impl WorkspaceRole {
     pub fn is_at_least_member(&self) -> bool {
-        matches!(self, WorkspaceRole::Member | WorkspaceRole::Admin | WorkspaceRole::Owner)
+        matches!(
+            self,
+            WorkspaceRole::Member | WorkspaceRole::Admin | WorkspaceRole::Owner
+        )
     }
 }
 

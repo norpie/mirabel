@@ -16,15 +16,14 @@ impl Scraper {
     }
 
     pub async fn scrape(&self, url: &str, timeout: Duration) -> Result<String> {
-        debug!("Scraping URL: {}", url);
+        debug!("Scraping URL: {url}");
         match time::timeout(timeout, self.client.goto(url)).await {
             Ok(result) => {
                 result?;
             }
             Err(_) => {
                 warn!(
-                    "Navigation timeout after {:?} - proceeding with partial page",
-                    timeout
+                    "Navigation timeout after {timeout:?} - proceeding with partial page"
                 );
             }
         }

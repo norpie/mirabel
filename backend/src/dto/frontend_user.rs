@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::{model::user::User};
+use crate::model::user::User;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FrontendUser {

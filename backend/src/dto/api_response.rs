@@ -1,9 +1,9 @@
 use crate::prelude::*;
 
 use actix_web::{
-    body::BoxBody,
-    http::{header::ContentType, StatusCode},
     HttpResponse, HttpResponseBuilder, Responder, ResponseError,
+    body::BoxBody,
+    http::{StatusCode, header::ContentType},
 };
 use serde::Serialize;
 

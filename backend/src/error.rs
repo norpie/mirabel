@@ -114,25 +114,25 @@ unsafe impl Sync for Error {}
 
 impl From<Box<dyn AStdError + std::marker::Send + std::marker::Sync>> for Error {
     fn from(error: Box<dyn AStdError + std::marker::Send + std::marker::Sync>) -> Self {
-        Error::Generic(format!("{:?}", error))
+        Error::Generic(format!("{error:?}"))
     }
 }
 
 impl From<argon2::password_hash::Error> for Error {
     fn from(error: argon2::password_hash::Error) -> Self {
-        Error::Argon2(format!("{:?}", error))
+        Error::Argon2(format!("{error:?}"))
     }
 }
 
 impl<'a> From<PoisonError<MutexGuard<'a, Option<PgConnection>>>> for Error {
     fn from(error: PoisonError<MutexGuard<'a, Option<PgConnection>>>) -> Self {
-        Error::PoisonedLock(format!("{:?}", error))
+        Error::PoisonedLock(format!("{error:?}"))
     }
 }
 
 impl<'a> From<SelectorErrorKind<'a>> for Error {
     fn from(error: SelectorErrorKind<'a>) -> Self {
-        Error::Scraper(format!("{:?}", error))
+        Error::Scraper(format!("{error:?}"))
     }
 }
 

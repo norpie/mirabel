@@ -1,7 +1,10 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use crate::{
-    driver::id::id, dto::session::event::{AcknowledgmentType, SessionEventContent}, model::{chat::ChatMessage, session::Session}, prelude::*
+    driver::id::id,
+    dto::session::event::{AcknowledgmentType, SessionEventContent},
+    model::session::Session,
+    prelude::*,
 };
 
 use actix_web::web::Data;
@@ -79,7 +82,7 @@ impl SessionWorker {
             WorkerEvent::Unsubscribe(id) => {
                 let sub = self.subscribers.lock().await.remove(&id);
                 if sub.is_none() {
-                    warn!("Tried to unsubscribe non-existing subscriber: {}", id);
+                    warn!("Tried to unsubscribe non-existing subscriber: {id}");
                 }
             }
         };
@@ -120,7 +123,7 @@ impl SessionWorker {
     }
 
     async fn handle_message_content(&self, author_id: String, message: String) -> Result<()> {
-        let mut session = self.session.lock().await;
+        let session = self.session.lock().await;
         // session
         //     .chat
         //     .add_message(ChatMessage::new(author_id, message));
@@ -156,7 +159,7 @@ impl SessionWorker {
         let subscribers = self.subscribers.lock().await;
         for (id, subscriber) in subscribers.iter() {
             if let Err(e) = subscriber.send(event.clone()) {
-                log::warn!("Failed to send event to subscriber: {}", e);
+                log::warn!("Failed to send event to subscriber: {e}");
                 self.subscribers.lock().await.remove(id);
             }
         }

@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{model::{chat::{Chat, ChatParticipant}, plan::Plan, session::Session}};
+use crate::model::{
+    chat::{Chat, ChatParticipant},
+    plan::Plan,
+    session::Session,
+};
 
 pub mod event;
 

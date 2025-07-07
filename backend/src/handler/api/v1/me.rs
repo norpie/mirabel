@@ -1,13 +1,11 @@
 use crate::{
-    dto::{frontend_user::FrontendUser, updated_user::UpdatedUser},
+    dto::frontend_user::FrontendUser,
     prelude::*,
-    service::users::UserService,
 };
 
 use actix_web::{
-    delete, get, patch,
-    web::{self, Data, Json},
-    Responder, Scope,
+    Responder, Scope, get,
+    web::{self},
 };
 
 use crate::{

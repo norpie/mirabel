@@ -8,11 +8,10 @@ use crate::{
 };
 
 use actix_web::{
-    delete,
+    HttpRequest, Responder, Scope, delete,
     http::header,
     post,
     web::{self, Data, Json},
-    HttpRequest, Responder, Scope,
 };
 
 pub fn scope(cfg: &mut web::ServiceConfig) {

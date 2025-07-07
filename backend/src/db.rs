@@ -21,7 +21,7 @@ pub async fn connect() -> Result<Pool> {
             format!("{protocol}://{username}:{password}@{host}:{port}/{database}")
         }
     };
-    debug!("Connecting to database with connection string: {}", url);
+    debug!("Connecting to database with connection string: {url}");
     {
         let mut conn = PgConnection::establish(&url)?;
         conn.run_pending_migrations(MIGRATIONS)?;

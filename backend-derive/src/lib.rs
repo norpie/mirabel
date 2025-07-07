@@ -38,7 +38,7 @@ pub fn named_struct(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Default names based on the struct name (convert to snake_case)
     let struct_name_str = struct_name.to_string();
     let default_singular = struct_name_str.to_case(Case::Snake);
-    let default_plural = format!("{}s", default_singular);
+    let default_plural = format!("{default_singular}s");
 
     // Check for custom names in attributes
     let mut singular_name = default_singular;

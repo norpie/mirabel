@@ -30,7 +30,7 @@ pub async fn run(db: Data<Pool>) -> Result<()> {
     let workspace_service = Data::new(WorkspaceService::from(db.clone())?);
     let session_service = Data::new(SessionService::from(db.clone())?);
 
-    info!("Listening on {}:{}", host, port);
+    info!("Listening on {host}:{port}");
     HttpServer::new(move || {
         let logger = Logger::default();
 

@@ -2,7 +2,7 @@
 use actix_web::web::Data;
 use driver::{
     browser::Browsers,
-    search::{traits::SearchEngine, SearchEngines},
+    search::{SearchEngines, traits::SearchEngine},
 };
 use log::{info, warn};
 
@@ -14,12 +14,12 @@ pub(crate) mod error;
 pub(crate) mod prelude;
 pub(crate) mod schema;
 
-pub(crate) mod session;
 pub(crate) mod driver;
 pub(crate) mod dto;
 pub(crate) mod handler;
 pub(crate) mod messaging;
 pub(crate) mod model;
+pub(crate) mod session;
 // pub(crate) mod repository;
 pub(crate) mod db;
 pub(crate) mod security;
@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
             info!("Mirabel has finished running successfully");
         }
         Err(e) => {
-            log::error!("An error occurred: {}", e);
+            log::error!("An error occurred: {e}");
         }
     }
     Ok(())
