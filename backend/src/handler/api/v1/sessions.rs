@@ -8,8 +8,7 @@ use crate::{
     },
     model::user::User,
     prelude::*,
-    repository::traits::Entity,
-    service::{sessions::SessionService, workspaces::WorkspaceService},
+    service::{sessions::SessionService},
     session::models::WorkerEvent,
 };
 
@@ -41,27 +40,27 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
 
 #[delete("")]
 pub async fn archive_user_session(
-    workspace_service: Data<WorkspaceService>,
+    session_service: Data<SessionService>,
     user: User,
     ids: Path<(String, String)>,
 ) -> Result<impl Responder> {
     let (workspace_id, session_id) = ids.into_inner();
-    workspace_service
-        .delete_user_session(user.id().unwrap(), workspace_id, session_id)
+    session_service
+        .delete_user_session(user, workspace_id, session_id)
         .await?;
     Ok(ApiResponse::ok(()))
 }
 
 #[patch("")]
 pub async fn update_user_session(
-    workspace_service: Data<WorkspaceService>,
+    session_service: Data<SessionService>,
     user: User,
     ids: Path<(String, String)>,
     session: Json<UpdatedSession>,
 ) -> Result<impl Responder> {
     let (id, session_id) = ids.into_inner();
     Ok(ApiResponse::ok(
-        workspace_service
+        session_service
             .update_user_session(user, id, session_id, session.into_inner().title)
             .await?,
     ))
@@ -69,14 +68,15 @@ pub async fn update_user_session(
 
 #[get("")]
 pub async fn get_workspace_session(
-    workspace_service: Data<WorkspaceService>,
+    session_service: Data<SessionService>,
     user: User,
     ids: Path<(String, String)>,
 ) -> Result<impl Responder> {
     let (workspace_id, session_id) = ids.into_inner();
-    let session: FullSession = workspace_service
-        .get_workspace_session_by_id(user.id().unwrap(), workspace_id, session_id)
+    let session: FullSession = session_service
+        .get_user_session_by_id(user, workspace_id, session_id)
         .await?
+        .ok_or(Error::Unauthorized("You are You are not authorized to view this session.".into()))?
         .into();
     Ok(ApiResponse::ok(session))
 }
@@ -93,7 +93,7 @@ pub async fn session_socket(
     debug!("WebSocket connection for session: {}", session_id);
     let (res, session, stream) = actix_ws::handle(&req, stream)?;
     let handler = session_service
-        .get_handler(user, session_id)
+        .get_handler(user, workspace_id, session_id)
         .await?;
 
     let (sender, receiver) = mpsc::unbounded_channel();

@@ -30,20 +30,20 @@ impl WorkspaceService {
     ) -> Result<FrontendWorkspace> {
         let workspace = Workspace::new(new_workspace.name);
         let workspace_membership =
-            WorkspaceMember::new(workspace.id, user.id, WorkspaceRole::Owner);
-        self.repository
-            .get()
-            .await?
-            .lock()?
-            .transaction::<(), Error, _>(|t| {
+            WorkspaceMember::new(workspace.id.clone(), user.id, WorkspaceRole::Owner);
+        let conn = self.repository.get().await?;
+        let workspace_clone = workspace.clone();
+        conn.interact(move |conn| {
+            conn.transaction::<(), Error, _>(|t| {
                 diesel::insert_into(crate::schema::workspaces::table)
-                    .values(&workspace)
+                    .values(&workspace_clone)
                     .execute(t)?;
                 diesel::insert_into(crate::schema::workspace_members::table)
                     .values(&workspace_membership)
                     .execute(t)?;
                 Ok(())
-            })?;
+            })
+        }).await??;
         Ok(workspace.into())
     }
 
@@ -54,19 +54,29 @@ impl WorkspaceService {
     ) -> Result<PageResponse<FrontendWorkspace>> {
         use crate::schema::workspace_members::dsl::*;
         use crate::schema::workspaces::dsl::*;
-        let query = workspace_members
-            .inner_join(workspaces)
-            .filter(user_id.eq(user.id));
-        let workspace_member_pairs = query
-            .offset(page.offset())
-            .limit(page.size())
-            .select((WorkspaceMember::as_select(), Workspace::as_select()))
-            .load::<(WorkspaceMember, Workspace)>(
-                &mut self.repository.get().await?.lock()?.into(),
-            )?;
-        let count = query
-            .select(count(workspace_id))
-            .first::<i64>(&mut self.repository.get().await?.lock()?.into())?;
+        
+        let conn = self.repository.get().await?;
+        let user_id_clone = user.id.clone();
+        let page_clone = page.clone();
+        let workspace_member_pairs = conn.interact(move |conn| {
+            workspace_members
+                .inner_join(workspaces)
+                .filter(user_id.eq(user_id_clone))
+                .offset(page_clone.offset())
+                .limit(page_clone.size())
+                .select((WorkspaceMember::as_select(), Workspace::as_select()))
+                .load::<(WorkspaceMember, Workspace)>(conn)
+        }).await??;
+        
+        let user_id_clone = user.id.clone();
+        let count = conn.interact(move |conn| {
+            workspace_members
+                .inner_join(workspaces)
+                .filter(user_id.eq(user_id_clone))
+                .select(count(workspace_id))
+                .first::<i64>(conn)
+        }).await??;
+        
         Ok(PageResponse::new(
             PageInfo::new(page.page(), page.size(), count),
             workspace_member_pairs
@@ -81,16 +91,19 @@ impl WorkspaceService {
         user_id: String,
         workspace_id: String,
     ) -> Result<Option<FrontendWorkspace>> {
-        use crate::schema::workspace_members::dsl::*;
-        use crate::schema::workspaces::dsl::*;
+        use crate::schema::workspace_members::dsl as wm;
+        use crate::schema::workspaces::dsl as w;
         
-        let result = workspace_members
-            .inner_join(workspaces)
-            .filter(user_id.eq(&user_id))
-            .filter(workspace_id.eq(&workspace_id))
-            .select(Workspace::as_select())
-            .first::<Workspace>(&mut self.repository.get().await?.lock()?.into())
-            .optional()?;
+        let conn = self.repository.get().await?;
+        let result = conn.interact(move |conn| {
+            wm::workspace_members
+                .inner_join(w::workspaces)
+                .filter(wm::user_id.eq(&user_id))
+                .filter(w::id.eq(&workspace_id))
+                .select(Workspace::as_select())
+                .first::<Workspace>(conn)
+                .optional()
+        }).await??;
             
         Ok(result.map(|w| w.into()))
     }

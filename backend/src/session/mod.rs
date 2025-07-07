@@ -4,10 +4,10 @@ use crate::{
     dto::session::event::{AcknowledgmentType, SessionEventContent},
     model::{chat::ChatMessage, session::Session},
     prelude::*,
-    repository::traits::Entity,
 };
 
 use actix_web::web::Data;
+use deadpool_diesel::postgres::Pool;
 use log::warn;
 use models::{SessionWorker, SessionWorkerState, WorkerEvent};
 use surrealdb::Uuid;
@@ -19,12 +19,12 @@ use tokio::{
     time::sleep,
 };
 
-use crate::{dto::session::event::SessionEvent, repository::RepositoryProvider};
+use crate::{dto::session::event::SessionEvent};
 
 pub mod models;
 
 impl SessionWorker {
-    pub fn new(session: Session, repository: Data<RepositoryProvider>) -> Self {
+    pub fn new(session: Session, repository: Data<Pool>) -> Self {
         let (event_sender, event_receiver) = unbounded_channel::<WorkerEvent>();
         Self {
             session: Arc::new(Mutex::new(session)),
@@ -46,7 +46,7 @@ impl SessionWorker {
                     if let Err(err) = worker.handle_event(event).await {
                         warn!(
                             "Failed to handle event in session ({}) worker: {}",
-                            worker.session.lock().await.id().unwrap(),
+                            worker.session.lock().await.id,
                             err
                         );
                     };
@@ -54,7 +54,7 @@ impl SessionWorker {
             }
             log::info!(
                 "Session handler stopped for session: {}",
-                self.session.lock().await.id().unwrap()
+                self.session.lock().await.id
             );
         });
     }
@@ -124,10 +124,10 @@ impl SessionWorker {
 
     async fn handle_message_content(&self, author_id: String, message: String) -> Result<()> {
         let mut session = self.session.lock().await;
-        session
-            .chat
-            .add_message(ChatMessage::new(author_id, message));
-        self.repository.session_repo().save(session.clone()).await?;
+        // session
+        //     .chat
+        //     .add_message(ChatMessage::new(author_id, message));
+        // self.repository.session_repo().save(session.clone()).await?;
         sleep(Duration::from_secs(1)).await;
         self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Delivered))
             .await?;
@@ -143,10 +143,10 @@ impl SessionWorker {
         sleep(Duration::from_secs(5)).await;
         let agent_id = "mirabel".to_string();
         let agent_message = "This is a test message from the agent.".to_string();
-        session
-            .chat
-            .add_message(ChatMessage::new(agent_id.clone(), agent_message.clone()));
-        self.repository.session_repo().save(session.clone()).await?;
+        // session
+        //     .chat
+        //     .add_message(ChatMessage::new(agent_id.clone(), agent_message.clone()));
+        // self.repository.session_repo().save(session.clone()).await?;
         self.broadcast(&SessionEvent::new(SessionEventContent::MessageContent {
             author_id: agent_id,
             message: agent_message,

@@ -1,12 +1,12 @@
 use chrono::{DateTime, Utc};
 use diesel::{
-    Selectable,
-    prelude::{Associations, Identifiable, Queryable},
+    prelude::{Associations, Identifiable, Insertable, Queryable}, Selectable
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{model::workspace::Workspace, schema::sessions};
 
-#[derive(Queryable, Selectable, Identifiable, Associations, Debug, PartialEq, Clone)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[diesel(belongs_to(Workspace))]
 #[diesel(table_name = sessions)]
 pub struct Session {
@@ -30,6 +30,11 @@ impl Session {
             modified_at: Utc::now(),
             archived: false,
         }
+    }
+    
+    pub fn set_title(&mut self, title: String) {
+        self.title = title;
+        self.modified_at = Utc::now();
     }
 }
 

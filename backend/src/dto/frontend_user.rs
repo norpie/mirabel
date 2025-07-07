@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::{model::user::User, repository::traits::Entity};
+use crate::{model::user::User};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FrontendUser {
@@ -15,7 +15,7 @@ pub struct FrontendUser {
 impl From<User> for FrontendUser {
     fn from(user: User) -> Self {
         FrontendUser {
-            id: user.id().unwrap(),
+            id: user.id,
             username: user.username,
             email: user.email,
             created_at: user.created_at,

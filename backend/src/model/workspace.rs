@@ -10,8 +10,9 @@ use diesel::{
     serialize::{IsNull, ToSql},
     sql_types::Integer,
 };
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::workspaces)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Workspace {
@@ -34,7 +35,7 @@ impl Workspace {
     }
 }
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::workspace_members)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct WorkspaceMember {
@@ -57,7 +58,7 @@ impl WorkspaceMember {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, AsExpression, FromSqlRow)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
 #[diesel(sql_type = Integer)]
 pub enum WorkspaceRole {
     Owner = 0,

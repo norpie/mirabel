@@ -4,8 +4,9 @@ use argon2::{Argon2, PasswordHash};
 use chrono::{DateTime, Utc};
 use diesel::prelude::Queryable;
 use diesel::{Insertable, Selectable};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -39,7 +40,7 @@ impl User {
     }
 }
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::avatars)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Avatar {
@@ -47,7 +48,7 @@ pub struct Avatar {
     pub user_id: String,
 }
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::auth_options)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct AuthOptions {
@@ -56,7 +57,7 @@ pub struct AuthOptions {
     pub two_factor_encoded: Option<String>,
 }
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq)]
+#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::deleted_users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DeletedUser {

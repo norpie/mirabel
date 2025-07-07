@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 use deadpool_diesel::postgres::{Manager, Pool, Runtime};
+use diesel::{Connection, PgConnection};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use log::debug;
 
@@ -21,9 +22,11 @@ pub async fn connect() -> Result<Pool> {
         }
     };
     debug!("Connecting to database with connection string: {}", url);
+    {
+        let mut conn = PgConnection::establish(&url)?;
+        conn.run_pending_migrations(MIGRATIONS)?;
+    }
     let manager = Manager::new(&url, Runtime::Tokio1);
     let pool = Pool::builder(manager).max_size(8).build()?;
-    let conn = pool.get().await?.lock()?;
-    conn.run_pending_migrations(MIGRATIONS)?;
     Ok(pool)
 }

@@ -1,8 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::repository::traits::Entity;
-
 use super::user::User;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -48,9 +46,9 @@ pub struct ChatParticipant {
 impl From<User> for ChatParticipant {
     fn from(user: User) -> Self {
         Self {
-            id: user.id().unwrap(),
+            id: user.id,
             name: user.username,
-            avatar: user.avatar,
+            avatar: None,
         }
     }
 }

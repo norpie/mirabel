@@ -1,8 +1,8 @@
 use crate::{
-    dto::{api_response::ApiResponse, avatar::Avatar, page::PageRequest, session::FullSession},
+    dto::{api_response::ApiResponse, page::PageRequest, session::FullSession},
     model::user::User,
     prelude::*,
-    service::workspaces,
+    service::{sessions::SessionService, workspaces},
 };
 
 use actix_web::{
@@ -43,14 +43,14 @@ pub async fn get_workspace_by_id(
 
 #[get("/session")]
 pub async fn get_user_workspace_sessions(
-    workspace_service: Data<WorkspaceService>,
+    session_service: Data<SessionService>,
     user: User,
     workspace_id: Path<String>,
     page: Query<PageRequest>,
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(
-        workspace_service
-            .get_user_workspace_sessions(workspace_id.to_string(), user.id, page.into_inner())
+        session_service
+            .get_user_workspace_sessions(workspace_id.to_string(), user, page.into_inner())
             .await?
             .to::<FullSession>(),
     ))
@@ -63,13 +63,13 @@ struct SessionInput {
 
 #[post("/session")]
 pub async fn create_workspace_session(
-    workspace_service: Data<WorkspaceService>,
+    session_service: Data<SessionService>,
     user: User,
     workspace_id: Path<String>,
     input: Json<SessionInput>,
 ) -> Result<impl Responder> {
     Ok(ApiResponse::ok(Into::<FullSession>::into(
-        workspace_service
+        session_service
             .create_workspace_session(user, workspace_id.to_string(), input.0.input)
             .await?,
     )))

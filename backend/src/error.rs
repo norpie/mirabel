@@ -1,7 +1,11 @@
+use std::{error::Error as StdError, sync::PoisonError};
+
+use diesel::{PgConnection};
 use miette::Diagnostic;
 use scraper::error::SelectorErrorKind;
 use thiserror::Error;
-use tokio::sync::mpsc::error::SendError;
+use tokio::sync::{mpsc::error::SendError};
+use std::sync::MutexGuard;
 
 use crate::dto::session::event::SessionEvent;
 
@@ -27,20 +31,31 @@ pub enum Error {
     NotFound,
     #[error("Resource not while updating: {0}")]
     NotFoundRecentUpdate(String),
-
+    #[error("Resource already exists: {0}")]
+    AlreadyExists(String),
+    #[error("Conflict: {0}")]
+    Conflict(String),
+    
     // 500.. HTTP error types
     #[error("Internal server error")]
     InternalServer,
 
     // # DB
-    // SurrealDB
-    #[error("A surrealdb error occurred: {0}")]
-    SurrealDB(Box<surrealdb::Error>),
     // Diesel (async)
     #[error("A diesel error occurred: {0}")]
     Diesel(#[from] diesel::result::Error),
     #[error("A diesel pool error occurred: {0}")]
-    DieselPool(#[from] diesel::r2d2::PoolError),
+    DieselPool(#[from] deadpool_diesel::PoolError),
+    #[error("A diesel interact error occurred: {0}")]
+    DieselInteract(#[from] deadpool_diesel::InteractError),
+    #[error("A diesel connection error occurred: {0}")]
+    DieselConnection(#[from] diesel::ConnectionError),
+    #[error("A diesel pool build error occurred: {0}")]
+    DieselPoolBuild(#[from] deadpool_diesel::postgres::BuildError),
+
+    // Poison
+    #[error("A poisoned lock error occurred: {0}")]
+    PoisonedLock(String),
 
     // Library error types
     #[error("An actix error occurred: {0}")]
@@ -96,6 +111,18 @@ pub enum Error {
 
 unsafe impl Send for Error {}
 unsafe impl Sync for Error {}
+
+impl From<Box<dyn StdError + std::marker::Send + std::marker::Sync>> for Error {
+    fn from(error: Box<dyn StdError + std::marker::Send + std::marker::Sync>) -> Self {
+        Error::Generic(format!("{:?}", error))
+    }
+}
+
+impl<'a> From<PoisonError<MutexGuard<'a, Option<PgConnection>>>> for Error {
+    fn from(error: PoisonError<MutexGuard<'a, Option<PgConnection>>>) -> Self {
+        Error::PoisonedLock(format!("{:?}", error))
+    }
+}
 
 impl<'a> From<SelectorErrorKind<'a>> for Error {
     fn from(error: SelectorErrorKind<'a>) -> Self {

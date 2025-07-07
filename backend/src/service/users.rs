@@ -15,12 +15,15 @@ impl UserService {
 
     pub async fn get_user(&self, user_id: &String) -> Result<Option<User>> {
         use crate::schema::users::dsl::*;
-        let mut conn = self.repository.get().await?.lock()?.into();
-        Ok(users
-            .filter(id.eq(user_id))
-            .select(User::as_select())
-            .load::<User>(&mut conn)?
-            .into_iter()
-            .next())
+        let conn = self.repository.get().await?;
+        let user_id = user_id.clone();
+        Ok(conn.interact(move |conn| {
+            users
+                .filter(id.eq(user_id))
+                .select(User::as_select())
+                .first::<User>(conn)
+                .optional()
+        })
+        .await??)
     }
 }

@@ -1,10 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
 use actix_web::web::Data;
+use deadpool_diesel::postgres::Pool;
 use tokio::sync::{mpsc::{UnboundedReceiver, UnboundedSender}, Mutex};
 use uuid::Uuid;
 
-use crate::{dto::session::event::SessionEvent, model::session::Session, repository::RepositoryProvider};
+use crate::{dto::session::event::SessionEvent, model::session::Session};
 
 pub enum SessionWorkerState {
     Stopped,
@@ -23,7 +24,7 @@ pub enum WorkerEvent {
 
 pub struct SessionWorker {
     pub session: Arc<Mutex<Session>>,
-    pub repository: Data<RepositoryProvider>,
+    pub repository: Data<Pool>,
     pub state: SessionWorkerState,
     pub receiver: Arc<Mutex<UnboundedReceiver<WorkerEvent>>>,
     pub sender: UnboundedSender<WorkerEvent>,
