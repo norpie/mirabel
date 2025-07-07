@@ -1,57 +1,39 @@
-use backend_derive::named_struct;
-use serde::{Deserialize, Serialize};
-use surrealdb::sql::Thing;
-
-use crate::repository::traits::Entity;
-
-use super::{
-    chat::{Chat, ChatMessage, ChatParticipant},
-    plan::Plan,
-    user::User,
+use chrono::{DateTime, Utc};
+use diesel::{
+    Selectable,
+    prelude::{Associations, Identifiable, Queryable},
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[named_struct]
+use crate::{model::workspace::Workspace, schema::sessions};
+
+#[derive(Queryable, Selectable, Identifiable, Associations, Debug, PartialEq, Clone)]
+#[diesel(belongs_to(Workspace))]
+#[diesel(table_name = sessions)]
 pub struct Session {
-    pub id: Option<Thing>,
+    pub id: String,
+    pub workspace_id: String,
+    pub user_id: String,
     pub title: String,
-    pub participants: Vec<ChatParticipant>,
-    pub plan: Option<Plan>,
-    pub chat: Chat,
-    pub terminal: Option<Vec<String>>,
+    pub created_at: DateTime<Utc>,
+    pub modified_at: DateTime<Utc>,
     pub archived: bool,
 }
 
-impl Entity for Session {
-    type ID = String;
-
-    fn id(&self) -> Option<Self::ID> {
-        self.id.as_ref().map(|thing| thing.id.to_string())
-    }
-}
-
 impl Session {
-    pub fn new(title: String) -> Self {
+    pub fn new(workspace_id: String, user_id: String, title: String) -> Self {
         Self {
-            id: None,
+            id: id!(),
+            workspace_id,
+            user_id,
             title,
-            plan: None,
-            chat: Chat::default(),
-            participants: Vec::new(),
-            terminal: None,
+            created_at: Utc::now(),
+            modified_at: Utc::now(),
             archived: false,
         }
     }
-
-    pub fn set_title(&mut self, title: String) {
-        self.title = title;
-    }
-
-    pub fn add_participant(&mut self, user: User) {
-        self.participants.push(user.into());
-    }
-
-    pub fn add_user_message(&mut self, author_id: String, message: String) {
-        self.chat.add_message(ChatMessage::new(author_id, message));
-    }
 }
+
+// participants: Vec<ChatParticipant>,
+// plan: Option<Plan>,
+// chat: Chat,
+// terminal: Option<Vec<String>>,

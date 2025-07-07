@@ -23,6 +23,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    sessions (id) {
+        id -> Text,
+        workspace_id -> Text,
+        user_id -> Text,
+        title -> Text,
+        created_at -> Timestamptz,
+        modified_at -> Timestamptz,
+        archived -> Bool,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Text,
         username -> Text,
@@ -56,6 +68,8 @@ diesel::table! {
 diesel::joinable!(auth_options -> users (user_id));
 diesel::joinable!(avatars -> users (user_id));
 diesel::joinable!(deleted_users -> users (id));
+diesel::joinable!(sessions -> users (user_id));
+diesel::joinable!(sessions -> workspaces (workspace_id));
 diesel::joinable!(workspace_members -> users (user_id));
 diesel::joinable!(workspace_members -> workspaces (workspace_id));
 
@@ -63,6 +77,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     auth_options,
     avatars,
     deleted_users,
+    sessions,
     users,
     workspace_members,
     workspaces,
