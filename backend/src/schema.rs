@@ -35,6 +35,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    timeline_entries (id) {
+        id -> Text,
+        session_id -> Text,
+        content -> Jsonb,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     users (id) {
         id -> Text,
         username -> Text,
@@ -70,6 +79,7 @@ diesel::joinable!(avatars -> users (user_id));
 diesel::joinable!(deleted_users -> users (id));
 diesel::joinable!(sessions -> users (user_id));
 diesel::joinable!(sessions -> workspaces (workspace_id));
+diesel::joinable!(timeline_entries -> sessions (session_id));
 diesel::joinable!(workspace_members -> users (user_id));
 diesel::joinable!(workspace_members -> workspaces (workspace_id));
 
@@ -78,6 +88,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     avatars,
     deleted_users,
     sessions,
+    timeline_entries,
     users,
     workspace_members,
     workspaces,
