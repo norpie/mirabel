@@ -83,6 +83,15 @@ pub enum TimelineEntryContent {
         action_type: ActionType,
         message: String,
     },
+    Spec {
+        content: String,
+    },
+    Plan {
+        placeholder: bool,
+    },
+    Shell {
+        lines: Vec<String>,
+    }
 }
 
 impl TimelineEntry {
@@ -90,6 +99,9 @@ impl TimelineEntry {
         match &self.content {
             TimelineEntryContent::Message { .. } => "message".to_string(),
             TimelineEntryContent::Action { .. } => "action".to_string(),
+            TimelineEntryContent::Spec { .. } => "spec".to_string(),
+            TimelineEntryContent::Plan { .. } => "plan".to_string(),
+            TimelineEntryContent::Shell { .. } => "shell".to_string(),
         }
     }
 }
