@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::model::{
-    session::Session,
-};
+use crate::{dto::page::PageResponse, model::{
+    session::Session, timeline::TimelineEntry,
+}};
 
 pub mod event;
 
@@ -10,17 +10,26 @@ pub mod event;
 pub struct FullSession {
     pub id: String,
     pub title: String,
-    pub terminal: Option<Vec<String>>,
     pub archived: bool,
+    pub timeline: PageResponse<TimelineEntry>,
+    pub spec: Option<String>,
+    pub shell: Option<Vec<String>>,
 }
 
-impl From<Session> for FullSession {
-    fn from(session: Session) -> Self {
-        Self {
+impl FullSession {
+    pub fn new(
+        session: Session,
+        timeline: PageResponse<TimelineEntry>,
+        spec: Option<String>,
+        shell: Option<Vec<String>>,
+    ) -> FullSession {
+        FullSession {
             id: session.id,
             title: session.title,
-            terminal: None,
             archived: session.archived,
+            timeline,
+            spec,
+            shell,
         }
     }
 }
