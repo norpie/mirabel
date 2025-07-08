@@ -18,6 +18,7 @@ pub struct DatabaseTimelineEntry {
     pub session_id: String,
     pub content: serde_json::Value,
     pub created_at: DateTime<Utc>,
+    pub content_type: String,
 }
 
 impl TryFrom<TimelineEntry> for DatabaseTimelineEntry {
@@ -27,6 +28,7 @@ impl TryFrom<TimelineEntry> for DatabaseTimelineEntry {
         Ok(DatabaseTimelineEntry {
             id: value.id,
             session_id: value.session_id,
+            content_type: value.content_type,
             content: serde_json::to_value(value.content)?,
             created_at: value.created_at,
         })
@@ -38,6 +40,7 @@ pub struct TimelineEntry {
     pub id: String,
     pub session_id: String,
     pub content: TimelineEntryContent,
+    pub content_type: String,
     pub created_at: DateTime<Utc>,
 }
 
@@ -49,6 +52,7 @@ impl TryFrom<DatabaseTimelineEntry> for TimelineEntry {
             id: value.id,
             session_id: value.session_id,
             content: serde_json::from_value(value.content)?,
+            content_type: value.content_type,
             created_at: value.created_at,
         })
     }
@@ -79,4 +83,13 @@ pub enum TimelineEntryContent {
         action_type: ActionType,
         message: String,
     },
+}
+
+impl TimelineEntry {
+    pub fn type_name(&self) -> String {
+        match &self.content {
+            TimelineEntryContent::Message { .. } => "message".to_string(),
+            TimelineEntryContent::Action { .. } => "action".to_string(),
+        }
+    }
 }

@@ -40,6 +40,7 @@ diesel::table! {
         session_id -> Text,
         content -> Jsonb,
         created_at -> Timestamptz,
+        content_type -> Text,
     }
 }
 
