@@ -5,7 +5,7 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::error::Error;
+use crate::{driver::id::id, error::Error};
 
 #[derive(
     Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
@@ -36,12 +36,47 @@ impl TryFrom<TimelineEntry> for DatabaseTimelineEntry {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TimelineEntry {
     pub id: String,
     pub session_id: String,
     pub content: TimelineEntryContent,
     pub content_type: String,
     pub created_at: DateTime<Utc>,
+}
+
+impl TimelineEntry {
+    pub fn user_message(
+        session_id: String,
+        content: String,
+    ) -> Self {
+        TimelineEntry {
+            id: id!(),
+            session_id,
+            content: TimelineEntryContent::Message {
+                sender: MessageSender::User,
+                message: content,
+            },
+            content_type: "message".to_string(),
+            created_at: Utc::now(),
+        }
+    }
+
+    pub fn agent_message(
+        session_id: String,
+        content: String,
+    ) -> Self {
+        TimelineEntry {
+            id: id!(),
+            session_id,
+            content: TimelineEntryContent::Message {
+                sender: MessageSender::Agent,
+                message: content,
+            },
+            content_type: "message".to_string(),
+            created_at: Utc::now(),
+        }
+    }
 }
 
 impl TryFrom<DatabaseTimelineEntry> for TimelineEntry {
@@ -59,14 +94,14 @@ impl TryFrom<DatabaseTimelineEntry> for TimelineEntry {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub enum MessageSender {
     User,
     Agent,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub enum ActionType {
     Command,
     NewFile,
@@ -75,9 +110,11 @@ pub enum ActionType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
+#[serde(rename_all = "camelCase")]
 pub enum TimelineEntryContent {
     Message {
         sender: MessageSender,
+        message: String,
     },
     Action {
         action_type: ActionType,

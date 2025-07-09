@@ -3,12 +3,16 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 use crate::{
     driver::id::id,
     dto::session::event::{AcknowledgmentType, SessionEventContent},
-    model::session::Session,
+    model::{
+        session::Session,
+        timeline::{DatabaseTimelineEntry, TimelineEntry},
+    },
     prelude::*,
 };
 
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
+use diesel::RunQueryDsl;
 use log::warn;
 use models::{SessionWorker, SessionWorkerState, WorkerEvent};
 use tokio::{
@@ -123,30 +127,48 @@ impl SessionWorker {
     }
 
     async fn handle_message_content(&self, author_id: String, message: String) -> Result<()> {
-        let session = self.session.lock().await;
-        // session
-        //     .chat
-        //     .add_message(ChatMessage::new(author_id, message));
-        // self.repository.session_repo().save(session.clone()).await?;
+        use crate::schema::timeline_entries::dsl as te;
+        let user_entry: DatabaseTimelineEntry =
+            TimelineEntry::user_message(self.session.lock().await.id.clone(), message)
+                .try_into()?;
+        self.repository
+            .get()
+            .await?
+            .interact(|conn| {
+                diesel::insert_into(te::timeline_entries)
+                    .values(user_entry)
+                    .execute(conn)
+            })
+            .await??;
         sleep(Duration::from_secs(1)).await;
         self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Delivered))
             .await?;
-        sleep(Duration::from_secs(2)).await;
+        sleep(Duration::from_secs(1)).await;
         self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Seen))
             .await?;
-        sleep(Duration::from_secs(3)).await;
+        sleep(Duration::from_secs(1)).await;
         self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Thinking))
             .await?;
-        sleep(Duration::from_secs(5)).await;
+        sleep(Duration::from_secs(2)).await;
         self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Typing))
             .await?;
-        sleep(Duration::from_secs(5)).await;
-        let agent_id = "mirabel".to_string();
+        sleep(Duration::from_secs(3)).await;
         let agent_message = "This is a test message from the agent.".to_string();
-        // session
-        //     .chat
-        //     .add_message(ChatMessage::new(agent_id.clone(), agent_message.clone()));
-        // self.repository.session_repo().save(session.clone()).await?;
+        let agent_entry: DatabaseTimelineEntry = TimelineEntry::agent_message(
+            self.session.lock().await.id.clone(),
+            agent_message.clone(),
+        )
+        .try_into()?;
+        self.repository
+            .get()
+            .await?
+            .interact(|conn| {
+                diesel::insert_into(te::timeline_entries)
+                    .values(agent_entry)
+                    .execute(conn)
+            })
+            .await??;
+        let agent_id = "mirabel".to_string();
         self.broadcast(&SessionEvent::new(SessionEventContent::MessageContent {
             author_id: agent_id,
             message: agent_message,

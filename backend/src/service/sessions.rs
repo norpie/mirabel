@@ -74,8 +74,14 @@ impl SessionService {
             })
             .await??;
 
-        // TODO: Add participant functionality
-        // TODO: Add user message functionality
+        let db_entry: DatabaseTimelineEntry =
+            TimelineEntry::user_message(session.id.clone(), input).try_into()?;
+        conn.interact(move |conn| {
+            diesel::insert_into(crate::schema::timeline_entries::table)
+                .values(db_entry)
+                .execute(conn)
+        })
+        .await??;
 
         Ok(session)
     }
