@@ -1,6 +1,6 @@
 services:
     db:
-      container_name: postgres
+      container_name: mirabel-database
       restart: always
       image: postgres
       ports:
@@ -13,7 +13,7 @@ services:
         - postgres-data:/var/lib/postgresql/data
 
     webdriver:
-        container_name: webdriver
+        container_name: mirabel-webdriver
         image: instrumentisto/geckodriver
         command: "--host=0.0.0.0 --allow-hosts=localhost --binary=/opt/firefox/firefox"
         ports:
