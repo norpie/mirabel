@@ -1,3 +1,5 @@
+use std::num::NonZeroI64;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,7 +24,7 @@ impl<T> PageResponse<T> {
         Self { page_info, data }
     }
 
-    pub fn from_vec(data: Vec<T>, page: i64) -> Self {
+    pub fn from_vec(data: Vec<T>, page: NonZeroI64) -> Self {
         let page_info = PageInfo {
             page,
             size: data.len() as i64,
@@ -38,24 +40,27 @@ impl<T> PageResponse<T> {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageRequest {
-    page: i64,
+    page: NonZeroI64,
     size: i64,
 }
 
 impl PageRequest {
-    pub fn new(page: i64, size: i64) -> Self {
+    pub fn new(page: NonZeroI64, size: i64) -> Self {
         Self { page, size }
     }
 }
 
 impl Default for PageRequest {
     fn default() -> Self {
-        Self { page: 0, size: 20 }
+        Self {
+            page: NonZeroI64::new(1).unwrap(),
+            size: 20,
+        }
     }
 }
 
 impl PageRequest {
-    pub fn page(&self) -> i64 {
+    pub fn page(&self) -> NonZeroI64 {
         self.page
     }
 
@@ -64,23 +69,23 @@ impl PageRequest {
     }
 
     pub fn offset(&self) -> i64 {
-        (self.page - 1) * self.size
+        (self.page.get() - 1) * self.size
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PageInfo {
-    page: i64,
+    page: NonZeroI64,
     size: i64,
     total: i64,
 }
 
 impl PageInfo {
-    pub fn new(page: i64, size: i64, total: i64) -> Self {
+    pub fn new(page: NonZeroI64, size: i64, total: i64) -> Self {
         Self { page, size, total }
     }
 
-    pub fn page(&self) -> i64 {
+    pub fn page(&self) -> NonZeroI64 {
         self.page
     }
 
