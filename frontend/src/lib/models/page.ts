@@ -1,9 +1,10 @@
-export interface Page {
+export interface PageInfo {
     page: number;
     size: number;
+    total: number;
 }
 
 export interface PageResponse<T> {
     data: T;
-    pageInfo: Page;
+    pageInfo: PageInfo;
 }
