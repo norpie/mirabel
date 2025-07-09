@@ -82,9 +82,7 @@
         handleResize();
         return () => {
 		    window.removeEventListener('resize', handleResize);
-            if (!data.session || data.session.id != session.id) {
-                socket?.disconnect();
-            }
+            socket?.disconnect();
         };
 	});
 </script>
