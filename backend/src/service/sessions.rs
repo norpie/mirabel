@@ -1,8 +1,15 @@
 use std::{collections::HashMap, sync::Arc};
 
 use crate::{
-    dto::page::{PageInfo, PageRequest, PageResponse},
-    model::{session::Session, workspace::WorkspaceMember},
+    dto::{
+        page::{PageInfo, PageRequest, PageResponse},
+        session::FullSession,
+    },
+    model::{
+        session::Session,
+        timeline::{DatabaseTimelineEntry, TimelineEntry, TimelineEntryContent},
+        workspace::WorkspaceMember,
+    },
     prelude::*,
     session::models::SessionWorker,
 };
@@ -96,6 +103,88 @@ impl SessionService {
                     .optional()
             })
             .await??)
+    }
+
+    pub async fn get_full_user_session(
+        &self,
+        user: User,
+        workspace_id: String,
+        id: String,
+    ) -> Result<Option<FullSession>> {
+        let session_opt = self
+            .get_user_session_by_id(user.clone(), workspace_id.clone(), id.clone())
+            .await?;
+
+        let Some(session) = session_opt else {
+            return Ok(None);
+        };
+
+        let page_response = self
+            .get_session_timeline(
+                user,
+                workspace_id.clone(),
+                id.clone(),
+                PageRequest::default(),
+            )
+            .await?;
+        let spec = self.get_latest_spec(id.clone()).await?;
+        let shell = self.get_shell_state(id.clone()).await?;
+
+        Ok(Some(FullSession::new(session, page_response, spec, shell)))
+    }
+
+    pub async fn get_session_timeline(
+        &self,
+        user: User,
+        workspace_id: String,
+        id: String,
+        page: PageRequest,
+    ) -> Result<PageResponse<TimelineEntry>> {
+        use crate::schema::timeline_entries::dsl as te;
+
+        let session_opt = self
+            .get_user_session_by_id(user, workspace_id.clone(), id.clone())
+            .await?;
+
+        if session_opt.is_none() {
+            return Err(Error::NotFound);
+        }
+
+        let conn = self.repository.get().await?;
+        let id_clone = id.clone();
+        let page_clone = page.clone();
+        let offset = page_clone.offset();
+        let limit = page_clone.size();
+        let db_entries = conn
+            .interact(move |conn| {
+                te::timeline_entries
+                    .filter(te::session_id.eq(id_clone))
+                    .order(te::created_at.desc())
+                    .offset(offset)
+                    .limit(limit)
+                    .load::<DatabaseTimelineEntry>(conn)
+            })
+            .await??;
+
+        let id_clone = id.clone();
+        let total_count = conn
+            .interact(|conn| {
+                te::timeline_entries
+                    .filter(te::session_id.eq(id_clone))
+                    .count()
+                    .get_result::<i64>(conn)
+            })
+            .await??;
+
+        let entries = db_entries
+            .into_iter()
+            .map(|entry| entry.try_into())
+            .collect::<Result<Vec<TimelineEntry>>>()?;
+
+        Ok(PageResponse::new(
+            PageInfo::new(page.page(), page.size(), total_count),
+            entries,
+        ))
     }
 
     pub async fn update_user_session(
@@ -219,6 +308,83 @@ impl SessionService {
             PageInfo::new(page.page(), page.size(), count),
             sessions,
         ))
+    }
+
+    pub async fn get_timeline_entry(
+        &self,
+        content_type: String,
+        session_id: String,
+    ) -> Result<Option<TimelineEntry>> {
+        let conn = self.repository.get().await?;
+        let db_entry_opt = conn
+            .interact(move |conn| {
+                use crate::schema::timeline_entries::dsl as te;
+                te::timeline_entries
+                    .filter(te::session_id.eq(&session_id))
+                    .filter(te::content_type.eq(&content_type))
+                    .order(te::created_at.desc())
+                    .first::<DatabaseTimelineEntry>(conn)
+                    .optional()
+            })
+            .await??;
+        let Some(db_entry) = db_entry_opt else {
+            return Ok(None);
+        };
+        let entry: TimelineEntry = db_entry.try_into()?;
+        Ok(Some(entry))
+    }
+
+    pub async fn get_latest_spec(&self, session_id: String) -> Result<Option<String>> {
+        let entry = self
+            .get_timeline_entry("spec".to_string(), session_id.clone())
+            .await?;
+        let Some(entry) = entry else {
+            return Ok(None);
+        };
+        match entry.content {
+            TimelineEntryContent::Spec { content } => {
+                debug!("Found spec content for session: {session_id}");
+                Ok(Some(content))
+            }
+            _ => {
+                panic!("Expected spec content type, got: {:?}", entry.content);
+            }
+        }
+    }
+
+    pub async fn get_latest_plan(&self, session_id: String) -> Result<Option<String>> {
+        let entry = self
+            .get_timeline_entry("plan".to_string(), session_id.clone())
+            .await?;
+        let Some(entry) = entry else {
+            return Ok(None);
+        };
+        match entry.content {
+            TimelineEntryContent::Plan { .. } => {
+                debug!("Found plan content for session: {session_id}");
+                Ok(Some("PLACEHOLDER".into())) // TODO: Implement real plan content retrieval
+            }
+            _ => {
+                panic!("Expected plan content type, got: {:?}", entry.content);
+            }
+        }
+    }
+    pub async fn get_shell_state(&self, session_id: String) -> Result<Option<Vec<String>>> {
+        let entry = self
+            .get_timeline_entry("shell".to_string(), session_id.clone())
+            .await?;
+        let Some(entry) = entry else {
+            return Ok(None);
+        };
+        match entry.content {
+            TimelineEntryContent::Shell { lines } => {
+                debug!("Found shell state for session: {session_id}");
+                Ok(Some(lines))
+            }
+            _ => {
+                panic!("Expected shell content type, got: {:?}", entry.content);
+            }
+        }
     }
 
     pub async fn get_handler(

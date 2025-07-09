@@ -51,8 +51,7 @@ pub async fn get_user_workspace_sessions(
     Ok(ApiResponse::ok(
         session_service
             .get_user_workspace_sessions(workspace_id.to_string(), user, page.into_inner())
-            .await?
-            .to::<FullSession>(),
+            .await?,
     ))
 }
 
@@ -68,9 +67,9 @@ pub async fn create_workspace_session(
     workspace_id: Path<String>,
     input: Json<SessionInput>,
 ) -> Result<impl Responder> {
-    Ok(ApiResponse::ok(Into::<FullSession>::into(
+    Ok(ApiResponse::ok(
         session_service
             .create_workspace_session(user, workspace_id.to_string(), input.0.input)
             .await?,
-    )))
+    ))
 }

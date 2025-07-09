@@ -74,12 +74,11 @@ pub async fn get_workspace_session(
 ) -> Result<impl Responder> {
     let (workspace_id, session_id) = ids.into_inner();
     let session: FullSession = session_service
-        .get_user_session_by_id(user, workspace_id, session_id)
+        .get_full_user_session(user, workspace_id, session_id)
         .await?
         .ok_or(Error::Unauthorized(
             "You are You are not authorized to view this session.".into(),
-        ))?
-        .into();
+        ))?;
     Ok(ApiResponse::ok(session))
 }
 
