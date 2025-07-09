@@ -5,7 +5,7 @@
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import Markdown from '$lib/components/markdown.svelte';
 
-    import { type Plan as PlanModel } from '$lib/models/session';
+	import { type Plan as PlanModel } from '$lib/models/session';
 	import Plan from '$lib/components/plan/plan.svelte';
 	import Terminal from './terminal.svelte';
 	import Code from './file.svelte';
@@ -15,21 +15,21 @@
 	import ListTree from 'lucide-svelte/icons/list-tree';
 	import SquareTerminal from 'lucide-svelte/icons/square-terminal';
 	import FileStack from 'lucide-svelte/icons/file-stack';
-    import Braces from 'lucide-svelte/icons/braces';
+	import Braces from 'lucide-svelte/icons/braces';
 	import Globe from 'lucide-svelte/icons/globe';
 	import History from 'lucide-svelte/icons/history';
 	import { getSessionState } from '$lib/session-state.svelte';
 
 	let {
-		tab = $bindable(),
+		tab = $bindable()
 	}: {
 		tab: string;
 	} = $props();
 
-    const sessionState = getSessionState();
-    let spec: string | null = $state(sessionState.session?.plan?.spec ?? null);
-    let plan: PlanModel | null = $state(sessionState.session?.plan ?? null);
-    let terminal: string[] | null = $state(sessionState.session?.terminal ?? null);
+	const sessionState = getSessionState();
+	let spec: string | null = $state(sessionState.session?.plan?.spec ?? null);
+	let plan: PlanModel | null = $state(sessionState.session?.plan ?? null);
+	let terminal: string[] | null = $state(sessionState.session?.terminal ?? null);
 
 	let auto = $state(false);
 
@@ -53,10 +53,6 @@
 					<Tabs.Trigger value="plan" class="gap-2">
 						<ListTree class="h-4 w-4" />
 						<p>Plan</p>
-					</Tabs.Trigger>
-					<Tabs.Trigger value="actions" class="gap-2">
-						<History class="h-4 w-4" />
-						<p>Actions</p>
 					</Tabs.Trigger>
 				</div>
 
@@ -83,17 +79,17 @@
 
 	{#if tab === 'spec'}
 		<Tabs.Content value="spec" class="h-full flex-1 flex-col rounded-xl md:min-h-min">
-            {#if spec}
-			    <div class="flex h-full flex-col bg-secondary">
-			    	<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4" thumbClass="bg-zinc-600">
-			    		<Markdown bind:markdown={spec} />
-			    	</ScrollArea>
-			    </div>
-            {:else}
-                <div class="flex items-center justify-center h-full w-full">
-                    <p class="text-gray-500">No spec available.</p>
-                </div>
-            {/if}
+			{#if spec}
+				<div class="flex h-full flex-col bg-secondary">
+					<ScrollArea class="mb-2 h-[1px] flex-grow rounded-lg p-4" thumbClass="bg-zinc-600">
+						<Markdown bind:markdown={spec} />
+					</ScrollArea>
+				</div>
+			{:else}
+				<div class="flex h-full w-full items-center justify-center">
+					<p class="text-gray-500">No spec available.</p>
+				</div>
+			{/if}
 		</Tabs.Content>
 	{/if}
 
@@ -131,13 +127,6 @@
 		>
 			<Browser />
 		</Tabs.Content>
-	{/if}
-
-	{#if tab === 'actions'}
-		<Tabs.Content
-			value="actions"
-			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
-		></Tabs.Content>
 	{/if}
 </Tabs.Root>
 
