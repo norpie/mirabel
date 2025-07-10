@@ -36,6 +36,7 @@ pub struct SessionWorker {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(tag = "type")]
 pub enum UserInteraction {
     Message { content: String },
     PromptResponse { prompt_id: String, response: String },
