@@ -1,11 +1,7 @@
 use std::{rc::Rc, sync::Arc, time::Duration};
 
 use crate::{
-    dto::{
-        api_response::ApiResponse,
-        session::{FullSession, event::SessionEvent},
-        updated_session::UpdatedSession,
-    },
+    dto::{api_response::ApiResponse, session::FullSession, updated_session::UpdatedSession},
     model::user::User,
     prelude::*,
     service::sessions::SessionService,

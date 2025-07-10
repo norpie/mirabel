@@ -2,7 +2,6 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use crate::{
     driver::id::id,
-    dto::session::event::SessionEventContent,
     model::{
         session::Session,
         timeline::{AcknowledgmentType, AgentStatus, DatabaseTimelineEntry, TimelineEntry},
