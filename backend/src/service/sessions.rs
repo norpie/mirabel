@@ -161,7 +161,9 @@ impl SessionService {
         let page_clone = page.clone();
         let offset = page_clone.offset();
         let limit = page_clone.size();
-        let db_entries = conn
+        
+        // Get latest entries first (newest to oldest), then reverse for chronological order
+        let mut db_entries = conn
             .interact(move |conn| {
                 te::timeline_entries
                     .filter(te::session_id.eq(id_clone))
@@ -171,6 +173,9 @@ impl SessionService {
                     .load::<DatabaseTimelineEntry>(conn)
             })
             .await??;
+
+        // Reverse to get chronological order (oldest to newest) for display
+        db_entries.reverse();
 
         let id_clone = id.clone();
         let total_count = conn
