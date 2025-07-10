@@ -9,7 +9,7 @@ use crate::{
     model::user::User,
     prelude::*,
     service::sessions::SessionService,
-    session::models::WorkerEvent,
+    session::models::{UserInteraction, WorkerEvent},
 };
 
 use actix_web::{
@@ -217,9 +217,9 @@ async fn handle_message(
     sender: mpsc::UnboundedSender<WorkerEvent>,
 ) -> Result<()> {
     match msg {
-        Message::Text(text) => match serde_json::from_str::<SessionEvent>(&text) {
+        Message::Text(text) => match serde_json::from_str::<UserInteraction>(&text) {
             Ok(event) => {
-                if sender.send(WorkerEvent::SessionEvent(event)).is_err() {
+                if sender.send(WorkerEvent::UserInteraction(event)).is_err() {
                     *open.lock().await = false;
                     return Err(Error::SocketClosed);
                 }

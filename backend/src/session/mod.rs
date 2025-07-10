@@ -2,12 +2,13 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use crate::{
     driver::id::id,
-    dto::session::event::{AcknowledgmentType, SessionEventContent},
+    dto::session::event::SessionEventContent,
     model::{
         session::Session,
-        timeline::{DatabaseTimelineEntry, TimelineEntry},
+        timeline::{AcknowledgmentType, AgentStatus, DatabaseTimelineEntry, TimelineEntry},
     },
     prelude::*,
+    session::models::UserInteraction,
 };
 
 use actix_web::web::Data;
@@ -22,8 +23,6 @@ use tokio::{
     },
     time::sleep,
 };
-
-use crate::dto::session::event::SessionEvent;
 
 pub mod models;
 
@@ -65,7 +64,7 @@ impl SessionWorker {
 
     pub async fn subscribe(
         &self,
-        sender: UnboundedSender<SessionEvent>,
+        sender: UnboundedSender<TimelineEntry>,
     ) -> Result<(String, UnboundedSender<WorkerEvent>)> {
         let id = id!();
         let mut subscribers = self.subscribers.lock().await;
@@ -78,9 +77,7 @@ impl SessionWorker {
 
     async fn handle_event(&self, event: WorkerEvent) -> Result<()> {
         match event {
-            WorkerEvent::SessionEvent(event) => {
-                // Start by broadcasting the event to all subscribers, so we don't get any client-side
-                // out-of-sync issues.
+            WorkerEvent::UserInteraction(event) => {
                 self.handle_session_event(event).await?;
             }
             WorkerEvent::Unsubscribe(id) => {
@@ -93,91 +90,83 @@ impl SessionWorker {
         Ok(())
     }
 
-    async fn handle_session_event(&self, event: SessionEvent) -> Result<()> {
-        self.broadcast(&event).await?;
-        match event.content {
-            SessionEventContent::AcknowledgmentContent { ack_type } => todo!(),
-            SessionEventContent::MessageContent { author_id, message } => {
-                self.handle_message_content(author_id, message).await?;
+    async fn handle_session_event(&self, event: UserInteraction) -> Result<()> {
+        match event {
+            UserInteraction::Message { content } => {
+                self.broadcast_save(TimelineEntry::user_message(
+                    self.session.lock().await.id.clone(),
+                    content.clone(),
+                ))
+                .await?;
+                self.handle_message_content(content).await?;
             }
-            SessionEventContent::AgentActionContent {
-                action,
-                description,
-            } => todo!(),
-            SessionEventContent::AgentPromptContent {
-                prompt_id,
-                prompt,
-                options,
-                allow_other,
-            } => todo!(),
-            SessionEventContent::UserPromptResponseContent {
+            UserInteraction::PromptResponse {
                 prompt_id,
                 response,
-            } => todo!(),
-            SessionEventContent::AgentNewTaskEvent {
-                task_id,
-                parent_id,
-                description,
-            } => todo!(),
-            SessionEventContent::AgentTaskEvent { task_id, status } => todo!(),
-            SessionEventContent::AgentSpecUpdateEvent { spec } => todo!(),
-            SessionEventContent::AgentTerminalContentEvent { content } => todo!(),
+            } => {
+                self.broadcast_save(TimelineEntry::prompt_response(
+                    self.session.lock().await.id.clone(),
+                    prompt_id,
+                    response,
+                ))
+                .await?
+            }
         }
         Ok(())
     }
 
-    async fn handle_message_content(&self, author_id: String, message: String) -> Result<()> {
-        use crate::schema::timeline_entries::dsl as te;
-        let user_entry: DatabaseTimelineEntry =
-            TimelineEntry::user_message(self.session.lock().await.id.clone(), message)
-                .try_into()?;
-        self.repository
-            .get()
-            .await?
-            .interact(|conn| {
-                diesel::insert_into(te::timeline_entries)
-                    .values(user_entry)
-                    .execute(conn)
-            })
-            .await??;
+    async fn handle_message_content(&self, message: String) -> Result<()> {
+        let session_id = self.session.lock().await.id.clone();
         sleep(Duration::from_secs(1)).await;
-        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Delivered))
-            .await?;
+        self.broadcast_save(TimelineEntry::acknowledgment(
+            session_id.clone(),
+            AcknowledgmentType::Delivered,
+        ))
+        .await?;
         sleep(Duration::from_secs(1)).await;
-        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Seen))
-            .await?;
+        self.broadcast_save(TimelineEntry::acknowledgment(
+            session_id.clone(),
+            AcknowledgmentType::Seen,
+        ))
+        .await?;
         sleep(Duration::from_secs(1)).await;
-        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Thinking))
-            .await?;
+        self.broadcast_save(TimelineEntry::status(
+            session_id.clone(),
+            AgentStatus::Thinking,
+        ))
+        .await?;
         sleep(Duration::from_secs(2)).await;
-        self.broadcast(&SessionEvent::acknowledgment(AcknowledgmentType::Typing))
-            .await?;
+        self.broadcast_save(TimelineEntry::status(
+            session_id.clone(),
+            AgentStatus::Typing,
+        ))
+        .await?;
         sleep(Duration::from_secs(3)).await;
-        let agent_message = "This is a test message from the agent.".to_string();
-        let agent_entry: DatabaseTimelineEntry = TimelineEntry::agent_message(
+        self.broadcast_save(TimelineEntry::agent_message(
             self.session.lock().await.id.clone(),
-            agent_message.clone(),
-        )
-        .try_into()?;
-        self.repository
-            .get()
-            .await?
-            .interact(|conn| {
-                diesel::insert_into(te::timeline_entries)
-                    .values(agent_entry)
-                    .execute(conn)
-            })
-            .await??;
-        let agent_id = "mirabel".to_string();
-        self.broadcast(&SessionEvent::new(SessionEventContent::MessageContent {
-            author_id: agent_id,
-            message: agent_message,
-        }))
+            format!("Echo: {message}"),
+        ))
         .await?;
         Ok(())
     }
 
-    pub async fn broadcast(&self, event: &SessionEvent) -> Result<()> {
+    pub async fn broadcast_save(&self, event: TimelineEntry) -> Result<()> {
+        use crate::schema::timeline_entries::dsl as te;
+        self.broadcast(&event).await?;
+        let db_entry: DatabaseTimelineEntry = event.try_into()?;
+        self.repository
+            .get()
+            .await?
+            .interact(|conn| {
+                diesel::insert_into(te::timeline_entries)
+                    .values(db_entry)
+                    .execute(conn)
+            })
+            .await??;
+        Ok(())
+    }
+
+    pub async fn broadcast(&self, event: &TimelineEntry) -> Result<()> {
         let subscribers = self.subscribers.lock().await;
         for (id, subscriber) in subscribers.iter() {
             if let Err(e) = subscriber.send(event.clone()) {

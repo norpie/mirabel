@@ -46,10 +46,7 @@ pub struct TimelineEntry {
 }
 
 impl TimelineEntry {
-    pub fn user_message(
-        session_id: String,
-        content: String,
-    ) -> Self {
+    pub fn user_message(session_id: String, content: String) -> Self {
         TimelineEntry {
             id: id!(),
             session_id,
@@ -62,10 +59,7 @@ impl TimelineEntry {
         }
     }
 
-    pub fn agent_message(
-        session_id: String,
-        content: String,
-    ) -> Self {
+    pub fn agent_message(session_id: String, content: String) -> Self {
         TimelineEntry {
             id: id!(),
             session_id,
@@ -74,6 +68,39 @@ impl TimelineEntry {
                 message: content,
             },
             content_type: "message".to_string(),
+            created_at: Utc::now(),
+        }
+    }
+
+    pub fn acknowledgment(session_id: String, ack_type: AcknowledgmentType) -> Self {
+        TimelineEntry {
+            id: id!(),
+            session_id,
+            content: TimelineEntryContent::Acknowledgment { ack_type },
+            content_type: "acknowledgment".to_string(),
+            created_at: Utc::now(),
+        }
+    }
+
+    pub fn status(session_id: String, status: AgentStatus) -> Self {
+        TimelineEntry {
+            id: id!(),
+            session_id,
+            content: TimelineEntryContent::AgentStatus { status },
+            content_type: "agent_status".to_string(),
+            created_at: Utc::now(),
+        }
+    }
+
+    pub fn prompt_response(session_id: String, prompt_id: String, response: String) -> Self {
+        TimelineEntry {
+            id: id!(),
+            session_id,
+            content: TimelineEntryContent::PromptResponse {
+                prompt_id,
+                response,
+            },
+            content_type: "prompt_response".to_string(),
             created_at: Utc::now(),
         }
     }
@@ -138,6 +165,14 @@ pub enum TimelineEntryContent {
     AgentStatus {
         status: AgentStatus,
     },
+    Prompt {
+        prompt_id: String,
+        options: Vec<String>,
+    },
+    PromptResponse {
+        prompt_id: String,
+        response: String,
+    },
     Action {
         action_type: ActionType,
         message: String,
@@ -150,7 +185,7 @@ pub enum TimelineEntryContent {
     },
     Shell {
         lines: Vec<String>,
-    }
+    },
 }
 
 impl TimelineEntry {
@@ -159,6 +194,8 @@ impl TimelineEntry {
             TimelineEntryContent::Message { .. } => "message".to_string(),
             TimelineEntryContent::Acknowledgment { .. } => "acknowledgment".to_string(),
             TimelineEntryContent::AgentStatus { .. } => "agent_status".to_string(),
+            TimelineEntryContent::Prompt { .. } => "prompt".to_string(),
+            TimelineEntryContent::PromptResponse { .. } => "prompt_response".to_string(),
             TimelineEntryContent::Action { .. } => "action".to_string(),
             TimelineEntryContent::Spec { .. } => "spec".to_string(),
             TimelineEntryContent::Plan { .. } => "plan".to_string(),

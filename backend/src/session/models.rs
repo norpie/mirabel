@@ -2,12 +2,13 @@ use std::{collections::HashMap, sync::Arc};
 
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
+use serde::{Deserialize, Serialize};
 use tokio::sync::{
     Mutex,
     mpsc::{UnboundedReceiver, UnboundedSender},
 };
 
-use crate::{dto::session::event::SessionEvent, model::session::Session};
+use crate::model::{session::Session, timeline::TimelineEntry};
 
 pub enum SessionWorkerState {
     Stopped,
@@ -20,7 +21,7 @@ pub enum SessionWorkerState {
 }
 
 pub enum WorkerEvent {
-    SessionEvent(SessionEvent),
+    UserInteraction(UserInteraction),
     Unsubscribe(String),
 }
 
@@ -30,5 +31,12 @@ pub struct SessionWorker {
     pub state: SessionWorkerState,
     pub receiver: Arc<Mutex<UnboundedReceiver<WorkerEvent>>>,
     pub sender: UnboundedSender<WorkerEvent>,
-    pub subscribers: Arc<Mutex<HashMap<String, UnboundedSender<SessionEvent>>>>,
+    pub subscribers: Arc<Mutex<HashMap<String, UnboundedSender<TimelineEntry>>>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum UserInteraction {
+    Message { content: String },
+    PromptResponse { prompt_id: String, response: String },
 }
