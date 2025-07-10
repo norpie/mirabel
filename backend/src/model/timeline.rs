@@ -87,7 +87,7 @@ impl TimelineEntry {
             id: id!(),
             session_id,
             content: TimelineEntryContent::AgentStatus { status },
-            content_type: "agent_status".to_string(),
+            content_type: "agentStatus".to_string(),
             created_at: Utc::now(),
         }
     }
@@ -155,47 +155,58 @@ pub enum ActionType {
 #[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
 pub enum TimelineEntryContent {
+    #[serde(rename_all = "camelCase")]
     Message {
         sender: MessageSender,
         message: String,
     },
+    #[serde(rename_all = "camelCase")]
     Acknowledgment {
         ack_type: AcknowledgmentType,
     },
+    #[serde(rename_all = "camelCase")]
     AgentStatus {
         status: AgentStatus,
     },
+    #[serde(rename_all = "camelCase")]
     Prompt {
         prompt_id: String,
         options: Vec<String>,
     },
+    #[serde(rename_all = "camelCase")]
     PromptResponse {
         prompt_id: String,
         response: String,
     },
+    #[serde(rename_all = "camelCase")]
     Action {
         action_type: ActionType,
         message: String,
     },
+    #[serde(rename_all = "camelCase")]
     Spec {
         content: String,
     },
+    #[serde(rename_all = "camelCase")]
     Plan {
         placeholder: bool,
     },
+    #[serde(rename_all = "camelCase")]
     Shell {
         lines: Vec<String>,
     },
 }
 
 impl TimelineEntry {
+
+    // IMPORTANT: Keep these in camelCase to match the JSON serialization
     pub fn type_name(&self) -> String {
         match &self.content {
             TimelineEntryContent::Message { .. } => "message".to_string(),
             TimelineEntryContent::Acknowledgment { .. } => "acknowledgment".to_string(),
-            TimelineEntryContent::AgentStatus { .. } => "agent_status".to_string(),
+            TimelineEntryContent::AgentStatus { .. } => "agentStatus".to_string(),
             TimelineEntryContent::Prompt { .. } => "prompt".to_string(),
-            TimelineEntryContent::PromptResponse { .. } => "prompt_response".to_string(),
+            TimelineEntryContent::PromptResponse { .. } => "promptResponse".to_string(),
             TimelineEntryContent::Action { .. } => "action".to_string(),
             TimelineEntryContent::Spec { .. } => "spec".to_string(),
             TimelineEntryContent::Plan { .. } => "plan".to_string(),
