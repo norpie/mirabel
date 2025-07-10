@@ -102,6 +102,22 @@ pub enum MessageSender {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub enum AcknowledgmentType {
+    Sent,
+    Delivered,
+    Seen,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AgentStatus {
+    Thinking,
+    Typing,
+    Error,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum ActionType {
     Command,
     NewFile,
@@ -115,6 +131,12 @@ pub enum TimelineEntryContent {
     Message {
         sender: MessageSender,
         message: String,
+    },
+    Acknowledgment {
+        ack_type: AcknowledgmentType,
+    },
+    AgentStatus {
+        status: AgentStatus,
     },
     Action {
         action_type: ActionType,
@@ -135,6 +157,8 @@ impl TimelineEntry {
     pub fn type_name(&self) -> String {
         match &self.content {
             TimelineEntryContent::Message { .. } => "message".to_string(),
+            TimelineEntryContent::Acknowledgment { .. } => "acknowledgment".to_string(),
+            TimelineEntryContent::AgentStatus { .. } => "agent_status".to_string(),
             TimelineEntryContent::Action { .. } => "action".to_string(),
             TimelineEntryContent::Spec { .. } => "spec".to_string(),
             TimelineEntryContent::Plan { .. } => "plan".to_string(),
