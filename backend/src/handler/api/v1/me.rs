@@ -1,7 +1,4 @@
-use crate::{
-    dto::frontend_user::FrontendUser,
-    prelude::*,
-};
+use crate::{dto::frontend_user::FrontendUser, prelude::*};
 
 use actix_web::{
     Responder, Scope, get,

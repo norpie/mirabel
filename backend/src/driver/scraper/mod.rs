@@ -22,9 +22,7 @@ impl Scraper {
                 result?;
             }
             Err(_) => {
-                warn!(
-                    "Navigation timeout after {timeout:?} - proceeding with partial page"
-                );
+                warn!("Navigation timeout after {timeout:?} - proceeding with partial page");
             }
         }
         Ok(self.client.source().await?)

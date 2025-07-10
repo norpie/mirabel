@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{dto::page::PageResponse, model::{
-    session::Session, timeline::TimelineEntry,
-}};
+use crate::{
+    dto::page::PageResponse,
+    model::{session::Session, timeline::TimelineEntry},
+};
 
 pub mod event;
 

@@ -2,7 +2,13 @@ use std::io::Write;
 
 use chrono::{DateTime, Utc};
 use diesel::{
-    deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::{Pg, PgValue}, prelude::{Insertable, Queryable}, serialize::{IsNull, ToSql}, sql_types::Integer, Selectable
+    Selectable,
+    deserialize::{FromSql, FromSqlRow},
+    expression::AsExpression,
+    pg::{Pg, PgValue},
+    prelude::{Insertable, Queryable},
+    serialize::{IsNull, ToSql},
+    sql_types::Integer,
 };
 use serde::{Deserialize, Serialize};
 
