@@ -1,54 +1,109 @@
+import type { PageResponse } from "./page";
+
 export interface ShallowSession {
     id: string;
     title: string;
+    avatar?: string;
 }
 
 export interface Session {
     id: string;
     title: string;
-    participants: Participant[];
-    chat: Chat;
-    plan: Plan | undefined;
-    terminal: string[] | undefined;
+    archived?: boolean;
+    timeline: PageResponse<TimelineEntry[]>;
+    spec?: string;
+    shell?: string[];
 }
 
-export function emptySession(): Session {
+export function emptySession() {
     return {
         id: '',
         title: '',
-        participants: [],
-        chat: { messages: [] },
-        plan: undefined,
-        terminal: undefined
-    };
+        archived: false,
+        timeline: {
+            pageInfo: {
+                page: 1,
+                size: 20,
+                total: 0,
+            },
+            data: [],
+        },
+        spec: undefined,
+        shell: []
+    }
 }
 
-export interface Plan {
-    goal: string;
-    spec: string;
-    children: PlanItem[];
+export interface UserInteraction {
+    type: 'message' | 'promptResponse';
+    content?: string;
+    promptId?: string;
+    response?: string;
 }
 
-export interface PlanItem {
-    id: string;
-    name: string;
-    description: string;
-    status: 'done' | 'paused' | 'in-progress' | 'todo';
-    children: PlanItem[];
+export interface TimelineEntry {
+    id: string
+    sessionId: string;
+    content: TimelineEntryContent;
+    contentType: 'message' | 'acknowledgment' | 'agentStatus' | 'prompt' | 'promptResponse' | 'action' | 'spec' | 'shell';
+    createdAt: string;
 }
 
-export interface Participant {
-    id: string;
-    name: string;
-    avatar?: string;
-}
+export type TimelineEntryContent = MessageContent | AcknowledgmentContent | AgentStatusContent | Prompt | PromptResponse | ActionContent | SpecContent | ShellContent;
 
-export interface Chat {
-    messages: Message[];
-}
-
-export interface Message {
-    timestamp: string;
-    authorId: string;
+export interface MessageContent {
+    type: 'message';
+    sender: 'user' | 'agent';
     message: string;
 }
+
+export interface AcknowledgmentContent {
+    type: 'acknowledgement';
+    ackType: 'sent' | 'delivered' | 'seen';
+}
+
+export interface AgentStatusContent {
+    type: 'agentStatus';
+    status: 'thinking' | 'typing' | 'paused' | 'error';
+}
+
+export interface Prompt {
+    type: 'prompt';
+    promptId: string;
+    options: string[];
+}
+
+export interface PromptResponse {
+    type: 'promptResponse';
+    promptId: string;
+    response: string;
+}
+
+export interface ActionContent {
+    type: 'action';
+    actionType: 'command' | 'newFile' | 'editFile';
+    message: string;
+}
+
+export interface SpecContent {
+    type: 'spec';
+    content: string;
+}
+
+export interface ShellContent {
+    type: 'shell';
+    lines: string[];
+}
+
+// export interface Plan {
+//     goal: string;
+//     spec: string;
+//     children: PlanItem[];
+// }
+//
+// export interface PlanItem {
+//     id: string;
+//     name: string;
+//     description: string;
+//     status: 'done' | 'paused' | 'in-progress' | 'todo';
+//     children: PlanItem[];
+// }
