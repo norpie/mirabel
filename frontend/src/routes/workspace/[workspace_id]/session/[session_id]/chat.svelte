@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Chat from '$lib/components/chat/index';
 	import Mirabel from '$lib/assets/mirabel.png';
-	import type { TimelineEntry, UserInteraction } from '$lib/models/session';
+	import type { TimelineEntry, TimelineMessage, UserInteraction } from '$lib/models/session';
 	import { toast } from 'svelte-sonner';
 	import { Separator } from '$lib/components/ui/separator';
 	import type { User } from '$lib/models/user';
@@ -18,12 +18,14 @@
 	let user: User = $derived(sessionState.user);
 	let timeline: TimelineEntry[] = $derived(sessionState.timeline);
 	let timelineCount: number = $derived(sessionState.timelineKnownTotal);
+
+	let messages: TimelineMessage[] = $derived.by(() => {
+		return timeline.filter((entry) => entry.contentType === 'message');
+	});
+
 	let socket: SocketHandler<TimelineEntry, UserInteraction> | undefined = $derived(
 		sessionState.socket
 	);
-	let firstMessageIndex: number = $derived.by(() => {
-		return timeline.findIndex((msg) => msg.contentType === 'message');
-	});
 
 	function messageAuthor(sender: string): {
 		id: string;
@@ -62,20 +64,18 @@
 
 <Chat.Root>
 	<Chat.Log messageCount={timelineCount}>
-		{#each timeline as msg, index}
-			{#if msg.contentType === 'message'}
-				{#if index > firstMessageIndex}
-					<Separator class="mb-2 mt-4" />
-				{/if}
-				{#if index === timeline.length - 1 && msg.content.sender !== 'agent'}
-					<Chat.Message
-						acknowledgment={sessionState.lastAcknowledgementType}
-						message={msg.content.message}
-						author={messageAuthor(msg.content.sender)}
-					/>
-				{:else}
-					<Chat.Message message={msg.content.message} author={messageAuthor(msg.content.sender)} />
-				{/if}
+		{#each messages as msg, index}
+			{#if index > 0}
+				<Separator class="mb-2 mt-4" />
+			{/if}
+			{#if index === timeline.length - 1 && msg.content.sender !== 'agent'}
+				<Chat.Message
+					acknowledgment={sessionState.lastAcknowledgementType}
+					message={msg.content.message}
+					author={messageAuthor(msg.content.sender)}
+				/>
+			{:else}
+				<Chat.Message message={msg.content.message} author={messageAuthor(msg.content.sender)} />
 			{/if}
 		{/each}
 		{#if sessionState.agentStatus && sessionState.agentStatusTime}

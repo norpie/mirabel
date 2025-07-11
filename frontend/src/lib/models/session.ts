@@ -50,6 +50,10 @@ export interface TimelineEntry {
 
 export type TimelineEntryContent = MessageContent | AcknowledgmentContent | AgentStatusContent | Prompt | PromptResponse | ActionContent | SpecContent | ShellContent;
 
+export type TimelineMessage = TimelineEntry & {
+    content: MessageContent;
+};
+
 export interface MessageContent {
     type: 'message';
     sender: 'user' | 'agent';
