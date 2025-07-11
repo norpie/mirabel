@@ -5,7 +5,6 @@
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import Markdown from '$lib/components/markdown.svelte';
 
-	import { type Plan as PlanModel } from '$lib/models/session';
 	import Plan from '$lib/components/plan/plan.svelte';
 	import Terminal from './terminal.svelte';
 	import Code from './file.svelte';
@@ -14,22 +13,21 @@
 	import SquareChartGantt from 'lucide-svelte/icons/square-chart-gantt';
 	import ListTree from 'lucide-svelte/icons/list-tree';
 	import SquareTerminal from 'lucide-svelte/icons/square-terminal';
-	import FileStack from 'lucide-svelte/icons/file-stack';
 	import Braces from 'lucide-svelte/icons/braces';
 	import Globe from 'lucide-svelte/icons/globe';
-	import History from 'lucide-svelte/icons/history';
-	import { getSessionState } from '$lib/session-state.svelte';
+	import { SessionState } from '$lib/session-state.svelte';
 
 	let {
-		tab = $bindable()
+		tab = $bindable(),
+        sessionState = $bindable(),
 	}: {
+        sessionState: SessionState;
 		tab: string;
 	} = $props();
 
-	const sessionState = getSessionState();
-	let spec: string | null = $state(sessionState.session?.plan?.spec ?? null);
-	let plan: PlanModel | null = $state(sessionState.session?.plan ?? null);
-	let terminal: string[] | null = $state(sessionState.session?.terminal ?? null);
+	let spec: string | null = $state(sessionState.session?.spec ?? null);
+	let plan: null = $state(null); // TODO: Fetch plan from sessionState
+	let terminal: string[] | null = $state(sessionState.session?.shell ?? null);
 
 	let auto = $state(false);
 
