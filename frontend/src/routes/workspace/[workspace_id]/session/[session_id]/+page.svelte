@@ -85,8 +85,12 @@
 	$effect(() => {
         console.log('Connecting socket');
 		return () => {
-            console.log('Disconnecting socket');
-			socket?.disconnect();
+            if (!data.session || data.session.id != session.id) {
+                console.log('Page changed, disconnecting socket');
+                socket?.disconnect();
+            } else {
+                console.log('Page unchanged, keeping socket connected');
+            }
 		};
 	});
 </script>
