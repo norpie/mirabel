@@ -58,8 +58,6 @@
 		});
 		chatInput = '';
 	}
-
-	$inspect(sessionState.agentStatus, sessionState.agentStatusTime);
 </script>
 
 <Chat.Root>
