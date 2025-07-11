@@ -57,7 +57,7 @@ export interface MessageContent {
 }
 
 export interface AcknowledgmentContent {
-    type: 'acknowledgement';
+    type: 'acknowledgment';
     ackType: 'sent' | 'delivered' | 'seen';
 }
 
