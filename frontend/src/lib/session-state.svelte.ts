@@ -1,7 +1,5 @@
-import { getContext, setContext } from "svelte";
 import { emptySession, type Session, type TimelineEntry, type UserInteraction } from "./models/session";
 import type { SocketHandler } from "./socket.svelte";
-import type { SessionAcknowledgmentEvent, SessionEvent, SessionMessageEvent } from "./models/event";
 import { emptyUser, type User } from "./models/user";
 
 export class SessionState {
@@ -37,6 +35,8 @@ export class SessionState {
     }
 
     private onEvent(event: TimelineEntry): void {
+        this.timeline.push(event);
+        this.timelineKnownTotal += 1;
         switch (event.content.type) {
             case 'acknowledgment':
                 this.onAcknowledge.bind(this)(event);
@@ -63,11 +63,6 @@ export class SessionState {
     }
 
     private onMessageContent(event: TimelineEntry): void {
-        if (!this.timeline) {
-            console.warn("Received message event for a session/chat that is not set.");
-            return;
-        }
-        this.timeline.push(event);
         this.lastAcknowledgementType = undefined;
         this.lastAcknowledgementTime = undefined;
         this.agentStatus = undefined;
