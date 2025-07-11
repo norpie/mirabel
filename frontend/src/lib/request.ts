@@ -30,7 +30,7 @@ function isPublicPath(endpoint: string): boolean {
   return publicPaths.some(path => endpoint.includes(path));
 }
 
-function connectWebSocket<T>(path: string, body?: any): SocketHandler<T> {
+function connectWebSocket<T, U>(path: string, body?: any): SocketHandler<T, U> {
     let endpoint = formatWebSocketEndpoint(path);
 
     // Format query parameters

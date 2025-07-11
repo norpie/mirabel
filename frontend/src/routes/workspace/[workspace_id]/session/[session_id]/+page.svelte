@@ -10,24 +10,22 @@
 	import type { PaneAPI } from 'paneforge';
 	import type { PageProps } from './$types';
 
-    import { selectedWorkspace, selectedSession, sessions } from '$lib/store';
+	import { selectedWorkspace, selectedSession, sessions } from '$lib/store';
 	import type { SocketHandler } from '$lib/socket.svelte';
-	import type { SessionEvent } from '$lib/models/event';
-	import { getSessionState, setSessionState } from '$lib/session-state.svelte';
-	import { untrack } from 'svelte';
+	import { SessionState } from '$lib/session-state.svelte';
+	import type { TimelineEntry, UserInteraction } from '$lib/models/session';
 
 	let { data }: PageProps = $props();
 
-    setSessionState(data.user, data.session, data.socket);
-    let sessionState = $state(getSessionState());
+	let sessionState = $state(new SessionState(data.user, data.session, data.socket));
 
 	let chatPane: PaneAPI | undefined = $state();
 	let monitorPane: PaneAPI | undefined = $state();
 
 	let inset: HTMLDivElement | undefined = $state();
 
-	let socket: SocketHandler<SessionEvent> | undefined = $state(data.socket);
-    let session = $state(data.session);
+	let socket: SocketHandler<TimelineEntry, UserInteraction> | undefined = $state(data.socket);
+	let session = $state(data.session);
 
 	const minSize = 5;
 	const maxSize = 100 - minSize;
@@ -71,19 +69,25 @@
 	}
 
 	$effect(() => {
-        selectedWorkspace.set(data.workspace);
-        selectedSession.set(data.session);
-        sessions.set(data.sessions);
-        untrack(() => {
-            setSessionState(data.user, data.session, data.socket);
-            sessionState = getSessionState();
-        });
+		selectedWorkspace.set(data.workspace);
+		selectedSession.set(data.session);
+		sessions.set(data.sessions);
+	});
+
+	$effect(() => {
+		handleResize();
 		window.addEventListener('resize', handleResize);
-        handleResize();
-        return () => {
-		    window.removeEventListener('resize', handleResize);
-            socket?.disconnect();
-        };
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	});
+
+	$effect(() => {
+        console.log('Connecting socket');
+		return () => {
+            console.log('Disconnecting socket');
+			socket?.disconnect();
+		};
 	});
 </script>
 
@@ -105,7 +109,7 @@
 						<ChevronsRight />
 					</button>
 				{:else}
-					<Chat {sessionState}/>
+					<Chat bind:sessionState />
 				{/if}
 			</Resizable.Pane>
 			<Resizable.Handle withHandle={enableHandle} disabled={disableResize} />
@@ -123,7 +127,7 @@
 						<ChevronsLeft />
 					</button>
 				{:else}
-					<Monitor bind:tab />
+					<Monitor bind:tab bind:sessionState />
 				{/if}
 			</Resizable.Pane>
 		</Resizable.PaneGroup>

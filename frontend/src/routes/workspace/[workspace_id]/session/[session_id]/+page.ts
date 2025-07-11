@@ -1,11 +1,11 @@
 import type { PageLoad } from './$types';
 
 import { connectWebSocket, get } from '$lib/request';
-import type { Session, ShallowSession } from '$lib/models/session';
+import type { Session, ShallowSession, TimelineEntry, UserInteraction } from '$lib/models/session';
 import type { Workspace } from '$lib/models/workspace';
 import { error } from '@sveltejs/kit';
 import type { SocketHandler } from '$lib/socket.svelte';
-import type { SessionEvent } from '$lib/models/event';
+import type Result from '$lib/models/result';
 
 export async function load({params, fetch, parent}: PageLoad): Promise<
 {
@@ -14,9 +14,9 @@ export async function load({params, fetch, parent}: PageLoad): Promise<
     sessions: ShallowSession[];
     session_id: string;
     session: Session;
-    socket: SocketHandler<SessionEvent>;
+    socket: SocketHandler<TimelineEntry, UserInteraction>;
 }>{
-    const session = await get(`v1/workspace/${params.workspace_id}/session/${params.session_id}`, undefined, fetch);
+    const session: Result<Session> = await get(`v1/workspace/${params.workspace_id}/session/${params.session_id}`, undefined, fetch);
     if (!session) {
         error(503, 'Could not connect to the server');
     }
@@ -28,7 +28,6 @@ export async function load({params, fetch, parent}: PageLoad): Promise<
     }
     const socket = connectWebSocket(`v1/workspace/${params.workspace_id}/session/${params.session_id}/socket`, undefined);
     socket.connect();
-    // const socket = new SocketHandler("")
     const parentData = await parent();
     return {
         ...parentData,

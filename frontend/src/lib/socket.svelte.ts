@@ -1,6 +1,6 @@
 import { toast } from "svelte-sonner";
 
-export class SocketHandler<T> {
+export class SocketHandler<T, U> {
     // Internal state
     private endpoint: string;
     private firstConnect: boolean = true;
@@ -39,6 +39,7 @@ export class SocketHandler<T> {
         } catch (error) {
             this.status = 'error';
             this.genericErrorToast('Connection Error', 'Failed to connect to the WebSocket server: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            console.log(error);
         }
         this.isReconnecting = false;
     }
@@ -102,7 +103,7 @@ export class SocketHandler<T> {
         });
     }
 
-    public send(data: T): void {
+    public send(data: U): void {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify(data));
         } else {
