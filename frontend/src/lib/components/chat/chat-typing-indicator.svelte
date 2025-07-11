@@ -8,18 +8,19 @@
 
 	let {
 		mirabelStatus,
-        lastAcknowledgementTime,
+		lastAcknowledgementTime
 	}: {
-		mirabelStatus: 'thinking' | 'typing' | 'paused' | 'idle',
-        lastAcknowledgementTime: Date;
+		mirabelStatus: 'thinking' | 'typing' | 'paused' | 'error';
+		lastAcknowledgementTime: Date;
 	} = $props();
 
 	let currentTime: Date = $state(new Date());
 	let elapsedTime: string = $derived.by(() => {
-		return formatElapsedTime(lastAcknowledgementTime, currentTime);
+		return formatElapsedTime(lastAcknowledgementTime ?? new Date(), currentTime);
 	});
 
 	let timer: number;
+
 	$effect(() => {
 		timer = window.setInterval(() => {
 			currentTime = new Date();
@@ -29,6 +30,8 @@
 			clearInterval(timer);
 		};
 	});
+
+	$inspect(elapsedTime);
 </script>
 
 <div class="mb-4 flex space-x-4">
@@ -46,10 +49,10 @@
 				{:else if mirabelStatus === 'paused'}
 					<!-- Pause icon for paused status -->
 					<div class="flex h-5 w-5 items-center justify-center">
-						<Pause class="text-muted-foreground h-4 w-4" />
+						<Pause class="h-4 w-4 text-muted-foreground" />
 					</div>
 				{/if}
-				<span class="text-muted-foreground ml-3 text-sm">
+				<span class="ml-3 text-sm text-muted-foreground">
 					{#if mirabelStatus === 'thinking'}
 						Thinking for {elapsedTime}...
 					{:else if mirabelStatus === 'typing'}
