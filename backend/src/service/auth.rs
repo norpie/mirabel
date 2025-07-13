@@ -23,14 +23,14 @@ impl AuthService {
         })
     }
 
-    pub async fn login(&self, user: LoginUser) -> Result<TokenPair> {
+    pub async fn login(&self, login_user: LoginUser) -> Result<TokenPair> {
         use crate::schema::users::dsl::*;
         let conn = self.repository.get().await?;
         let found_user = conn
             .interact(|conn| {
                 users
-                    .filter(email.eq(user.email.clone()))
-                    .or_filter(username.eq(user.email))
+                    .filter(email.eq(login_user.email.clone()))
+                    .or_filter(username.eq(login_user.email))
                     .first::<User>(conn)
                     .optional()
             })
@@ -38,9 +38,7 @@ impl AuthService {
         let Some(user) = found_user else {
             return Err(Error::Unauthorized("Wrong email or password".into()));
         };
-        if !user.is_correct_password(&user.password)? {
-            return Err(Error::Unauthorized("Wrong email or password".into()));
-        }
+        user.is_correct_password(&login_user.password)?;
         self.token_factory.generate_token(user.id.to_string())
     }
 

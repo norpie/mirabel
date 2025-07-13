@@ -35,10 +35,9 @@ impl User {
         })
     }
 
-    pub fn is_correct_password(&self, password: &str) -> Result<bool> {
+    pub fn is_correct_password(&self, password: &str) -> Result<()> {
         Argon2::default()
             .verify_password(password.as_bytes(), &PasswordHash::new(&self.password)?)
-            .map(|_| true)
             .map_err(|_| Error::Unauthorized("Wrong email or password".into()))
     }
 }
