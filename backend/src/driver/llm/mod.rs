@@ -1,4 +1,16 @@
+use async_trait::async_trait;
+
+use crate::prelude::*;
+
 pub(crate) mod ollama;
+
+#[async_trait]
+pub trait Llm {
+    async fn generate(&self, parameters: Option<Parameters>, prompt: &str) -> Result<String>;
+}
+
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+pub struct Parameters;
 
 pub enum LlmApi {
     Ollama,
