@@ -9,21 +9,21 @@ use crate::prelude::*;
 pub(crate) mod models;
 
 #[derive(Debug)]
-pub struct Ollama<'a> {
-    base_url: &'a str,
+pub struct Ollama {
+    base_url: String,
     client: Client,
 }
 
-impl Default for Ollama<'_> {
+impl Default for Ollama {
     fn default() -> Self {
         Self {
-            base_url: "http://localhost:11434",
+            base_url: "http://localhost:11434".into(),
             client: Client::new(),
         }
     }
 }
 
-impl Ollama<'_> {
+impl Ollama {
     async fn request<T, U>(&self, method: Method, route: &str, body: T) -> Result<U>
     where
         T: Serialize,
