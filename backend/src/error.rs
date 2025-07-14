@@ -88,6 +88,8 @@ pub enum Error {
     PdfExtractOutput(#[from] pdf_extract::OutputError),
     #[error("A scraper error occurred: {0}")]
     Scraper(String), // TODO: Find a way to keep more information
+    #[error("A Tera error occurred: {0}")]
+    Tera(#[from] tera::Error),
 
     // `std`-error types
     #[error("An IO error occurred: {0}")]
