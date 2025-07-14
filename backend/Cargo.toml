@@ -44,6 +44,8 @@ nanoid = "0.4.0"
 diesel_migrations = { version = "2.2.0", features = ["postgres"] }
 diesel = { version = "2.2.11", features = ["chrono", "postgres", "postgres_backend", "serde_json", "time", "uuid"] }
 deadpool-diesel = { version = "0.6.1", features = ["serde", "postgres"] }
+indoc = "2.0.6"
+tera = "1.20.0"
 
 [dev-dependencies]
 anyhow = "1.0.95"
