@@ -14,6 +14,7 @@
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { del } from '$lib/request';
+	import Button from './ui/button/button.svelte';
 
 	const sidebar = useSidebar();
 
@@ -52,16 +53,16 @@
 							>
 								<DropdownMenu.Item>
 									<Eye class="text-muted-foreground" />
-									<span onclick={() => goto(`/workspace/${$selectedWorkspace.id}/session/${session.id}`)}>View Session</span>
+									<a href={`/workspace/${$selectedWorkspace.id}/session/${session.id}`}>View Session</a>
 								</DropdownMenu.Item>
 								<DropdownMenu.Item>
 									<Star class="text-muted-foreground" />
-									<span onclick={() => toast.info("Not implemented yet.")}>Favourite Session</span>
+									<Button size="pseudoATag" variant="ghost" onclick={() => toast.info("Not implemented yet.")}>Favourite Session</Button>
 								</DropdownMenu.Item>
 								<DropdownMenu.Separator />
 								<DropdownMenu.Item>
 									<Archive class="text-muted-foreground" />
-									<span onclick={() => archiveSession(session.id)}>Archive Session</span>
+									<Button size="pseudoATag" variant="ghost" onclick={() => archiveSession(session.id)}>Archive Session</Button>
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
