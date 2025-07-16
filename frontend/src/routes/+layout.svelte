@@ -10,6 +10,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 
 	import { page } from '$app/state';
+	import { authStore } from '$lib/auth/store.svelte.js';
 
 	let hideSidebar: boolean = $derived(isExcluded(page.url.pathname));
 
@@ -26,6 +27,13 @@
 	    user.set(data.user);
 	    workspaces.set(data.workspaces);
     });
+
+	// Initialize auth store on client-side
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			authStore.initialize();
+		}
+	});
 </script>
 
 <ModeWatcher />

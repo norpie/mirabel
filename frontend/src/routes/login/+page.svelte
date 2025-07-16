@@ -3,39 +3,38 @@
     import * as Card from '$lib/components/ui/card/index.js';
     import { Input } from '$lib/components/ui/input/index.js';
     import { Label } from '$lib/components/ui/label/index.js';
+    import { superForm } from 'sveltekit-superforms';
+    import { zodClient } from 'sveltekit-superforms/adapters';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+    
+    import { authStore } from '$lib/auth/store.svelte.js';
+    import { loginSchema } from '$lib/auth/schemas.js';
 
-    import { toast } from 'svelte-sonner';
-
-    import { post } from '$lib/request';
-
-    import { goto, invalidate } from '$app/navigation';
-	import type Result from '$lib/models/result';
-
-    async function login() {
-        const response = await post<Result<{ access_token: string }>>('v1/auth/login', {
-            email: email,
-            password: password
-        });
-
-        if (response.error) {
-            toast.error(response.error);
-            return;
+    // Redirect if already logged in
+    onMount(() => {
+        if (authStore.isAuthenticated) {
+            goto('/');
         }
+    });
 
-        if (!response.data) {
-            toast.error('An error occurred');
-            return;
+    const { form, errors, enhance, submitting } = superForm(
+        { email: '', password: '' }, 
+        {
+            SPA: true,
+            validators: zodClient(loginSchema),
+            onSubmit: async ({ formData, cancel }) => {
+                cancel();
+                const email = formData.get('email') as string;
+                const password = formData.get('password') as string;
+                
+                const result = await authStore.login({ email, password });
+                if (!result.success && result.error) {
+                    // Error handling is done in the store
+                }
+            }
         }
-
-        localStorage.setItem('accessToken', response.data.access_token);
-        toast.success('Logged in successfully');
-        goto('/', {
-            invalidateAll: true
-        });
-    }
-
-    let email = $state();
-    let password = $state();
+    );
 </script>
 
 <div class="flex h-screen w-full items-center justify-center px-4">
@@ -45,23 +44,50 @@
             <Card.Description>Enter your email below to login to your account</Card.Description>
         </Card.Header>
         <Card.Content>
-            <div class="grid gap-4">
-                <div class="grid gap-2">
-                    <Label for="email">Email</Label>
-                    <Input id="email" type="email" placeholder="me@example.com" required bind:value={email} />
-                </div>
-                <div class="grid gap-2">
-                    <div class="flex items-center">
-                        <Label for="password">Password</Label>
-                        <!-- <a href="##" class="ml-auto inline-block text-sm underline"> -->
-                        <!--    Forgot your password? -->
-                        <!-- </a> -->
+            <form method="POST" use:enhance>
+                <div class="grid gap-4">
+                    <div class="grid gap-2">
+                        <Label for="email">Email</Label>
+                        <Input 
+                            id="email"
+                            name="email"
+                            type="email" 
+                            placeholder="me@example.com" 
+                            bind:value={$form.email}
+                            disabled={$submitting || authStore.isLoading}
+                        />
+                        {#if $errors.email}
+                            <p class="text-sm text-red-500">{$errors.email}</p>
+                        {/if}
                     </div>
-                    <Input id="password" type="password" required bind:value={password} />
+
+                    <div class="grid gap-2">
+                        <Label for="password">Password</Label>
+                        <Input 
+                            id="password"
+                            name="password"
+                            type="password" 
+                            bind:value={$form.password}
+                            disabled={$submitting || authStore.isLoading}
+                        />
+                        {#if $errors.password}
+                            <p class="text-sm text-red-500">{$errors.password}</p>
+                        {/if}
+                    </div>
+
+                    <Button 
+                        type="submit" 
+                        class="w-full" 
+                        disabled={$submitting || authStore.isLoading}
+                    >
+                        {#if $submitting || authStore.isLoading}
+                            Logging in...
+                        {:else}
+                            Login
+                        {/if}
+                    </Button>
                 </div>
-                <Button class="w-full" onclick={login}>Login</Button>
-                <!-- <Button variant="outline" class="w-full">Login with Google</Button> -->
-            </div>
+            </form>
             <div class="mt-4 text-center text-sm">
                 Don't have an account?
                 <a href="/register" class="underline"> Register </a>

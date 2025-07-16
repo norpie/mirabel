@@ -20,15 +20,13 @@
 	import SettingsInsert from '$lib/components/settings.svelte';
 
 	import { user } from '$lib/store';
-	import { del } from '$lib/request';
+	import { authStore } from '$lib/auth/store.svelte.js';
 	import { goto } from '$app/navigation';
 
 	const sidebar = useSidebar();
 
 	async function logout() {
-		await del('v1/auth/logout');
-		localStorage.removeItem('accessToken');
-		goto('/login');
+		await authStore.logout();
 	}
 
 	let settingsOpen = $state(false);

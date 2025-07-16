@@ -1,6 +1,6 @@
 import type { LayoutLoad } from './$types';
 
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { get } from '$lib/request';
 import type { Workspace } from '$lib/models/workspace';
 import type { ShallowSession } from '$lib/models/session';
@@ -11,9 +11,16 @@ export const load: LayoutLoad<{
     user: User;
     workspaces: Workspace[];
     workspaceId: string;
-    sessions: PageResponse<ShallowSession[]>;
+    sessions: ShallowSession[];
     workspace: Workspace;
 }> = async ({ params, fetch, parent }) => {
+    const parentData = await parent();
+
+    // Check if user is authenticated
+    if (!parentData.user) {
+        throw redirect(303, '/login');
+    }
+
 	const page = { page: 1, size: 10 };
     const workspace = await get<Workspace>(`v1/workspace/${params.workspace_id}`, undefined, fetch);
     if (!workspace) {
@@ -35,7 +42,7 @@ export const load: LayoutLoad<{
     if (!sessions.data || !sessions.data) {
         error(404, 'No sessions found for this workspace');
     }
-    const parentData = await parent();
+
     return {
         ...parentData,
         workspaceId: params.workspace_id,

@@ -1,6 +1,7 @@
 import { goto } from "$app/navigation";
 import type Result from "./models/result";
 import { SocketHandler } from "./socket.svelte";
+import { TokenStorage } from "./auth/tokens";
 
 // TODO: Get the URL from the environment
 const url = "http://localhost:8080/api";
@@ -11,6 +12,7 @@ const wsUrl = url.replace(/^http/, 'ws');
 const publicPaths = [
   "v1/auth/register",
   "v1/auth/login",
+  "v1/auth/refresh",
   // Add other public endpoints
 ];
 
@@ -31,31 +33,20 @@ function isPublicPath(endpoint: string): boolean {
 }
 
 function connectWebSocket<T, U>(path: string, body?: any): SocketHandler<T, U> {
-    let endpoint = formatWebSocketEndpoint(path);
-
-    // Format query parameters
-    let query = "";
+    const endpoint = formatWebSocketEndpoint(path);
+    const queryParams: Record<string, string> = {};
+    
+    // Add body parameters as query params
     if (body) {
-        query += "?";
         for (const key in body) {
-            query += `${key}=${body[key]}&`;
+            queryParams[key] = String(body[key]);
         }
     }
-
-    // Append access token as query parameter if available
-    const accessToken = localStorage.getItem("accessToken");
-    if (accessToken && !isPublicPath(path)) {
-        if (query) {
-            query += `access_token=${accessToken}`;
-        } else {
-            query += "?access_token=" + accessToken;
-        }
-    } else if (query) {
-        // Remove the last '&' character if there's no token to add
-        query = query.slice(0, -1);
-    }
-
-    return new SocketHandler(endpoint + query);
+    
+    // Determine if this path requires authentication
+    const requiresAuth = !isPublicPath(path);
+    
+    return new SocketHandler(endpoint, queryParams, requiresAuth);
 }
 
 async function request<T>(method: string, endpoint: string, body: any | null = null, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
@@ -64,14 +55,15 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
         "Content-Type": "application/json",
     };
 
-    if (!isPublicPath(endpoint) && localStorage.getItem("accessToken")) {
-        headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
+    if (!isPublicPath(endpoint) && TokenStorage.hasAccessToken()) {
+        headers["Authorization"] = `Bearer ${TokenStorage.getAccessToken()}`;
     }
 
     const response = await fetchFunction(endpoint, {
         method,
         headers,
-        body: body ? JSON.stringify(body) : undefined
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'include' // Include cookies for refresh token
     });
 
     // Only handle 401 for authenticated paths and if we're in a browser
@@ -81,9 +73,9 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
         // Don't try to refresh if we're already on login or register pages
         if (currentPath === "/login" || currentPath === "/register") {
             return {
-                data: null,
+                data: undefined,
                 error: "Authentication required",
-            };
+            } as Result<T>;
         }
 
         // If already refreshing, wait for the existing refresh attempt
@@ -92,13 +84,13 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
 
             if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
                 return {
-                    data: null,
+                    data: undefined,
                     error: "Token expired",
-                };
+                } as Result<T>;
             }
 
             // Retry with the new token
-            localStorage.setItem("accessToken", tokenResult.data.access_token);
+            TokenStorage.setAccessToken(tokenResult.data.access_token);
             return request(method, endpoint, body, fetchFunction);
         }
 
@@ -111,17 +103,17 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
 
             if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
                 // Clear tokens and redirect to login
-                localStorage.removeItem("accessToken");
+                TokenStorage.clearAll();
                 await goto("/login", {
                     invalidateAll: true,
                 });
                 return {
-                    data: null,
+                    data: undefined,
                     error: "Token expired",
-                };
+                } as Result<T>;
             }
 
-            localStorage.setItem("accessToken", tokenResult.data.access_token);
+            TokenStorage.setAccessToken(tokenResult.data.access_token);
             return request(method, endpoint, body, fetchFunction);
         } finally {
             // Reset refresh state

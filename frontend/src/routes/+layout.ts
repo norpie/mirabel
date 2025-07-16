@@ -7,43 +7,62 @@ import type { PageResponse } from '$lib/models/page';
 import type { Workspace } from '$lib/models/workspace';
 import { error } from '@sveltejs/kit';
 import type { User } from '$lib/models/user';
+import { authStore } from '$lib/auth/store.svelte';
 
 export const load: LayoutLoad<{
-	user: User;
+	user: User | null;
 	workspaces: Workspace[];
 }> = async ({ fetch }) => {
-	const userResult = await get<Result<User>>('v1/me', undefined, fetch);
-	if (!userResult) {
-		error(503, 'Unable to fetch user data');
+	// Initialize auth store
+	await authStore.initialize();
+
+	// If not authenticated, return null user and empty workspaces
+	if (!authStore.isAuthenticated || !authStore.user) {
+		return {
+			user: null,
+			workspaces: []
+		};
 	}
-	if (!userResult.data && userResult.error) {
-        return {
-            user: null,
-            workspaces: []
-        }
+
+	// User is authenticated, fetch workspaces
+	try {
+		const workspaceResult = await get<Result<PageResponse<Workspace[]>>>(
+			`v1/me/workspace`,
+			{
+				page: 1,
+				size: 10
+			},
+			fetch
+		);
+
+		if (!workspaceResult) {
+			error(503, 'Unable to fetch workspaces');
+		}
+
+		if (!workspaceResult.data && workspaceResult.error) {
+			console.error('Failed to load workspaces:', workspaceResult.error);
+			return {
+				user: authStore.user,
+				workspaces: []
+			};
+		}
+
+		if (!workspaceResult.data || !workspaceResult.data.data) {
+			return {
+				user: authStore.user,
+				workspaces: []
+			};
+		}
+
+		return {
+			user: authStore.user,
+			workspaces: workspaceResult.data.data
+		};
+	} catch (err) {
+		console.error('Error loading workspaces:', err);
+		return {
+			user: authStore.user,
+			workspaces: []
+		};
 	}
-	if (!userResult.data) {
-		error(404, 'User not found');
-	}
-	const workspaceResult = await get<Result<PageResponse<Workspace[]>>>(
-		`v1/me/workspace`,
-		{
-			page: 1,
-			size: 10
-		},
-		fetch
-	);
-	if (!workspaceResult) {
-		error(503, 'Unable to fetch workspaces');
-	}
-	if (!workspaceResult.data && workspaceResult.error) {
-		error(500, `Failed to load workspaces: ${workspaceResult.error}`);
-	}
-	if (!workspaceResult.data || !workspaceResult.data.data) {
-		error(404, 'Workspaces not found');
-	}
-	return {
-		user: userResult.data,
-		workspaces: workspaceResult.data.data
-	};
-}
+};
