@@ -7,11 +7,13 @@
 		value = $bindable(''),
 		send,
 		socketStatus,
+		onReconnect,
 		disabled = false
 	}: {
 		value?: string;
 		send: () => void;
 		socketStatus?: 'connecting' | 'open' | 'closing' | 'closed' | 'error',
+		onReconnect?: () => void;
 		disabled?: boolean;
 	} = $props();
 
@@ -31,15 +33,15 @@
 	function colorFromSocketStatus(status: 'connecting' | 'open' | 'closing' | 'closed' | 'error'): { color: string; title: string } {
 		switch (status) {
 			case 'open':
-				return { color: 'bg-green-500', title: 'Connection established' };
+				return { color: 'bg-green-500 animate-pulse', title: 'Connection established' };
 			case 'connecting':
-				return { color: 'bg-amber-500', title: 'Connecting...' };
+				return { color: 'bg-amber-500 animate-pulse', title: 'Connecting...' };
 			case 'closing':
-				return { color: 'bg-orange-500', title: 'Closing connection...' };
+				return { color: 'bg-orange-500 animate-pulse', title: 'Closing connection...' };
 			case 'closed':
-				return { color: 'bg-red-500', title: 'Connection closed' };
+				return { color: 'bg-red-500 cursor-pointer hover:bg-red-400', title: 'Connection closed - Click to reconnect' };
 			case 'error':
-				return { color: 'bg-red-500', title: 'Connection error' };
+				return { color: 'bg-red-500 cursor-pointer hover:bg-red-400', title: 'Connection error - Click to reconnect' };
 			default:
 				return { color: 'bg-gray-500', title: 'Unknown status' };
 		}
@@ -54,11 +56,17 @@
 			case 'closing':
 				return 'Closing connection...';
 			case 'closed':
-				return 'Connection closed';
+				return 'Connection closed - Click to reconnect';
 			case 'error':
-				return 'Connection error';
+				return 'Connection error - Click to reconnect';
 			default:
 				return 'Unknown status';
+		}
+	}
+
+	function handleStatusClick() {
+		if ((socketStatus === 'closed' || socketStatus === 'error') && onReconnect) {
+			onReconnect();
 		}
 	}
 
@@ -74,6 +82,9 @@
 	<span
 		class="border-secondary absolute right-1 top-1 h-3 w-3 rounded-full border {color} z-50"
 		{title}
+		onclick={handleStatusClick}
+		role={socketStatus === 'closed' || socketStatus === 'error' ? 'button' : undefined}
+		tabindex={socketStatus === 'closed' || socketStatus === 'error' ? 0 : undefined}
 	></span>
 
 	<Textarea

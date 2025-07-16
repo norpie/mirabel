@@ -27,7 +27,6 @@ export async function load({params, fetch, parent}: PageLoad): Promise<
         error(404, 'Session not found');
     }
     const socket = connectWebSocket(`v1/workspace/${params.workspace_id}/session/${params.session_id}/socket`, undefined);
-    socket.connect();
     const parentData = await parent();
     return {
         ...parentData,

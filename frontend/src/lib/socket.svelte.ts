@@ -13,11 +13,12 @@ export class SocketHandler<T, U> {
     // Reconnect settings
     private autoReconnect: boolean = true;
     private isReconnecting: boolean = false;
-    private reconnectInterval: number = 5000;
+    private reconnectInterval: number = 3000;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Toasting
-    private connectionToastId: string | number | null = null;
+    // Toast management
+    private currentToastId: string | number | null = null;
+    private retryCountdownInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(endpoint: string) {
         this.endpoint = endpoint;
@@ -29,19 +30,21 @@ export class SocketHandler<T, U> {
             this.reconnectTimer = null;
         }
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            this.genericErrorToast('Already Connected', 'You are already connected to the WebSocket server.');
             return;
         }
+        
         try {
             this.status = 'connecting';
             this.socket = new WebSocket(this.endpoint);
             this.setHandlers();
         } catch (error) {
             this.status = 'error';
-            this.genericErrorToast('Connection Error', 'Failed to connect to the WebSocket server: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            if (this.firstConnect) {
+                this.showConnectionWarning();
+            }
             console.log(error);
         }
-        this.isReconnecting = false;
+        // Don't reset isReconnecting here - let onOpen handle it
     }
 
     public disconnect(): void {
@@ -49,10 +52,7 @@ export class SocketHandler<T, U> {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
         }
-        if (this.connectionToastId) {
-            toast.dismiss(this.connectionToastId);
-            this.connectionToastId = null;
-        }
+        this.dismissCurrentToast();
         this.autoReconnect = false;
         this.socket?.close();
         this.socket = null;
@@ -67,12 +67,8 @@ export class SocketHandler<T, U> {
     private reconnect(): void {
         if (!this.autoReconnect || this.isReconnecting) return;
         this.isReconnecting = true;
-        try {
-            this.connectionToast('Reconnecting...', 'Attempting to reconnect to the WebSocket server...', 'info');
-            this.connect();
-        } catch (error) {
-            this.genericErrorToast('Reconnect Error', 'Failed to initiate reconnection: ' + (error instanceof Error ? error.message : 'Unknown error'));
-        }
+        this.dismissCurrentToast();
+        this.connect();
     }
 
     public setMessageHandler(handler: (message: T) => void): void {
@@ -87,47 +83,37 @@ export class SocketHandler<T, U> {
         this.socket.onmessage = (event: MessageEvent) => this.onMessage(event);
     }
 
-    private genericErrorToast(title: string, description: string): void {
-        toast.error(title, {
-            description
-        });
-    }
-
-    private connectionToast(title: string, description: string, type: 'success' | 'info' | 'error'): void {
-        if (this.connectionToastId) {
-            toast.dismiss(this.connectionToastId);
-        }
-        this.connectionToastId = toast[type](title, {
-            description,
-            duration: 5000
-        });
-    }
-
     public send(data: U): void {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify(data));
-        } else {
-            this.genericErrorToast('Connection Error', 'You are not connected to the server.');
         }
     }
 
     private onOpen(): void {
-        if (this.connectionToastId) {
-            toast.dismiss(this.connectionToastId);
-            this.connectionToastId = null;
-        }
-        if (!this.firstConnect) {
-            this.connectionToast('Reconnected', 'Successfully reconnected to the WebSocket server.', 'success');
-        }
+        const wasReconnecting = this.isReconnecting;
         this.firstConnect = false;
         this.status = 'open';
         this.isReconnecting = false;
+        
+        this.dismissCurrentToast();
+        
+        if (wasReconnecting) {
+            this.currentToastId = toast.success("Reconnected to server", {
+                description: "Connection restored successfully",
+                duration: 3000
+            });
+        }
     }
 
     private onClose(): void {
         this.status = 'closed';
         this.isReconnecting = false;
-        this.connectionToast('Connection Closed', 'Attempting to reconnect...', 'info');
+        
+        // Show connection lost error if this wasn't the first connection
+        if (!this.firstConnect) {
+            this.showConnectionLostError();
+        }
+        
         this.reconnectTimer = setTimeout(() => {
             this.reconnect();
         }, this.reconnectInterval);
@@ -136,7 +122,14 @@ export class SocketHandler<T, U> {
     private onError(event: Event): void {
         this.status = 'error';
         this.isReconnecting = false;
-        this.connectionToast('Connection Error', event instanceof Error ? event.message : 'An error occurred with the WebSocket connection.', 'error');
+        
+        // Show appropriate error toast
+        if (this.firstConnect) {
+            this.showConnectionWarning();
+        } else {
+            this.showConnectionLostError();
+        }
+        
         this.reconnectTimer = setTimeout(() => {
             this.reconnect();
         }, this.reconnectInterval);
@@ -144,16 +137,70 @@ export class SocketHandler<T, U> {
 
     private onMessage(event: MessageEvent): void {
         if (!this.messageHandler) {
-            this.genericErrorToast('No Message Handler', 'No message handler is set to process incoming messages.');
             return;
         }
         try {
             let json = JSON.parse(event.data);
             this.messageHandler(json as T);
         } catch (error) {
-            this.genericErrorToast('Failed to process message.', error instanceof Error ? error.message : 'Unknown error');
             console.trace(error);
         }
+    }
+
+    private dismissCurrentToast(): void {
+        if (this.retryCountdownInterval) {
+            clearInterval(this.retryCountdownInterval);
+            this.retryCountdownInterval = null;
+        }
+        toast.dismiss();
+        this.currentToastId = null;
+    }
+
+    private showConnectionWarning(): void {
+        this.dismissCurrentToast();
+        this.currentToastId = toast.warning("Failed to connect to server", {
+            description: "Please check your internet connection",
+            duration: 5000
+        });
+    }
+
+    private showConnectionLostError(): void {
+        this.dismissCurrentToast();
+        
+        let countdown = Math.ceil(this.reconnectInterval / 1000);
+        
+        this.currentToastId = toast.error("Connection lost", {
+            description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
+            duration: Infinity,
+            action: {
+                label: "Retry now",
+                onClick: () => {
+                    this.dismissCurrentToast();
+                    this.manualReconnect();
+                }
+            }
+        });
+        
+        this.retryCountdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                this.dismissCurrentToast();
+                return;
+            }
+            
+            toast.error("Connection lost", {
+                id: this.currentToastId,
+                description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
+                duration: Infinity,
+                action: {
+                    label: "Retry now",
+                    onClick: () => {
+                        this.dismissCurrentToast();
+                        this.manualReconnect();
+                    }
+                }
+            });
+        }, 1000);
     }
 
 }

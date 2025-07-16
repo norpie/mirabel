@@ -49,6 +49,12 @@
 
 	let chatInput = $state('');
 
+	function handleReconnect() {
+		if (socket) {
+			socket.manualReconnect();
+		}
+	}
+
 	async function sendMessage() {
 		if (!socket) {
 			toast.error('Socket is not connected. Please try again later.');
@@ -90,6 +96,7 @@
 		socketStatus={sessionState.socket?.status}
 		bind:value={chatInput}
 		send={sendMessage}
+		onReconnect={handleReconnect}
 		disabled={!timeline}
 	/>
 </Chat.Root>

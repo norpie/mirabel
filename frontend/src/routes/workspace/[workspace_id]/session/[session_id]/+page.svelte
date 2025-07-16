@@ -82,15 +82,18 @@
 		};
 	});
 
+	// Socket connection management
 	$effect(() => {
-        console.log('Connecting socket');
+		if (socket && session) {
+			console.log('Connecting socket for session:', session.id);
+			socket.connect();
+		}
+		
 		return () => {
-            if (!data.session || data.session.id != session.id) {
-                console.log('Page changed, disconnecting socket');
-                socket?.disconnect();
-            } else {
-                console.log('Page unchanged, keeping socket connected');
-            }
+			if (socket) {
+				console.log('Disconnecting socket for session:', session.id);
+				socket.disconnect();
+			}
 		};
 	});
 </script>
