@@ -7,7 +7,7 @@
 	import AccountSettings from './settings/account-settings.svelte';
 	import IntegrationsSettings from './settings/integrations-settings.svelte';
 	import PasswordSettings from './settings/password-settings.svelte';
-	import SessionsSettings from './settings/sessions-settings.svelte';
+	
 	import AppearanceSettings from './settings/appearance-settings.svelte';
 	import NotificationsSettings from './settings/notifications-settings.svelte';
 
@@ -47,8 +47,7 @@
 			title: 'Security',
 			items: [
 				{ value: '2fa', title: 'Two-Factor Authentication', component: TwoFactorSettings },
-                { value: 'password', title: 'Change Password', component: PasswordSettings },
-                { value: 'sessions', title: 'Active Sessions', component: SessionsSettings }
+                { value: 'password', title: 'Change Password', component: PasswordSettings }
 			]
 		},
 		{

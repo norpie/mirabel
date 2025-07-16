@@ -3,6 +3,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as ScrollArea from '$lib/components/ui/scroll-area/index.js';
 
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
 
@@ -34,8 +35,10 @@
 </script>
 
 <Dialog.Root bind:open={settingsOpen}>
-	<Dialog.Content class="min-h-[80%] min-w-[60%]">
-		<SettingsInsert />
+	<Dialog.Content class="h-[85vh] max-w-[75vw] min-w-[50vw] flex flex-col overflow-hidden">
+		<ScrollArea.Root class="flex-1">
+			<SettingsInsert />
+		</ScrollArea.Root>
 	</Dialog.Content>
 </Dialog.Root>
 
