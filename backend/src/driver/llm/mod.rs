@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 
 use crate::prelude::*;
 
@@ -6,11 +7,25 @@ pub(crate) mod ollama;
 
 #[async_trait]
 pub trait Llm {
-    async fn generate(&self, parameters: Option<Parameters>, prompt: &str) -> Result<String>;
+    async fn generate(&self, parameters: Option<Parameters>, prompt: &str) -> Result<LlmResponse>;
 }
 
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Parameters;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct LlmResponse {
+    pub generation: String,
+    pub metadata: LlmResponseMetadata,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct LlmResponseMetadata {
+    pub start_time: DateTime<Utc>,
+    pub end_time: DateTime<Utc>,
+    pub prompt_token_count: u32,
+    pub response_token_count: u32,
+}
 
 pub enum LlmApi {
     Ollama,

@@ -14,6 +14,7 @@ pub(crate) mod error;
 pub(crate) mod prelude;
 pub(crate) mod schema;
 
+pub(crate) mod agent;
 pub(crate) mod driver;
 pub(crate) mod dto;
 pub(crate) mod handler;
