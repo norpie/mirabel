@@ -1,13 +1,14 @@
 use std::{collections::HashMap, sync::Arc};
 
 use crate::{
+    driver::llm::ollama::Ollama,
     dto::{
         page::{PageInfo, PageRequest, PageResponse},
         session::FullSession,
     },
     model::{
         session::Session,
-        timeline::{DatabaseTimelineEntry, TimelineEntry, TimelineEntryContent},
+        timeline::{TimelineEntry, TimelineEntryContent},
         workspace::WorkspaceMember,
     },
     prelude::*,
@@ -24,13 +25,15 @@ use crate::model::user::User;
 
 pub struct SessionService {
     repository: Data<Pool>,
+    llm: Data<Ollama>,
     session_handler_registry: Data<Mutex<HashMap<String, Arc<SessionWorker>>>>,
 }
 
 impl SessionService {
-    pub fn from(repository: Data<Pool>) -> Result<Self> {
+    pub fn from(repository: Data<Pool>, llm: Data<Ollama>) -> Result<Self> {
         Ok(Self {
             repository,
+            llm,
             session_handler_registry: Data::new(Mutex::new(HashMap::new())),
         })
     }
@@ -74,11 +77,10 @@ impl SessionService {
             })
             .await??;
 
-        let db_entry: DatabaseTimelineEntry =
-            TimelineEntry::user_message(session.id.clone(), input).try_into()?;
+        let entry = TimelineEntry::user_message(session.id.clone(), input);
         conn.interact(move |conn| {
             diesel::insert_into(crate::schema::timeline_entries::table)
-                .values(db_entry)
+                .values(entry)
                 .execute(conn)
         })
         .await??;
@@ -161,21 +163,21 @@ impl SessionService {
         let page_clone = page.clone();
         let offset = page_clone.offset();
         let limit = page_clone.size();
-        
+
         // Get latest entries first (newest to oldest), then reverse for chronological order
-        let mut db_entries = conn
+        let mut entries = conn
             .interact(move |conn| {
                 te::timeline_entries
                     .filter(te::session_id.eq(id_clone))
                     .order(te::created_at.desc())
                     .offset(offset)
                     .limit(limit)
-                    .load::<DatabaseTimelineEntry>(conn)
+                    .load::<TimelineEntry>(conn)
             })
             .await??;
 
         // Reverse to get chronological order (oldest to newest) for display
-        db_entries.reverse();
+        entries.reverse();
 
         let id_clone = id.clone();
         let total_count = conn
@@ -186,11 +188,6 @@ impl SessionService {
                     .get_result::<i64>(conn)
             })
             .await??;
-
-        let entries = db_entries
-            .into_iter()
-            .map(|entry| entry.try_into())
-            .collect::<Result<Vec<TimelineEntry>>>()?;
 
         Ok(PageResponse::new(
             PageInfo::new(page.page(), page.size(), total_count),
@@ -327,22 +324,18 @@ impl SessionService {
         session_id: String,
     ) -> Result<Option<TimelineEntry>> {
         let conn = self.repository.get().await?;
-        let db_entry_opt = conn
+        let entry_opt = conn
             .interact(move |conn| {
                 use crate::schema::timeline_entries::dsl as te;
                 te::timeline_entries
                     .filter(te::session_id.eq(&session_id))
                     .filter(te::content_type.eq(&content_type))
                     .order(te::created_at.desc())
-                    .first::<DatabaseTimelineEntry>(conn)
+                    .first::<TimelineEntry>(conn)
                     .optional()
             })
             .await??;
-        let Some(db_entry) = db_entry_opt else {
-            return Ok(None);
-        };
-        let entry: TimelineEntry = db_entry.try_into()?;
-        Ok(Some(entry))
+        Ok(entry_opt)
     }
 
     pub async fn get_latest_spec(&self, session_id: String) -> Result<Option<String>> {
@@ -418,8 +411,11 @@ impl SessionService {
         let handler = match opt_handler {
             Some(handler) => handler.clone(),
             None => {
-                let new_handler =
-                    Arc::new(SessionWorker::new(session.clone(), self.repository.clone()));
+                let new_handler = Arc::new(SessionWorker::new(
+                    session.clone(),
+                    self.repository.clone(),
+                    self.llm.clone(),
+                ));
                 registry.insert(session_id.clone(), new_handler.clone());
                 let runner_clone = new_handler.clone();
                 let session_id_clone = session_id.clone();

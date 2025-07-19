@@ -1,48 +1,28 @@
 use chrono::{DateTime, Utc};
 use diesel::{
     Selectable,
+    deserialize::{FromSql, FromSqlRow},
+    expression::AsExpression,
+    pg::{Pg, PgValue},
     prelude::{Insertable, Queryable},
+    serialize::ToSql,
+    sql_types::Jsonb,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{driver::id::id, error::Error};
+use crate::driver::id::id;
 
-#[derive(
-    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Queryable, Selectable, Insertable)]
 #[diesel(belongs_to(Session))]
 #[diesel(table_name = crate::schema::timeline_entries)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct DatabaseTimelineEntry {
-    pub id: String,
-    pub session_id: String,
-    pub content: serde_json::Value,
-    pub created_at: DateTime<Utc>,
-    pub content_type: String,
-}
-
-impl TryFrom<TimelineEntry> for DatabaseTimelineEntry {
-    type Error = Error;
-
-    fn try_from(value: TimelineEntry) -> Result<Self, Self::Error> {
-        Ok(DatabaseTimelineEntry {
-            id: value.id,
-            session_id: value.session_id,
-            content_type: value.content_type,
-            content: serde_json::to_value(value.content)?,
-            created_at: value.created_at,
-        })
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TimelineEntry {
     pub id: String,
     pub session_id: String,
     pub content: TimelineEntryContent,
-    pub content_type: String,
     pub created_at: DateTime<Utc>,
+    pub content_type: String,
 }
 
 impl TimelineEntry {
@@ -106,17 +86,21 @@ impl TimelineEntry {
     }
 }
 
-impl TryFrom<DatabaseTimelineEntry> for TimelineEntry {
-    type Error = Error;
+impl TimelineEntry {
 
-    fn try_from(value: DatabaseTimelineEntry) -> Result<Self, Self::Error> {
-        Ok(TimelineEntry {
-            id: value.id,
-            session_id: value.session_id,
-            content: serde_json::from_value(value.content)?,
-            content_type: value.content_type,
-            created_at: value.created_at,
-        })
+    // IMPORTANT: Keep these in camelCase to match the JSON serialization
+    pub fn type_name(&self) -> String {
+        match &self.content {
+            TimelineEntryContent::Message { .. } => "message".to_string(),
+            TimelineEntryContent::Acknowledgment { .. } => "acknowledgment".to_string(),
+            TimelineEntryContent::AgentStatus { .. } => "agentStatus".to_string(),
+            TimelineEntryContent::Prompt { .. } => "prompt".to_string(),
+            TimelineEntryContent::PromptResponse { .. } => "promptResponse".to_string(),
+            TimelineEntryContent::Action { .. } => "action".to_string(),
+            TimelineEntryContent::Spec { .. } => "spec".to_string(),
+            TimelineEntryContent::Plan { .. } => "plan".to_string(),
+            TimelineEntryContent::Shell { .. } => "shell".to_string(),
+        }
     }
 }
 
@@ -151,7 +135,8 @@ pub enum ActionType {
     EditFile,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, AsExpression, FromSqlRow)]
+#[diesel(sql_type = Jsonb)]
 #[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
 pub enum TimelineEntryContent {
@@ -197,20 +182,19 @@ pub enum TimelineEntryContent {
     },
 }
 
-impl TimelineEntry {
+impl FromSql<Jsonb, Pg> for TimelineEntryContent {
+    fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
+        let value = <serde_json::Value as FromSql<Jsonb, Pg>>::from_sql(bytes)?;
+        serde_json::from_value(value).map_err(|e| e.into())
+    }
+}
 
-    // IMPORTANT: Keep these in camelCase to match the JSON serialization
-    pub fn type_name(&self) -> String {
-        match &self.content {
-            TimelineEntryContent::Message { .. } => "message".to_string(),
-            TimelineEntryContent::Acknowledgment { .. } => "acknowledgment".to_string(),
-            TimelineEntryContent::AgentStatus { .. } => "agentStatus".to_string(),
-            TimelineEntryContent::Prompt { .. } => "prompt".to_string(),
-            TimelineEntryContent::PromptResponse { .. } => "promptResponse".to_string(),
-            TimelineEntryContent::Action { .. } => "action".to_string(),
-            TimelineEntryContent::Spec { .. } => "spec".to_string(),
-            TimelineEntryContent::Plan { .. } => "plan".to_string(),
-            TimelineEntryContent::Shell { .. } => "shell".to_string(),
-        }
+impl ToSql<Jsonb, Pg> for TimelineEntryContent {
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, Pg>,
+    ) -> diesel::serialize::Result {
+        let value = serde_json::to_value(self)?;
+        <serde_json::Value as ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
