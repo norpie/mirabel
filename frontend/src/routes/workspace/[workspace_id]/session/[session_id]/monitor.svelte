@@ -96,7 +96,7 @@
 			value="plan"
 			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
 		>
-			<Plan bind:plan />
+			<Plan plan />
 		</Tabs.Content>
 	{/if}
 
