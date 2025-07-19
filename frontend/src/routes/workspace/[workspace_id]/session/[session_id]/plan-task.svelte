@@ -87,9 +87,9 @@
 
     function getTypeIcon(type: string) {
         switch (type) {
-            case 'detour-insert':
+            case 'detour':
                 return CornerDownRight;
-            case 'detour-around':
+            case 'deviation':
                 return ArrowRight;
             default:
                 return null;
@@ -98,9 +98,9 @@
 
     function getTypeColor(type: string) {
         switch (type) {
-            case 'detour-insert':
+            case 'detour':
                 return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800';
-            case 'detour-around':
+            case 'deviation':
                 return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800';
             default:
                 return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800';
@@ -198,7 +198,7 @@
                 {#if TypeIcon}
                     <TypeIcon class="mr-1 h-3 w-3" />
                 {/if}
-                {task.type === 'detour-insert' ? 'Detour' : 'Deviation'}
+                {task.type === 'detour' ? 'Detour' : 'Deviation'}
             </Badge>
         {/if}
     </div>
@@ -209,8 +209,16 @@
         <p
             class="inline-block rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs italic text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
         >
-            <strong>Reason:</strong>
+            <strong>Detour Reason:</strong>
             {task.detourReason}
+        </p>
+    {/if}
+    {#if task.deviationReason}
+        <p
+            class="inline-block rounded border border-orange-200 bg-orange-50 px-2 py-1 text-xs italic text-orange-700 dark:border-orange-800 dark:bg-orange-900/20 dark:text-orange-300"
+        >
+            <strong>Deviation Reason:</strong>
+            {task.deviationReason}
         </p>
     {/if}
 {/snippet}
@@ -233,7 +241,7 @@
 {/snippet}
 
 {#snippet taskSecondaryContent()}
-    {#if task.detourReason}
+    {#if task.detourReason || task.deviationReason}
         <div class="flex items-start gap-3">
             <div class="flex-1">
                 {@render taskDetourReason()}

@@ -1,4 +1,4 @@
-export type TaskType = 'planned' | 'detour-insert' | 'detour-around';
+export type TaskType = 'planned' | 'detour' | 'deviation';
 
 export type TaskStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'paused';
 
@@ -14,6 +14,7 @@ export interface PlanTask {
     pausedAt?: Date;
     cancelledAt?: Date;
     detourReason?: string;
+    deviationReason?: string;
     originalTaskId?: string;
 }
 
@@ -237,7 +238,7 @@ export function placeholderPlan(): Plan {
                     {
                         id: '3-3',
                         title: 'Fix token validation edge cases',
-                        type: 'detour-insert',
+                        type: 'detour',
                         status: 'completed',
                         detourReason:
                             'Discovered expired tokens were not handled properly during testing',
@@ -245,7 +246,7 @@ export function placeholderPlan(): Plan {
                             {
                                 id: '3-3-1',
                                 title: 'Add proper error handling for expired tokens',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'completed',
                                 children: [],
                                 createdAt: new Date()
@@ -253,7 +254,7 @@ export function placeholderPlan(): Plan {
                             {
                                 id: '3-3-2',
                                 title: 'Implement token refresh mechanism',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'completed',
                                 children: [],
                                 createdAt: new Date()
@@ -267,21 +268,20 @@ export function placeholderPlan(): Plan {
             {
                 id: '4',
                 title: 'Fix critical database connection pooling issue',
-                type: 'detour-insert',
-                status: 'completed',
+                                type: 'detour',                status: 'completed',
                 detourReason:
                     'Discovered connection pool exhaustion causing timeouts during OAuth testing',
                 children: [
                     {
                         id: '4-1',
                         title: 'Investigate connection pool configuration',
-                        type: 'detour-insert',
+                        type: 'detour',
                         status: 'completed',
                         children: [
                             {
                                 id: '4-1-1',
                                 title: 'Analyze current pool settings in database.rs',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'completed',
                                 children: [],
                                 createdAt: new Date()
@@ -289,7 +289,7 @@ export function placeholderPlan(): Plan {
                             {
                                 id: '4-1-2',
                                 title: 'Review connection timeout logs',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'completed',
                                 children: [],
                                 createdAt: new Date()
@@ -300,13 +300,13 @@ export function placeholderPlan(): Plan {
                     {
                         id: '4-2',
                         title: 'Implement proper connection pool management',
-                        type: 'detour-insert',
+                        type: 'detour',
                         status: 'completed',
                         children: [
                             {
                                 id: '4-2-1',
                                 title: 'Increase max_connections to 20',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'completed',
                                 children: [],
                                 createdAt: new Date()
@@ -314,7 +314,7 @@ export function placeholderPlan(): Plan {
                             {
                                 id: '4-2-2',
                                 title: 'Add connection timeout handling',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'completed',
                                 children: [],
                                 createdAt: new Date()
@@ -381,9 +381,9 @@ export function placeholderPlan(): Plan {
                             {
                                 id: '5-2-3',
                                 title: 'Build simplified workspace API without permissions',
-                                type: 'detour-around',
+                                type: 'deviation',
                                 status: 'in-progress',
-                                detourReason:
+                                deviationReason:
                                     'Original complex permissions approach was too time-consuming, switching to MVP approach',
                                 originalTaskId: '5-2-2',
                                 children: [],
@@ -398,21 +398,20 @@ export function placeholderPlan(): Plan {
             {
                 id: '7',
                 title: 'Debug workspace creation memory leak',
-                type: 'detour-insert',
-                status: 'pending',
-                detourReason:
+                                type: 'detour',                status: 'pending',
+                deviationReason:
                     'Memory usage spiking during workspace creation testing - need to investigate before continuing',
                 children: [
                     {
                         id: '7-1',
                         title: 'Profile memory usage during workspace operations',
-                        type: 'detour-insert',
+                        type: 'detour',
                         status: 'pending',
                         children: [
                             {
                                 id: '7-1-1',
                                 title: 'Run valgrind on workspace creation endpoint',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'pending',
                                 children: [],
                                 createdAt: new Date()
@@ -420,7 +419,7 @@ export function placeholderPlan(): Plan {
                             {
                                 id: '7-1-2',
                                 title: 'Analyze heap allocations in diesel ORM calls',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'pending',
                                 children: [],
                                 createdAt: new Date()
@@ -431,13 +430,13 @@ export function placeholderPlan(): Plan {
                     {
                         id: '7-2',
                         title: 'Fix identified memory management issues',
-                        type: 'detour-insert',
+                        type: 'detour',
                         status: 'pending',
                         children: [
                             {
                                 id: '7-2-1',
                                 title: 'Replace Vec clones with references in workspace_service',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'pending',
                                 children: [],
                                 createdAt: new Date()
@@ -445,7 +444,7 @@ export function placeholderPlan(): Plan {
                             {
                                 id: '7-2-2',
                                 title: 'Add explicit drop for large query results',
-                                type: 'detour-insert',
+                                type: 'detour',
                                 status: 'pending',
                                 children: [],
                                 createdAt: new Date()
