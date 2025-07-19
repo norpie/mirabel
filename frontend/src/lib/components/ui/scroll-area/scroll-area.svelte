@@ -45,11 +45,32 @@
 	$effect(() => {
 		if (viewportRef && fadeout !== "none") {
 			viewportRef.addEventListener('scroll', updateFadeVisibility);
+			
+			// Set up ResizeObserver to watch for content changes
+			const resizeObserver = new ResizeObserver(() => {
+				updateFadeVisibility();
+			});
+			
+			// Set up MutationObserver to watch for DOM changes (like expanding/collapsing)
+			const mutationObserver = new MutationObserver(() => {
+				updateFadeVisibility();
+			});
+			
+			// Watch the viewport for size changes and its children for structure changes
+			resizeObserver.observe(viewportRef);
+			mutationObserver.observe(viewportRef, { 
+				childList: true, 
+				subtree: true, 
+				attributes: false 
+			});
+			
 			// Initial check
 			updateFadeVisibility();
 			
 			return () => {
 				viewportRef?.removeEventListener('scroll', updateFadeVisibility);
+				resizeObserver.disconnect();
+				mutationObserver.disconnect();
 			};
 		}
 	});
