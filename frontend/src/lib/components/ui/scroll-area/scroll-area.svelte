@@ -11,6 +11,7 @@
 		scrollbarXClasses = "",
 		scrollbarYClasses = "",
         thumbClass = "",
+		fadeout = "none",
 		children,
 		...restProps
 	}: WithoutChild<ScrollAreaPrimitive.RootProps> & {
@@ -19,10 +20,56 @@
 		scrollbarXClasses?: string | undefined;
 		scrollbarYClasses?: string | undefined;
         thumbClass?: string | undefined;
+		fadeout?: "none" | "both" | "top" | "bottom" | undefined;
 	} = $props();
+
+	let showTopFade = $state(false);
+	let showBottomFade = $state(false);
+
+	function updateFadeVisibility() {
+		if (!viewportRef || fadeout === "none") return;
+		
+		const { scrollTop, scrollHeight, clientHeight } = viewportRef;
+		const isAtTop = scrollTop <= 1; // Small tolerance for floating point precision
+		const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+		
+		if (fadeout === "top" || fadeout === "both") {
+			showTopFade = !isAtTop;
+		}
+		
+		if (fadeout === "bottom" || fadeout === "both") {
+			showBottomFade = !isAtBottom;
+		}
+	}
+
+	$effect(() => {
+		if (viewportRef && fadeout !== "none") {
+			viewportRef.addEventListener('scroll', updateFadeVisibility);
+			// Initial check
+			updateFadeVisibility();
+			
+			return () => {
+				viewportRef?.removeEventListener('scroll', updateFadeVisibility);
+			};
+		}
+	});
+
+	function getFadeoutClasses() {
+		let classes = "";
+		
+		if (showTopFade) {
+			classes += " before:absolute before:top-0 before:left-0 before:right-0 before:h-4 before:bg-gradient-to-b before:from-background before:to-transparent before:z-10 before:pointer-events-none";
+		}
+		
+		if (showBottomFade) {
+			classes += " after:absolute after:bottom-0 after:left-0 after:right-0 after:h-4 after:bg-gradient-to-t after:from-background after:to-transparent after:z-10 after:pointer-events-none";
+		}
+		
+		return classes;
+	}
 </script>
 
-<ScrollAreaPrimitive.Root bind:ref {...restProps} class={cn("relative overflow-hidden", className)}>
+<ScrollAreaPrimitive.Root bind:ref {...restProps} class={cn("relative overflow-hidden", getFadeoutClasses(), className)}>
 	<ScrollAreaPrimitive.Viewport bind:ref={viewportRef} class="h-full w-full rounded-[inherit]">
 		{@render children?.()}
 	</ScrollAreaPrimitive.Viewport>
