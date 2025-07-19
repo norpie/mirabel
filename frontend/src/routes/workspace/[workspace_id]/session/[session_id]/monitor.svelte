@@ -103,7 +103,7 @@
 	{#if tab === 'terminal'}
 		<Tabs.Content
 			value="terminal"
-			class="svelte-flow-clipping h-full flex-1 overflow-hidden rounded-xl md:min-h-min"
+			class="h-full flex-1 overflow-hidden md:min-h-min"
 		>
 			<Terminal lines={terminal} />
 		</Tabs.Content>
