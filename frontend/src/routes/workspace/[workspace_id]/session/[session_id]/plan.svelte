@@ -77,8 +77,8 @@
             </div>
         </div>
         
-        <ScrollArea class="h-[1px] flex-grow" fadeout="both">
-            <div class="space-y-2 p-1">
+        <ScrollArea class="h-[1px] flex-grow" type="always" fadeout="both">
+            <div class="space-y-2 pr-4">
                 {#each plan.tasks as task (task.id)}
                     <PlanTask {task} {plan} onExpandTask={handleExpandTask} onCollapseTask={handleCollapseTask} />
                 {/each}
