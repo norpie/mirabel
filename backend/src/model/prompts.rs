@@ -5,7 +5,9 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
+)]
 #[diesel(table_name = crate::schema::prompt_evaluations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct PromptEvaluation {

@@ -1,5 +1,5 @@
 use crate::{
-    dto::{api_response::ApiResponse, page::PageRequest, session::FullSession},
+    dto::{api_response::ApiResponse, page::PageRequest},
     model::user::User,
     prelude::*,
     service::{sessions::SessionService, workspaces},

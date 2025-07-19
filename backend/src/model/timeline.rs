@@ -12,7 +12,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::driver::id::id;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Queryable, Selectable, Insertable)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Queryable, Selectable, Insertable,
+)]
 #[diesel(belongs_to(Session))]
 #[diesel(table_name = crate::schema::timeline_entries)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -87,7 +89,6 @@ impl TimelineEntry {
 }
 
 impl TimelineEntry {
-
     // IMPORTANT: Keep these in camelCase to match the JSON serialization
     pub fn type_name(&self) -> String {
         match &self.content {
@@ -146,40 +147,27 @@ pub enum TimelineEntryContent {
         message: String,
     },
     #[serde(rename_all = "camelCase")]
-    Acknowledgment {
-        ack_type: AcknowledgmentType,
-    },
+    Acknowledgment { ack_type: AcknowledgmentType },
     #[serde(rename_all = "camelCase")]
-    AgentStatus {
-        status: AgentStatus,
-    },
+    AgentStatus { status: AgentStatus },
     #[serde(rename_all = "camelCase")]
     Prompt {
         prompt_id: String,
         options: Vec<String>,
     },
     #[serde(rename_all = "camelCase")]
-    PromptResponse {
-        prompt_id: String,
-        response: String,
-    },
+    PromptResponse { prompt_id: String, response: String },
     #[serde(rename_all = "camelCase")]
     Action {
         action_type: ActionType,
         message: String,
     },
     #[serde(rename_all = "camelCase")]
-    Spec {
-        content: String,
-    },
+    Spec { content: String },
     #[serde(rename_all = "camelCase")]
-    Plan {
-        placeholder: bool,
-    },
+    Plan { placeholder: bool },
     #[serde(rename_all = "camelCase")]
-    Shell {
-        lines: Vec<String>,
-    },
+    Shell { lines: Vec<String> },
 }
 
 impl FromSql<Jsonb, Pg> for TimelineEntryContent {

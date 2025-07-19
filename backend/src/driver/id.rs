@@ -34,6 +34,6 @@ mod tests {
         let id = id!();
         assert_eq!(id.len(), 21);
         assert!(id.chars().all(|c| ALPHABET.contains(&c)));
-        println!("Generated ID: {}", id);
+        println!("Generated ID: {id}");
     }
 }

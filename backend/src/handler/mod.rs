@@ -1,5 +1,5 @@
 use crate::{
-    driver::llm::{LlmApi, ollama::Ollama},
+    driver::llm::ollama::Ollama,
     prelude::*,
     service::{
         auth::AuthService, sessions::SessionService, users::UserService,

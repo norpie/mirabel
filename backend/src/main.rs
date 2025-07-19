@@ -8,7 +8,7 @@ use log::{info, warn};
 
 extern crate backend_derive;
 
-use crate::prelude::*;
+use crate::{driver::llm::ollama::Ollama, prelude::*};
 
 pub(crate) mod error;
 pub(crate) mod prelude;
@@ -52,8 +52,9 @@ async fn run() -> Result<()> {
         warn!("No search engines are available");
     }
     let browsers = Browsers::new().await?;
+    let llm = Ollama::default();
     info!("Running lifecycle tasks");
-    handler::run(Data::new(db)).await?;
+    handler::run(Data::new(db), Data::new(llm)).await?;
     info!("Running cleanup tasks");
     browsers.close().await?;
     Ok(())

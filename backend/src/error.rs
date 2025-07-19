@@ -5,7 +5,6 @@ use miette::Diagnostic;
 use scraper::error::SelectorErrorKind;
 use std::sync::MutexGuard;
 use thiserror::Error;
-use tokio::sync::mpsc::error::SendError;
 
 #[derive(Debug, Error, Diagnostic)]
 pub enum Error {

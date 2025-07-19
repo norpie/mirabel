@@ -105,7 +105,7 @@ impl FromSql<Integer, Pg> for WorkspaceRole {
         let opt_role = WorkspaceRole::from_i32(value);
         match opt_role {
             Some(role) => Ok(role),
-            None => Err(format!("Invalid WorkspaceRole value: {}", value).into()),
+            None => Err(format!("Invalid WorkspaceRole value: {value}").into()),
         }
     }
 }

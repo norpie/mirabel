@@ -11,7 +11,10 @@ use tokio::sync::{
     mpsc::{UnboundedReceiver, UnboundedSender},
 };
 
-use crate::{driver::llm::ollama::Ollama, model::{session::Session, timeline::TimelineEntry}};
+use crate::{
+    driver::llm::ollama::Ollama,
+    model::{session::Session, timeline::TimelineEntry},
+};
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum SessionWorkerState {

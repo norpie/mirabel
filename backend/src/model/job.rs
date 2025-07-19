@@ -21,8 +21,8 @@ pub enum JobType {
     TitleGeneration = 0,     // Generate a title for the session
     SessionSummary = 1,      // Summarize the session
     CategorizeUserInput = 2, // Categorize user input, to know what to do next (update spec, start a
-                             // new task, etc., extract content, etc.)
-    ContentExtraction = 3,   // Extract content from user input (secret, email, code snippet, etc.)
+    // new task, etc., extract content, etc.)
+    ContentExtraction = 3, // Extract content from user input (secret, email, code snippet, etc.)
 }
 
 impl JobType {
@@ -52,7 +52,7 @@ impl FromSql<Integer, Pg> for JobType {
         let opt_job_type = JobType::from_i32(value);
         match opt_job_type {
             Some(job_type) => Ok(job_type),
-            None => Err(format!("Invalid JobType value: {}", value).into()),
+            None => Err(format!("Invalid JobType value: {value}").into()),
         }
     }
 }
@@ -105,7 +105,7 @@ impl FromSql<Integer, Pg> for JobStatus {
         let opt_status = JobStatus::from_i32(value);
         match opt_status {
             Some(status) => Ok(status),
-            None => Err(format!("Invalid JobStatus value: {}", value).into()),
+            None => Err(format!("Invalid JobStatus value: {value}").into()),
         }
     }
 }
@@ -121,7 +121,9 @@ impl ToSql<Integer, Pg> for JobStatus {
     }
 }
 
-#[derive(Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
+)]
 #[diesel(table_name = crate::schema::jobs)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Job {
