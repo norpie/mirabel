@@ -5,7 +5,7 @@
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import Markdown from '$lib/components/markdown.svelte';
 
-	import Plan from '$lib/components/plan/plan.svelte';
+	import Plan from './plan.svelte';
 	import Terminal from './terminal.svelte';
 	import Code from './file.svelte';
 	import Browser from './browser.svelte';
