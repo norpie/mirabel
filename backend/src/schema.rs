@@ -23,6 +23,28 @@ diesel::table! {
 }
 
 diesel::table! {
+    jobs (id) {
+        id -> Text,
+        session_id -> Text,
+        parent_job_id -> Nullable<Text>,
+        job_type -> Int4,
+        status -> Int4,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    prompt_evaluations (id) {
+        id -> Text,
+        job_id -> Text,
+        prompt_token_count -> Int4,
+        response_token_count -> Int4,
+        evaluation_start -> Timestamptz,
+        evaluation_end -> Timestamptz,
+    }
+}
+
+diesel::table! {
     sessions (id) {
         id -> Text,
         workspace_id -> Text,
@@ -78,6 +100,8 @@ diesel::table! {
 diesel::joinable!(auth_options -> users (user_id));
 diesel::joinable!(avatars -> users (user_id));
 diesel::joinable!(deleted_users -> users (id));
+diesel::joinable!(jobs -> sessions (session_id));
+diesel::joinable!(prompt_evaluations -> jobs (job_id));
 diesel::joinable!(sessions -> users (user_id));
 diesel::joinable!(sessions -> workspaces (workspace_id));
 diesel::joinable!(timeline_entries -> sessions (session_id));
@@ -88,6 +112,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     auth_options,
     avatars,
     deleted_users,
+    jobs,
+    prompt_evaluations,
     sessions,
     timeline_entries,
     users,
