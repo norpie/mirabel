@@ -1,7 +1,7 @@
-import { toast } from "svelte-sonner";
-import { authStore } from "./auth/store.svelte";
-import { TokenStorage } from "./auth/tokens";
-import { goto } from "$app/navigation";
+import { toast } from 'svelte-sonner';
+import { authStore } from './auth/store.svelte';
+import { TokenStorage } from './auth/tokens';
+import { goto } from '$app/navigation';
 
 export class SocketHandler<T, U> {
     // Internal state
@@ -9,8 +9,8 @@ export class SocketHandler<T, U> {
     private queryParams: Record<string, string>;
     private firstConnect: boolean = true;
     private socket: WebSocket | null = null;
-    status: 'connecting' | 'open' | 'closing' | 'closed' | 'error' = $state("closed");
-    
+    status: 'connecting' | 'open' | 'closing' | 'closed' | 'error' = $state('closed');
+
     // Auth handling
     private requiresAuth: boolean = true;
     private lastAuthToken: string | null = null;
@@ -28,13 +28,17 @@ export class SocketHandler<T, U> {
     private currentToastId: string | number | null = null;
     private retryCountdownInterval: ReturnType<typeof setInterval> | null = null;
 
-    constructor(baseEndpoint: string, queryParams: Record<string, string> = {}, requiresAuth: boolean = true) {
+    constructor(
+        baseEndpoint: string,
+        queryParams: Record<string, string> = {},
+        requiresAuth: boolean = true
+    ) {
         // Parse the baseEndpoint to separate URL and query params
         const [url, existingQuery] = baseEndpoint.split('?');
         this.baseEndpoint = url;
         this.queryParams = { ...queryParams };
         this.requiresAuth = requiresAuth;
-        
+
         // Parse existing query params if any
         if (existingQuery) {
             const urlParams = new URLSearchParams(existingQuery);
@@ -46,7 +50,7 @@ export class SocketHandler<T, U> {
 
     private buildEndpointWithAuth(): string {
         let params = { ...this.queryParams };
-        
+
         if (this.requiresAuth) {
             const accessToken = TokenStorage.getAccessToken();
             if (accessToken) {
@@ -64,20 +68,20 @@ export class SocketHandler<T, U> {
                 return '';
             }
         }
-        
+
         const queryString = new URLSearchParams(params).toString();
         return `${this.baseEndpoint}${queryString ? '?' + queryString : ''}`;
     }
 
     private shouldAttemptReconnect(): boolean {
         if (!this.autoReconnect) return false;
-        
+
         // If auth is required, only reconnect if user is still authenticated
         if (this.requiresAuth && !authStore.isAuthenticated) {
             console.log('Skipping reconnect: user is no longer authenticated');
             return false;
         }
-        
+
         // Check if token has changed (might have been refreshed)
         if (this.requiresAuth) {
             const currentToken = TokenStorage.getAccessToken();
@@ -86,7 +90,7 @@ export class SocketHandler<T, U> {
                 return true;
             }
         }
-        
+
         return true;
     }
 
@@ -98,14 +102,16 @@ export class SocketHandler<T, U> {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             return;
         }
-        
+
         // Check auth requirements before connecting
         if (this.requiresAuth && !authStore.isAuthenticated) {
             this.status = 'error';
-            console.warn('Cannot connect WebSocket: authentication required but user not authenticated');
+            console.warn(
+                'Cannot connect WebSocket: authentication required but user not authenticated'
+            );
             return;
         }
-        
+
         const endpoint = this.buildEndpointWithAuth();
         if (!endpoint) {
             this.status = 'error';
@@ -114,7 +120,7 @@ export class SocketHandler<T, U> {
             }
             return;
         }
-        
+
         try {
             this.status = 'connecting';
             this.socket = new WebSocket(endpoint);
@@ -176,12 +182,12 @@ export class SocketHandler<T, U> {
         this.firstConnect = false;
         this.status = 'open';
         this.isReconnecting = false;
-        
+
         this.dismissCurrentToast();
-        
+
         if (wasReconnecting) {
-            this.currentToastId = toast.success("Reconnected to server", {
-                description: "Connection restored successfully",
+            this.currentToastId = toast.success('Reconnected to server', {
+                description: 'Connection restored successfully',
                 duration: 3000
             });
         }
@@ -190,19 +196,19 @@ export class SocketHandler<T, U> {
     private onClose(event: CloseEvent): void {
         this.status = 'closed';
         this.isReconnecting = false;
-        
+
         // Check for auth-related close codes
         if (event.code === 1008 || event.code === 4001 || event.code === 4003) {
             // Authentication-related close codes
             this.handleAuthError();
             return;
         }
-        
+
         // Show connection lost error if this wasn't the first connection
         if (!this.firstConnect) {
             this.showConnectionLostError();
         }
-        
+
         if (this.shouldAttemptReconnect()) {
             this.reconnectTimer = setTimeout(() => {
                 this.reconnect();
@@ -213,14 +219,14 @@ export class SocketHandler<T, U> {
     private onError(event: Event): void {
         this.status = 'error';
         this.isReconnecting = false;
-        
+
         // Show appropriate error toast
         if (this.firstConnect) {
             this.showConnectionWarning();
         } else {
             this.showConnectionLostError();
         }
-        
+
         if (this.shouldAttemptReconnect()) {
             this.reconnectTimer = setTimeout(() => {
                 this.reconnect();
@@ -234,13 +240,13 @@ export class SocketHandler<T, U> {
         }
         try {
             let json = JSON.parse(event.data);
-            
+
             // Check for auth error messages from server
             if (json.type === 'auth_error' || json.error === 'unauthorized') {
                 this.handleAuthError();
                 return;
             }
-            
+
             this.messageHandler(json as T);
         } catch (error) {
             console.trace(error);
@@ -250,22 +256,22 @@ export class SocketHandler<T, U> {
     private handleAuthError(): void {
         this.dismissCurrentToast();
         this.autoReconnect = false; // Stop reconnection attempts
-        
+
         if (this.requiresAuth) {
             console.warn('WebSocket authentication failed - logging out user');
-            
+
             // Show auth error toast
-            this.currentToastId = toast.error("Authentication expired", {
-                description: "Your session has expired. Please log in again.",
+            this.currentToastId = toast.error('Authentication expired', {
+                description: 'Your session has expired. Please log in again.',
                 duration: 5000,
                 action: {
-                    label: "Login",
+                    label: 'Login',
                     onClick: () => {
-                        goto("/login");
+                        goto('/login');
                     }
                 }
             });
-            
+
             // Force logout through auth store
             authStore.logout();
         }
@@ -282,21 +288,21 @@ export class SocketHandler<T, U> {
 
     private showConnectionWarning(): void {
         this.dismissCurrentToast();
-        this.currentToastId = toast.warning("Failed to connect to server", {
-            description: "Please check your internet connection",
+        this.currentToastId = toast.warning('Failed to connect to server', {
+            description: 'Please check your internet connection',
             duration: 5000
         });
     }
 
     private showAuthError(): void {
         this.dismissCurrentToast();
-        this.currentToastId = toast.error("Authentication required", {
-            description: "Please log in to access this feature",
+        this.currentToastId = toast.error('Authentication required', {
+            description: 'Please log in to access this feature',
             duration: 5000,
             action: {
-                label: "Login",
+                label: 'Login',
                 onClick: () => {
-                    goto("/login");
+                    goto('/login');
                 }
             }
         });
@@ -304,14 +310,14 @@ export class SocketHandler<T, U> {
 
     private showConnectionLostError(): void {
         this.dismissCurrentToast();
-        
+
         if (!this.shouldAttemptReconnect()) {
             // Don't show retry countdown if we won't actually retry
-            this.currentToastId = toast.error("Connection lost", {
-                description: "Unable to reconnect - please refresh the page",
+            this.currentToastId = toast.error('Connection lost', {
+                description: 'Unable to reconnect - please refresh the page',
                 duration: Infinity,
                 action: {
-                    label: "Refresh",
+                    label: 'Refresh',
                     onClick: () => {
                         window.location.reload();
                     }
@@ -319,34 +325,34 @@ export class SocketHandler<T, U> {
             });
             return;
         }
-        
+
         let countdown = Math.ceil(this.reconnectInterval / 1000);
-        
-        this.currentToastId = toast.error("Connection lost", {
+
+        this.currentToastId = toast.error('Connection lost', {
             description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
             duration: Infinity,
             action: {
-                label: "Retry now",
+                label: 'Retry now',
                 onClick: () => {
                     this.dismissCurrentToast();
                     this.manualReconnect();
                 }
             }
         });
-        
+
         this.retryCountdownInterval = setInterval(() => {
             countdown--;
             if (countdown <= 0) {
                 this.dismissCurrentToast();
                 return;
             }
-            
-            toast.error("Connection lost", {
+
+            toast.error('Connection lost', {
                 id: this.currentToastId,
                 description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
                 duration: Infinity,
                 action: {
-                    label: "Retry now",
+                    label: 'Retry now',
                     onClick: () => {
                         this.dismissCurrentToast();
                         this.manualReconnect();
@@ -355,5 +361,4 @@ export class SocketHandler<T, U> {
             });
         }, 1000);
     }
-
 }

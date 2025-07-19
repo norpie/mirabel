@@ -12,11 +12,10 @@ export {
     TypingIndicator,
     Action,
     Input,
-
     Root as Chat,
     Log as ChatLog,
     Message as ChatMessage,
     TypingIndicator as ChatTypingIndicator,
     Action as ChatAction,
-    Input as ChatInput,
-}
+    Input as ChatInput
+};

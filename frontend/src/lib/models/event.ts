@@ -1,8 +1,8 @@
 export interface SessionEvent {
-    id: string;              // Unique identifier for the event
-    source: string;          // Who is the source of the event (e.g., user, agent, system)
-    timestamp: string;       // ISO 8601 timestamp of when the event occurred
-    content: SessionContent ; // Content of the event, can vary based on type
+    id: string; // Unique identifier for the event
+    source: string; // Who is the source of the event (e.g., user, agent, system)
+    timestamp: string; // ISO 8601 timestamp of when the event occurred
+    content: SessionContent; // Content of the event, can vary based on type
 }
 
 export type SessionContent =

@@ -1,8 +1,8 @@
-import type { PlanItem, Session, ShallowSession } from "$lib/models/session";
-import type { PageInfo, PageResponse } from "$lib/models/page";
-import { generateId } from "$lib/utils";
-import { get, post } from "$lib/request";
-import type Result from "$lib/models/result";
+import type { PlanItem, Session, ShallowSession } from '$lib/models/session';
+import type { PageInfo, PageResponse } from '$lib/models/page';
+import { generateId } from '$lib/utils';
+import { get, post } from '$lib/request';
+import type Result from '$lib/models/result';
 
 /*
 # User History Page Specification (Final)
@@ -153,41 +153,43 @@ This feature adds a "History" page where users can view their past actions.
 const children: PlanItem[] = [
     {
         id: generateId(),
-        name: "Database Schema Setup",
-        description: "Define and migrate the database schema for user action history.",
-        status: "done",
+        name: 'Database Schema Setup',
+        description: 'Define and migrate the database schema for user action history.',
+        status: 'done',
         children: [
             {
                 id: generateId(),
-                name: "Create Migration",
-                description: "Generate and modify migration scripts.",
-                status: "done",
+                name: 'Create Migration',
+                description: 'Generate and modify migration scripts.',
+                status: 'done',
                 children: [
                     {
                         id: generateId(),
-                        name: "Run migration",
-                        description: "Run `migrate create -n create_user_action_history`",
-                        status: "done",
+                        name: 'Run migration',
+                        description: 'Run `migrate create -n create_user_action_history`',
+                        status: 'done',
                         children: []
                     },
                     {
                         id: generateId(),
-                        name: "Patch migration file",
-                        description: "Modify the migration file to include necessary tables and enums.",
-                        status: "done",
+                        name: 'Patch migration file',
+                        description:
+                            'Modify the migration file to include necessary tables and enums.',
+                        status: 'done',
                         children: [
                             {
                                 id: generateId(),
-                                name: "Define enum",
-                                description: "CREATE TYPE action_type AS ENUM ('CREATE', 'UPDATE', 'DELETE')",
-                                status: "done",
+                                name: 'Define enum',
+                                description:
+                                    "CREATE TYPE action_type AS ENUM ('CREATE', 'UPDATE', 'DELETE')",
+                                status: 'done',
                                 children: []
                             },
                             {
                                 id: generateId(),
-                                name: "Create table",
-                                description: "CREATE TABLE user_action_history (...)",
-                                status: "done",
+                                name: 'Create table',
+                                description: 'CREATE TABLE user_action_history (...)',
+                                status: 'done',
                                 children: []
                             }
                         ]
@@ -196,30 +198,31 @@ const children: PlanItem[] = [
             },
             {
                 id: generateId(),
-                name: "Apply Migration",
-                description: "Execute the migration to update the database schema.",
-                status: "done",
+                name: 'Apply Migration',
+                description: 'Execute the migration to update the database schema.',
+                status: 'done',
                 children: [
                     {
                         id: generateId(),
-                        name: "Run `db-migrate up`",
-                        description: "Apply pending database migrations.",
-                        status: "done",
+                        name: 'Run `db-migrate up`',
+                        description: 'Apply pending database migrations.',
+                        status: 'done',
                         children: []
                     }
                 ]
             },
             {
                 id: generateId(),
-                name: "Create Indexes",
-                description: "Optimize database queries with indexing.",
-                status: "done",
+                name: 'Create Indexes',
+                description: 'Optimize database queries with indexing.',
+                status: 'done',
                 children: [
                     {
                         id: generateId(),
-                        description: "Run `psql -c \"CREATE INDEX idx_user_actions ON user_action_history (user_id, timestamp)\"`",
-                        name: "Create index",
-                        status: "done",
+                        description:
+                            'Run `psql -c "CREATE INDEX idx_user_actions ON user_action_history (user_id, timestamp)"`',
+                        name: 'Create index',
+                        status: 'done',
                         children: []
                     }
                 ]
@@ -228,41 +231,44 @@ const children: PlanItem[] = [
     },
     {
         id: generateId(),
-        name: "Backend API Implementation",
-        description: "Develop API endpoints for retrieving and exporting user action history.",
-        status: "in-progress",
+        name: 'Backend API Implementation',
+        description: 'Develop API endpoints for retrieving and exporting user action history.',
+        status: 'in-progress',
         children: [
             {
                 id: generateId(),
-                name: "History Route",
-                description: "Create the API route for fetching user history.",
-                status: "in-progress",
+                name: 'History Route',
+                description: 'Create the API route for fetching user history.',
+                status: 'in-progress',
                 children: [
                     {
                         id: generateId(),
-                        name: "Generate controller",
-                        description: "Generate a NestJS controller for handling history requests by running `nest generate controller history`",
-                        status: "done",
+                        name: 'Generate controller',
+                        description:
+                            'Generate a NestJS controller for handling history requests by running `nest generate controller history`',
+                        status: 'done',
                         children: []
                     },
                     {
                         id: generateId(),
-                        name: "Modify history controller",
-                        description: "Modify `src/history/history.controller.ts` to add necessary endpoints and validation.",
-                        status: "in-progress",
+                        name: 'Modify history controller',
+                        description:
+                            'Modify `src/history/history.controller.ts` to add necessary endpoints and validation.',
+                        status: 'in-progress',
                         children: [
                             {
                                 id: generateId(),
-                                name: "Add @Get() decorator",
-                                description: "Define a GET endpoint for retrieving history.",
-                                status: "done",
+                                name: 'Add @Get() decorator',
+                                description: 'Define a GET endpoint for retrieving history.',
+                                status: 'done',
                                 children: []
                             },
                             {
                                 id: generateId(),
-                                name: "Implement query params validation",
-                                description: "Ensure request parameters are validated before processing.",
-                                status: "todo",
+                                name: 'Implement query params validation',
+                                description:
+                                    'Ensure request parameters are validated before processing.',
+                                status: 'todo',
                                 children: []
                             }
                         ]
@@ -273,45 +279,45 @@ const children: PlanItem[] = [
     },
     {
         id: generateId(),
-        name: "Frontend Implementation",
-        description: "Build the UI for displaying and exporting user action history.",
-        status: "todo",
+        name: 'Frontend Implementation',
+        description: 'Build the UI for displaying and exporting user action history.',
+        status: 'todo',
         children: [
             {
                 id: generateId(),
-                name: "History Page Component",
-                description: "Create and style the history page UI component.",
-                status: "todo",
+                name: 'History Page Component',
+                description: 'Create and style the history page UI component.',
+                status: 'todo',
                 children: []
             }
         ]
     },
     {
         id: generateId(),
-        name: "Permissions & Security",
-        description: "Ensure only authorized users can access the history API.",
-        status: "todo",
+        name: 'Permissions & Security',
+        description: 'Ensure only authorized users can access the history API.',
+        status: 'todo',
         children: [
             {
                 id: generateId(),
-                name: "Activate middleware",
-                description: "Add authentication middleware to protect the history route.",
-                status: "todo",
+                name: 'Activate middleware',
+                description: 'Add authentication middleware to protect the history route.',
+                status: 'todo',
                 children: []
             }
         ]
     },
     {
         id: generateId(),
-        name: "Testing & Validation",
-        description: "Perform tests on the database, API, UI, and security.",
-        status: "todo",
+        name: 'Testing & Validation',
+        description: 'Perform tests on the database, API, UI, and security.',
+        status: 'todo',
         children: [
             {
                 id: generateId(),
-                name: "Write Unit Tests",
-                description: "Develop unit tests for API endpoints and services.",
-                status: "todo",
+                name: 'Write Unit Tests',
+                description: 'Develop unit tests for API endpoints and services.',
+                status: 'todo',
                 children: []
             }
         ]
@@ -321,7 +327,7 @@ const children: PlanItem[] = [
 const sampleResponse: PageResponse<Session[]> = {
     pageInfo: {
         page: 1,
-        pageSize: 10,
+        pageSize: 10
     },
     data: [
         {
@@ -346,62 +352,62 @@ const sampleResponse: PageResponse<Session[]> = {
                 spec,
                 children
             },
-terminal: [
-        "\u001b[1;34m# Mirabel Terminal v1.0.0\u001b[0m",
-        "\u001b[1;32mmirabel@workspace:~$\u001b[0m ls -la",
-        "total 32",
-        "drwxr-xr-x  5 mirabel users 4096 May 15 14:22 \u001b[1;34m.\u001b[0m",
-        "drwxr-xr-x  3 root    root  4096 Mar 10 09:15 \u001b[1;34m..\u001b[0m",
-        "-rw-------  1 mirabel users  220 Mar 10 09:15 .bash_logout",
-        "-rw-------  1 mirabel users 3771 Mar 10 09:15 .bashrc",
-        "drwxr-xr-x  3 mirabel users 4096 May 15 14:10 \u001b[1;34m.config\u001b[0m",
-        "drwxr-xr-x  8 mirabel users 4096 May 15 14:15 \u001b[1;34mproject\u001b[0m",
-        "-rw-r--r--  1 mirabel users   21 May 15 14:05 README.md",
-        "\u001b[1;32mmirabel@workspace:~$\u001b[0m cd project",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m git status",
-        "On branch \u001b[1;36mmaster\u001b[0m",
-        "Your branch is up to date with '\u001b[1;36morigin/master\u001b[0m'.",
-        "",
-        "Changes not staged for commit:",
-        "  (use \"git add <file>...\" to update what will be committed)",
-        "  (use \"git restore <file>...\" to discard changes in working directory)",
-        "        \u001b[1;31mmodified:   src/main.rs\u001b[0m",
-        "        \u001b[1;31mmodified:   Cargo.toml\u001b[0m",
-        "",
-        "Untracked files:",
-        "  (use \"git add <file>...\" to include in what will be committed)",
-        "        \u001b[1;31msrc/utils/\u001b[0m",
-        "",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m cargo build",
-        "   \u001b[1;32mCompiling\u001b[0m project v0.1.0 (/home/mirabel/project)",
-        "    \u001b[1;32mFinished\u001b[0m dev [unoptimized + debuginfo] target(s) in 1.45s",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m ./target/debug/project",
-        "\u001b[1;33mWARNING:\u001b[0m Configuration file not found, using defaults",
-        "Project initialized successfully!",
-        "Listening on 127.0.0.1:8080",
-        "\u001b[1;32mmirabel@workspace:~/project$\u001b[0m "
-    ],
+            terminal: [
+                '\u001b[1;34m# Mirabel Terminal v1.0.0\u001b[0m',
+                '\u001b[1;32mmirabel@workspace:~$\u001b[0m ls -la',
+                'total 32',
+                'drwxr-xr-x  5 mirabel users 4096 May 15 14:22 \u001b[1;34m.\u001b[0m',
+                'drwxr-xr-x  3 root    root  4096 Mar 10 09:15 \u001b[1;34m..\u001b[0m',
+                '-rw-------  1 mirabel users  220 Mar 10 09:15 .bash_logout',
+                '-rw-------  1 mirabel users 3771 Mar 10 09:15 .bashrc',
+                'drwxr-xr-x  3 mirabel users 4096 May 15 14:10 \u001b[1;34m.config\u001b[0m',
+                'drwxr-xr-x  8 mirabel users 4096 May 15 14:15 \u001b[1;34mproject\u001b[0m',
+                '-rw-r--r--  1 mirabel users   21 May 15 14:05 README.md',
+                '\u001b[1;32mmirabel@workspace:~$\u001b[0m cd project',
+                '\u001b[1;32mmirabel@workspace:~/project$\u001b[0m git status',
+                'On branch \u001b[1;36mmaster\u001b[0m',
+                "Your branch is up to date with '\u001b[1;36morigin/master\u001b[0m'.",
+                '',
+                'Changes not staged for commit:',
+                '  (use "git add <file>..." to update what will be committed)',
+                '  (use "git restore <file>..." to discard changes in working directory)',
+                '        \u001b[1;31mmodified:   src/main.rs\u001b[0m',
+                '        \u001b[1;31mmodified:   Cargo.toml\u001b[0m',
+                '',
+                'Untracked files:',
+                '  (use "git add <file>..." to include in what will be committed)',
+                '        \u001b[1;31msrc/utils/\u001b[0m',
+                '',
+                '\u001b[1;32mmirabel@workspace:~/project$\u001b[0m cargo build',
+                '   \u001b[1;32mCompiling\u001b[0m project v0.1.0 (/home/mirabel/project)',
+                '    \u001b[1;32mFinished\u001b[0m dev [unoptimized + debuginfo] target(s) in 1.45s',
+                '\u001b[1;32mmirabel@workspace:~/project$\u001b[0m ./target/debug/project',
+                '\u001b[1;33mWARNING:\u001b[0m Configuration file not found, using defaults',
+                'Project initialized successfully!',
+                'Listening on 127.0.0.1:8080',
+                '\u001b[1;32mmirabel@workspace:~/project$\u001b[0m '
+            ],
             chat: {
                 messages: [
                     {
                         timestamp: '2021-08-31T12:00:00Z',
-                        participant: "sadlkjrfhycnsf",
-                        message: "Let\'s fix issue #5",
+                        participant: 'sadlkjrfhycnsf',
+                        message: "Let\'s fix issue #5"
                     },
                     {
                         timestamp: '2021-09-31T12:01:00Z',
-                        participant: "vasudfniunyave",
-                        message: "I'm on it.",
+                        participant: 'vasudfniunyave',
+                        message: "I'm on it."
                     },
                     {
                         timestamp: '2021-09-01T12:02:00Z',
                         participant: 'vasudfniunyave',
-                        message: "I've generated a plan. Do you want to approve it?",
+                        message: "I've generated a plan. Do you want to approve it?"
                     },
                     {
                         timestamp: '2021-09-01T12:03:00Z',
                         participant: 'sadlkjrfhycnsf',
-                        message: "Yes, please.",
+                        message: 'Yes, please.'
                     },
                     {
                         timestamp: '2021-09-01T12:04:00Z',
@@ -411,7 +417,7 @@ terminal: [
                     {
                         timestamp: '2021-09-01T12:05:00Z',
                         participant: 'sadlkjrfhycnsf',
-                        message: "Thanks. Let me know if you need any help."
+                        message: 'Thanks. Let me know if you need any help.'
                     },
                     {
                         timestamp: '2021-09-01T12:06:00Z',
@@ -421,7 +427,7 @@ terminal: [
                     {
                         timestamp: '2021-09-01T12:07:00Z',
                         participant: 'sadlkjrfhycnsf',
-                        message: "Sounds good. Take your time."
+                        message: 'Sounds good. Take your time.'
                     },
                     {
                         timestamp: '2021-09-01T12:08:00Z',
@@ -431,7 +437,7 @@ terminal: [
                     {
                         timestamp: '2021-09-01T12:09:00Z',
                         participant: 'sadlkjrfhycnsf',
-                        message: "Can you tell me more about the issues?"
+                        message: 'Can you tell me more about the issues?'
                     },
                     {
                         timestamp: '2021-09-01T12:10:00Z',
@@ -446,17 +452,17 @@ terminal: [
                     {
                         timestamp: '2021-09-01T12:12:00Z',
                         participant: 'vasudfniunyave',
-                        message: "First, the API call is not returning the expected data."
+                        message: 'First, the API call is not returning the expected data.'
                     },
                     {
                         timestamp: '2021-09-01T12:13:00Z',
                         participant: 'sadlkjrfhycnsf',
-                        message: "Can you check the API endpoint and parameters?"
+                        message: 'Can you check the API endpoint and parameters?'
                     },
                     {
                         timestamp: '2021-09-01T12:14:00Z',
                         participant: 'vasudfniunyave',
-                        message: "I did, everything looks correct. Could it be a backend issue?"
+                        message: 'I did, everything looks correct. Could it be a backend issue?'
                     },
                     {
                         timestamp: '2021-09-01T12:15:00Z',
@@ -471,19 +477,19 @@ terminal: [
                     {
                         timestamp: '2021-09-01T12:17:00Z',
                         participant: 'sadlkjrfhycnsf',
-                        message: "Great, thanks."
+                        message: 'Great, thanks.'
                     },
                     {
                         timestamp: '2025-02-01T12:18:00Z',
                         participant: 'vasudfniunyave',
-                        message: "Also, the UI is not rendering the chat messages as expected."
+                        message: 'Also, the UI is not rendering the chat messages as expected.'
                     },
                     {
                         timestamp: new Date().toISOString(),
                         participant: 'sadlkjrfhycnsf',
-                        message: "Check the component and ensure data binding is correct."
+                        message: 'Check the component and ensure data binding is correct.'
                     }
-                ],
+                ]
             }
         }
     ]

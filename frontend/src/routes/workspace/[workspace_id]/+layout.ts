@@ -21,7 +21,7 @@ export const load: LayoutLoad<{
         throw redirect(303, '/login');
     }
 
-	const page = { page: 1, size: 10 };
+    const page = { page: 1, size: 10 };
     const workspace = await get<Workspace>(`v1/workspace/${params.workspace_id}`, undefined, fetch);
     if (!workspace) {
         error(503, 'Could not connect to the server');
@@ -32,7 +32,11 @@ export const load: LayoutLoad<{
     if (!workspace.data) {
         error(404, 'Workspace not found');
     }
-	let sessions = await get<PageResponse<ShallowSession[]>>(`v1/workspace/${params.workspace_id}/session`, page, fetch)
+    let sessions = await get<PageResponse<ShallowSession[]>>(
+        `v1/workspace/${params.workspace_id}/session`,
+        page,
+        fetch
+    );
     if (!sessions) {
         error(503, 'Could not connect to the server');
     }
@@ -47,6 +51,6 @@ export const load: LayoutLoad<{
         ...parentData,
         workspaceId: params.workspace_id,
         sessions: sessions.data.data,
-        workspace: workspace.data,
+        workspace: workspace.data
     };
 };

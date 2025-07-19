@@ -1,4 +1,4 @@
-import type { PageResponse } from "./page";
+import type { PageResponse } from './page';
 
 export interface ShallowSession {
     id: string;
@@ -24,13 +24,13 @@ export function emptySession() {
             pageInfo: {
                 page: 1,
                 size: 20,
-                total: 0,
+                total: 0
             },
-            data: [],
+            data: []
         },
         spec: undefined,
         shell: []
-    }
+    };
 }
 
 export interface UserInteraction {
@@ -41,14 +41,30 @@ export interface UserInteraction {
 }
 
 export interface TimelineEntry {
-    id: string
+    id: string;
     sessionId: string;
     content: TimelineEntryContent;
-    contentType: 'message' | 'acknowledgment' | 'agentStatus' | 'prompt' | 'promptResponse' | 'action' | 'spec' | 'shell';
+    contentType:
+        | 'message'
+        | 'acknowledgment'
+        | 'agentStatus'
+        | 'prompt'
+        | 'promptResponse'
+        | 'action'
+        | 'spec'
+        | 'shell';
     createdAt: string;
 }
 
-export type TimelineEntryContent = MessageContent | AcknowledgmentContent | AgentStatusContent | Prompt | PromptResponse | ActionContent | SpecContent | ShellContent;
+export type TimelineEntryContent =
+    | MessageContent
+    | AcknowledgmentContent
+    | AgentStatusContent
+    | Prompt
+    | PromptResponse
+    | ActionContent
+    | SpecContent
+    | ShellContent;
 
 export type TimelineMessage = TimelineEntry & {
     content: MessageContent;

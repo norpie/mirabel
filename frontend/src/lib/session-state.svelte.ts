@@ -1,6 +1,11 @@
-import { emptySession, type Session, type TimelineEntry, type UserInteraction } from "./models/session";
-import type { SocketHandler } from "./socket.svelte";
-import { emptyUser, type User } from "./models/user";
+import {
+    emptySession,
+    type Session,
+    type TimelineEntry,
+    type UserInteraction
+} from './models/session';
+import type { SocketHandler } from './socket.svelte';
+import { emptyUser, type User } from './models/user';
 
 export class SessionState {
     user: User = $state(emptyUser());
@@ -17,7 +22,11 @@ export class SessionState {
     agentStatus: 'thinking' | 'typing' | 'paused' | 'error' | undefined = $state();
     agentStatusTime: Date | undefined = $state();
 
-    constructor(user: User, session: Session, socket: SocketHandler<TimelineEntry, UserInteraction>) {
+    constructor(
+        user: User,
+        session: Session,
+        socket: SocketHandler<TimelineEntry, UserInteraction>
+    ) {
         this.user = user;
         this.session = session;
         this.timeline = session.timeline.data;

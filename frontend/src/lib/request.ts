@@ -1,19 +1,19 @@
-import { goto } from "$app/navigation";
-import type Result from "./models/result";
-import { SocketHandler } from "./socket.svelte";
-import { TokenStorage } from "./auth/tokens";
+import { goto } from '$app/navigation';
+import type Result from './models/result';
+import { SocketHandler } from './socket.svelte';
+import { TokenStorage } from './auth/tokens';
 
 // TODO: Get the URL from the environment
-const url = "http://localhost:8080/api";
+const url = 'http://localhost:8080/api';
 // WebSocket URL derived from the HTTP URL
 const wsUrl = url.replace(/^http/, 'ws');
 
 // Add paths that don't require authentication
 const publicPaths = [
-  "v1/auth/register",
-  "v1/auth/login",
-  "v1/auth/refresh",
-  // Add other public endpoints
+    'v1/auth/register',
+    'v1/auth/login',
+    'v1/auth/refresh'
+    // Add other public endpoints
 ];
 
 // Global state to prevent multiple refresh attempts
@@ -29,34 +29,39 @@ function formatWebSocketEndpoint(path: string): string {
 }
 
 function isPublicPath(endpoint: string): boolean {
-  return publicPaths.some(path => endpoint.includes(path));
+    return publicPaths.some((path) => endpoint.includes(path));
 }
 
 function connectWebSocket<T, U>(path: string, body?: any): SocketHandler<T, U> {
     const endpoint = formatWebSocketEndpoint(path);
     const queryParams: Record<string, string> = {};
-    
+
     // Add body parameters as query params
     if (body) {
         for (const key in body) {
             queryParams[key] = String(body[key]);
         }
     }
-    
+
     // Determine if this path requires authentication
     const requiresAuth = !isPublicPath(path);
-    
+
     return new SocketHandler(endpoint, queryParams, requiresAuth);
 }
 
-async function request<T>(method: string, endpoint: string, body: any | null = null, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
+async function request<T>(
+    method: string,
+    endpoint: string,
+    body: any | null = null,
+    fetchFunction: typeof fetch = fetch
+): Promise<Result<T>> {
     // Don't add authorization header for public paths
     const headers: Record<string, string> = {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json'
     };
 
     if (!isPublicPath(endpoint) && TokenStorage.hasAccessToken()) {
-        headers["Authorization"] = `Bearer ${TokenStorage.getAccessToken()}`;
+        headers['Authorization'] = `Bearer ${TokenStorage.getAccessToken()}`;
     }
 
     const response = await fetchFunction(endpoint, {
@@ -71,10 +76,10 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
         const currentPath = window.location.pathname;
 
         // Don't try to refresh if we're already on login or register pages
-        if (currentPath === "/login" || currentPath === "/register") {
+        if (currentPath === '/login' || currentPath === '/register') {
             return {
                 data: undefined,
-                error: "Authentication required",
+                error: 'Authentication required'
             } as Result<T>;
         }
 
@@ -82,10 +87,15 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
         if (isRefreshing && refreshPromise) {
             const tokenResult = await refreshPromise;
 
-            if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
+            if (
+                tokenResult === null ||
+                tokenResult === undefined ||
+                tokenResult.error ||
+                !tokenResult.data
+            ) {
                 return {
                     data: undefined,
-                    error: "Token expired",
+                    error: 'Token expired'
                 } as Result<T>;
             }
 
@@ -101,15 +111,20 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
         try {
             const tokenResult = await refreshPromise;
 
-            if (tokenResult === null || tokenResult === undefined || tokenResult.error || !tokenResult.data) {
+            if (
+                tokenResult === null ||
+                tokenResult === undefined ||
+                tokenResult.error ||
+                !tokenResult.data
+            ) {
                 // Clear tokens and redirect to login
                 TokenStorage.clearAll();
-                await goto("/login", {
-                    invalidateAll: true,
+                await goto('/login', {
+                    invalidateAll: true
                 });
                 return {
                     data: undefined,
-                    error: "Token expired",
+                    error: 'Token expired'
                 } as Result<T>;
             }
 
@@ -125,10 +140,14 @@ async function request<T>(method: string, endpoint: string, body: any | null = n
     return await response.json();
 }
 
-async function get<T>(path: string, body?: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    let query = "";
+async function get<T>(
+    path: string,
+    body?: any,
+    fetchFunction: typeof fetch = fetch
+): Promise<Result<T>> {
+    let query = '';
     if (body) {
-        query += "?";
+        query += '?';
         for (const key in body) {
             query += `${key}=${body[key]}&`;
         }
@@ -137,28 +156,38 @@ async function get<T>(path: string, body?: any, fetchFunction: typeof fetch = fe
             query = query.slice(0, -1);
         }
     }
-    return request("GET", formatEndpoint(`${path}${query}`), null, fetchFunction);
+    return request('GET', formatEndpoint(`${path}${query}`), null, fetchFunction);
 }
 
-async function post<T>(path: string, body: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    return request("POST", formatEndpoint(path), body, fetchFunction);
+async function post<T>(
+    path: string,
+    body: any,
+    fetchFunction: typeof fetch = fetch
+): Promise<Result<T>> {
+    return request('POST', formatEndpoint(path), body, fetchFunction);
 }
 
-async function put<T>(path: string, body: any, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    return request("PUT", formatEndpoint(path), body, fetchFunction);
+async function put<T>(
+    path: string,
+    body: any,
+    fetchFunction: typeof fetch = fetch
+): Promise<Result<T>> {
+    return request('PUT', formatEndpoint(path), body, fetchFunction);
 }
 
 async function del<T>(path: string, fetchFunction: typeof fetch = fetch): Promise<Result<T>> {
-    return request("DELETE", formatEndpoint(path), null, fetchFunction);
+    return request('DELETE', formatEndpoint(path), null, fetchFunction);
 }
 
-async function refresh(fetchFunction: typeof fetch = fetch): Promise<Result<{ access_token: string }> | null> {
-    const response = await fetchFunction(formatEndpoint("v1/auth/refresh"), {
-        method: "POST",
+async function refresh(
+    fetchFunction: typeof fetch = fetch
+): Promise<Result<{ access_token: string }> | null> {
+    const response = await fetchFunction(formatEndpoint('v1/auth/refresh'), {
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json'
         },
-        credentials: "include",
+        credentials: 'include'
     });
 
     if (response.status === 401) {

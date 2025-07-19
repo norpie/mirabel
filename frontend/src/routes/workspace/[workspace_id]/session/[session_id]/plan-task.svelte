@@ -13,15 +13,15 @@
     import ChevronRight from 'lucide-svelte/icons/chevron-right';
     import ChevronDown from 'lucide-svelte/icons/chevron-down';
 
-    let { 
-        task, 
-        plan, 
+    let {
+        task,
+        plan,
         depth = 0,
         onExpandTask,
         onCollapseTask
-    }: { 
-        task: PlanTask; 
-        plan: Plan; 
+    }: {
+        task: PlanTask;
+        plan: Plan;
         depth?: number;
         onExpandTask?: (taskId: string) => void;
         onCollapseTask?: (taskId: string) => void;
@@ -30,7 +30,7 @@
     // Helper function to check if task or any child is running
     function hasRunningTask(task: PlanTask): boolean {
         if (task.status === 'in-progress') return true;
-        return task.children.some(child => hasRunningTask(child));
+        return task.children.some((child) => hasRunningTask(child));
     }
 
     // Initial expansion state: only expand if this task or its children have running tasks
@@ -57,37 +57,53 @@
 
     function getStatusIcon(status: string) {
         switch (status) {
-            case 'completed': return Check;
-            case 'in-progress': return Play;
-            case 'paused': return Pause;
-            case 'cancelled': return X;
-            default: return Clock;
+            case 'completed':
+                return Check;
+            case 'in-progress':
+                return Play;
+            case 'paused':
+                return Pause;
+            case 'cancelled':
+                return X;
+            default:
+                return Clock;
         }
     }
 
     function getStatusColor(status: string) {
         switch (status) {
-            case 'completed': return 'bg-green-100 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300';
-            case 'in-progress': return 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300';
-            case 'paused': return 'bg-yellow-100 border-yellow-200 text-yellow-700 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300';
-            case 'cancelled': return 'bg-red-100 border-red-200 text-red-500 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400';
-            default: return 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300';
+            case 'completed':
+                return 'bg-green-100 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300';
+            case 'in-progress':
+                return 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300';
+            case 'paused':
+                return 'bg-yellow-100 border-yellow-200 text-yellow-700 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300';
+            case 'cancelled':
+                return 'bg-red-100 border-red-200 text-red-500 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400';
+            default:
+                return 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800/50 dark:border-gray-700 dark:text-gray-300';
         }
     }
 
     function getTypeIcon(type: string) {
         switch (type) {
-            case 'detour-insert': return CornerDownRight;
-            case 'detour-around': return ArrowRight;
-            default: return null;
+            case 'detour-insert':
+                return CornerDownRight;
+            case 'detour-around':
+                return ArrowRight;
+            default:
+                return null;
         }
     }
 
     function getTypeColor(type: string) {
         switch (type) {
-            case 'detour-insert': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800';
-            case 'detour-around': return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800';
-            default: return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800';
+            case 'detour-insert':
+                return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800';
+            case 'detour-around':
+                return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800';
+            default:
+                return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800';
         }
     }
 
@@ -99,7 +115,7 @@
 <!-- UI Control Snippets -->
 {#snippet expansionButton()}
     {#if task.children.length > 0}
-        <button 
+        <button
             class="flex h-5 w-5 items-center justify-center rounded hover:bg-white/50 dark:hover:bg-gray-700/50"
             onclick={toggleExpansion}
         >
@@ -115,9 +131,28 @@
 {/snippet}
 
 {#snippet taskCheckbox()}
-    <div class="flex h-5 w-5 items-center justify-center rounded border-2 flex-shrink-0 {task.status === 'cancelled' ? 'bg-red-100 border-red-400 dark:bg-red-900/30 dark:border-red-600' : isCurrentTask ? 'bg-blue-100 border-blue-400 dark:bg-blue-900/30 dark:border-blue-500' : task.status === 'completed' ? 'bg-green-100 border-green-400 dark:bg-green-900/30 dark:border-green-500' : task.status === 'in-progress' ? 'bg-blue-100 border-blue-400 dark:bg-blue-900/30 dark:border-blue-500' : task.status === 'paused' ? 'bg-yellow-100 border-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-500' : 'bg-white border-gray-300 dark:bg-gray-800 dark:border-gray-600'}">
+    <div
+        class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 {task.status ===
+        'cancelled'
+            ? 'border-red-400 bg-red-100 dark:border-red-600 dark:bg-red-900/30'
+            : isCurrentTask
+              ? 'border-blue-400 bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30'
+              : task.status === 'completed'
+                ? 'border-green-400 bg-green-100 dark:border-green-500 dark:bg-green-900/30'
+                : task.status === 'in-progress'
+                  ? 'border-blue-400 bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30'
+                  : task.status === 'paused'
+                    ? 'border-yellow-400 bg-yellow-100 dark:border-yellow-500 dark:bg-yellow-900/30'
+                    : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800'}"
+    >
         {#if task.status === 'completed'}
-            <svg class="h-3 w-3 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <svg
+                class="h-3 w-3 text-green-600 dark:text-green-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="3"
+            >
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
         {:else if task.status === 'in-progress'}
@@ -128,7 +163,14 @@
                     fill="none"
                     viewBox="0 0 24 24"
                 >
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                    ></circle>
                     <path
                         class="opacity-75"
                         fill="currentColor"
@@ -137,20 +179,24 @@
                 </svg>
             </div>
         {:else if task.status === 'paused'}
-            <Pause class="h-2.5 w-2.5 {isCurrentTask ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400'}" />
+            <Pause
+                class="h-2.5 w-2.5 {isCurrentTask
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-yellow-600 dark:text-yellow-400'}"
+            />
         {/if}
     </div>
 {/snippet}
 
 <!-- Content Snippets -->
 {#snippet taskTitle()}
-    <div class="flex items-center gap-2 flex-wrap">
+    <div class="flex flex-wrap items-center gap-2">
         <span class="text-sm font-medium">{task.title}</span>
-        
+
         {#if task.type !== 'planned'}
             <Badge variant="outline" class="text-xs {getTypeColor(task.type)}">
                 {#if TypeIcon}
-                    <TypeIcon class="h-3 w-3 mr-1" />
+                    <TypeIcon class="mr-1 h-3 w-3" />
                 {/if}
                 {task.type === 'detour-insert' ? 'Detour' : 'Deviation'}
             </Badge>
@@ -160,8 +206,11 @@
 
 {#snippet taskDetourReason()}
     {#if task.detourReason}
-        <p class="text-xs text-amber-700 dark:text-amber-300 italic bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-800 inline-block">
-            <strong>Reason:</strong> {task.detourReason}
+        <p
+            class="inline-block rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs italic text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+        >
+            <strong>Reason:</strong>
+            {task.detourReason}
         </p>
     {/if}
 {/snippet}
@@ -175,7 +224,9 @@
                 {@render taskTitle()}
             </div>
             {#if task.status === 'cancelled'}
-                <span class="absolute top-1/2 left-0 right-0 bg-red-400 dark:bg-red-500 h-0.5 -translate-y-1/2 pointer-events-none"></span>
+                <span
+                    class="pointer-events-none absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 bg-red-400 dark:bg-red-500"
+                ></span>
             {/if}
         </div>
     </div>
@@ -192,21 +243,33 @@
 {/snippet}
 
 <div class="space-y-2" style="margin-left: {depth}rem">
-    <div class="flex items-start gap-3 rounded-lg border p-2 transition-all {isCurrentTask ? 'bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-600 dark:text-blue-300' : getStatusColor(task.status)} {isCurrentTask ? 'ring-2 ring-blue-400 dark:ring-blue-500 shadow-md' : ''}">
-        <div class="flex-shrink-0 mt-0.5">
+    <div
+        class="flex items-start gap-3 rounded-lg border p-2 transition-all {isCurrentTask
+            ? 'border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
+            : getStatusColor(task.status)} {isCurrentTask
+            ? 'shadow-md ring-2 ring-blue-400 dark:ring-blue-500'
+            : ''}"
+    >
+        <div class="mt-0.5 flex-shrink-0">
             {@render expansionButton()}
         </div>
 
-        <div class="flex-1 min-w-0 space-y-1">
+        <div class="min-w-0 flex-1 space-y-1">
             {@render taskMainContent()}
             {@render taskSecondaryContent()}
         </div>
     </div>
 
     {#if expanded && task.children.length > 0}
-        <div class="space-y-2 ml-3">
+        <div class="ml-3 space-y-2">
             {#each task.children as child (child.id)}
-                <svelte:self task={child} {plan} depth={depth + 1} {onExpandTask} {onCollapseTask} />
+                <svelte:self
+                    task={child}
+                    {plan}
+                    depth={depth + 1}
+                    {onExpandTask}
+                    {onCollapseTask}
+                />
             {/each}
         </div>
     {/if}

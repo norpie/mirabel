@@ -2,7 +2,13 @@
     import { type Plan, placeholderPlan } from '$lib/models/plan';
     import PlanTask from './plan-task.svelte';
     import { ScrollArea } from '$lib/components/ui/scroll-area';
-    import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+    import {
+        Card,
+        CardContent,
+        CardDescription,
+        CardHeader,
+        CardTitle
+    } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
     import Activity from 'lucide-svelte/icons/activity';
 
@@ -15,26 +21,30 @@
 
     let stats = $derived.by(() => {
         if (!plan) return { total: 0, completed: 0, paused: 0 };
-        
-        function countTasks(tasks: PlanTask[]): { total: number, completed: number, paused: number } {
+
+        function countTasks(tasks: PlanTask[]): {
+            total: number;
+            completed: number;
+            paused: number;
+        } {
             let total = 0;
             let completed = 0;
             let paused = 0;
-            
+
             for (const task of tasks) {
                 total++;
                 if (task.status === 'completed') completed++;
                 if (task.status === 'paused') paused++;
-                
+
                 const childStats = countTasks(task.children);
                 total += childStats.total;
                 completed += childStats.completed;
                 paused += childStats.paused;
             }
-            
+
             return { total, completed, paused };
         }
-        
+
         return countTasks(plan.tasks);
     });
 
@@ -76,11 +86,16 @@
                 <Badge variant="secondary">{stats.completed}/{stats.total} completed</Badge>
             </div>
         </div>
-        
+
         <ScrollArea class="h-[1px] flex-grow" type="always" fadeout="both">
             <div class="space-y-2 pr-4">
                 {#each plan.tasks as task (task.id)}
-                    <PlanTask {task} {plan} onExpandTask={handleExpandTask} onCollapseTask={handleCollapseTask} />
+                    <PlanTask
+                        {task}
+                        {plan}
+                        onExpandTask={handleExpandTask}
+                        onCollapseTask={handleCollapseTask}
+                    />
                 {/each}
             </div>
         </ScrollArea>

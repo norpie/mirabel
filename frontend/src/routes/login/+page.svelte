@@ -7,7 +7,7 @@
     import { zodClient } from 'sveltekit-superforms/adapters';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    
+
     import { authStore } from '$lib/auth/store.svelte.js';
     import { loginSchema } from '$lib/auth/schemas.js';
 
@@ -19,7 +19,7 @@
     });
 
     const { form, errors, enhance, submitting } = superForm(
-        { email: '', password: '' }, 
+        { email: '', password: '' },
         {
             SPA: true,
             validators: zodClient(loginSchema),
@@ -27,7 +27,7 @@
                 cancel();
                 const email = formData.get('email') as string;
                 const password = formData.get('password') as string;
-                
+
                 const result = await authStore.login({ email, password });
                 if (!result.success && result.error) {
                     // Error handling is done in the store
@@ -48,11 +48,11 @@
                 <div class="grid gap-4">
                     <div class="grid gap-2">
                         <Label for="email">Email</Label>
-                        <Input 
+                        <Input
                             id="email"
                             name="email"
-                            type="email" 
-                            placeholder="me@example.com" 
+                            type="email"
+                            placeholder="me@example.com"
                             bind:value={$form.email}
                             disabled={$submitting || authStore.isLoading}
                         />
@@ -63,10 +63,10 @@
 
                     <div class="grid gap-2">
                         <Label for="password">Password</Label>
-                        <Input 
+                        <Input
                             id="password"
                             name="password"
-                            type="password" 
+                            type="password"
                             bind:value={$form.password}
                             disabled={$submitting || authStore.isLoading}
                         />
@@ -75,9 +75,9 @@
                         {/if}
                     </div>
 
-                    <Button 
-                        type="submit" 
-                        class="w-full" 
+                    <Button
+                        type="submit"
+                        class="w-full"
                         disabled={$submitting || authStore.isLoading}
                     >
                         {#if $submitting || authStore.isLoading}
