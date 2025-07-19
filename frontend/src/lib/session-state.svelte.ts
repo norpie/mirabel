@@ -69,6 +69,8 @@ export class SessionState {
     private onAgentStatus(event: TimelineEntry): void {
         this.agentStatusTime = new Date(event.createdAt);
         this.agentStatus = event.content.status;
+        this.lastAcknowledgementType = undefined;
+        this.lastAcknowledgementTime = undefined;
     }
 
     private onMessageContent(event: TimelineEntry): void {
