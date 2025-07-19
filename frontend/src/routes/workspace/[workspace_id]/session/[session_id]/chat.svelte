@@ -23,6 +23,15 @@
         return timeline.filter((entry) => entry.contentType === 'message');
     });
 
+    let lastUserMessage: TimelineMessage | undefined = $derived.by(() => {
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].content.sender === 'user') {
+                return messages[i];
+            }
+        }
+        return undefined;
+    });
+
     let socket: SocketHandler<TimelineEntry, UserInteraction> | undefined = $derived(
         sessionState.socket
     );
@@ -74,7 +83,7 @@
             {#if index > 0}
                 <Separator class="mb-2 mt-4" />
             {/if}
-            {#if index === timeline.length - 1 && msg.content.sender !== 'agent'}
+            {#if lastUserMessage && msg.id === lastUserMessage.id}
                 <Chat.Message
                     acknowledgment={sessionState.lastAcknowledgementType}
                     message={msg.content.message}
