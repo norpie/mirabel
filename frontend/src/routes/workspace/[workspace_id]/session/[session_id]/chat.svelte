@@ -75,10 +75,18 @@
         });
         chatInput = '';
     }
+
+    async function handleLoadMore() {
+        await sessionState.loadOlderMessages();
+    }
 </script>
 
 <Chat.Root>
-    <Chat.Log messageCount={timelineCount}>
+    <Chat.Log 
+        messageCount={timelineCount}
+        onLoadMore={handleLoadMore}
+        isLoading={sessionState.isLoadingOlder}
+    >
         {#each messages as msg, index}
             {#if index > 0}
                 <Separator class="mb-2 mt-4" />
