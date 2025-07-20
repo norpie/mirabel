@@ -1,5 +1,5 @@
-import type { PlanItem, Session, ShallowSession } from '$lib/models/session';
-import type { PageInfo, PageResponse } from '$lib/models/page';
+import type { PlanItem, Session, ShallowSession, TimelineEntry } from '$lib/models/session';
+import type { PageInfo, PageResponse, CursorPageResponse } from '$lib/models/page';
 import { generateId } from '$lib/utils';
 import { get, post } from '$lib/request';
 import type Result from '$lib/models/result';
@@ -494,3 +494,43 @@ const sampleResponse: PageResponse<Session[]> = {
         }
     ]
 };
+
+export async function getSessionTimeline(
+    workspaceId: string,
+    sessionId: string,
+    page: number = 1,
+    size: number = 10
+): Promise<PageResponse<TimelineEntry[]>> {
+    const response = await get<PageResponse<TimelineEntry[]>>(
+        `v1/workspace/${workspaceId}/session/${sessionId}/timeline?page=${page}&size=${size}`
+    );
+    return response;
+}
+
+export async function getSessionTimelineCursor(
+    workspaceId: string,
+    sessionId: string,
+    options: {
+        before?: string;
+        after?: string;
+        limit?: number;
+    } = {}
+): Promise<CursorPageResponse<TimelineEntry[]>> {
+    const params = new URLSearchParams();
+    
+    if (options.before) {
+        params.append('before', options.before);
+    }
+    if (options.after) {
+        params.append('after', options.after);
+    }
+    if (options.limit) {
+        params.append('limit', options.limit.toString());
+    }
+    
+    const queryString = params.toString();
+    const url = `v1/workspace/${workspaceId}/session/${sessionId}/timeline${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await get<CursorPageResponse<TimelineEntry[]>>(url);
+    return response;
+}

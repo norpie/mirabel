@@ -1,7 +1,7 @@
 use std::{rc::Rc, sync::Arc, time::Duration};
 
 use crate::{
-    dto::{api_response::ApiResponse, session::FullSession, updated_session::UpdatedSession},
+    dto::{api_response::ApiResponse, page::CursorPageRequest, session::FullSession, updated_session::UpdatedSession},
     model::user::User,
     prelude::*,
     service::sessions::SessionService,
@@ -10,7 +10,7 @@ use crate::{
 
 use actix_web::{
     HttpRequest, HttpResponse, Responder, Scope, delete, get, patch,
-    web::{self, Data, Json, Path},
+    web::{self, Data, Json, Path, Query},
 };
 use actix_ws::{Message, Session};
 use futures::StreamExt;
@@ -28,6 +28,7 @@ pub fn scope(cfg: &mut web::ServiceConfig) {
     cfg.service(
         Scope::new("/session/{session_id}")
             .service(get_workspace_session)
+            .service(get_session_timeline)
             .service(archive_user_session)
             .service(update_user_session)
             .service(session_socket),
@@ -60,6 +61,20 @@ pub async fn update_user_session(
             .update_user_session(user, id, session_id, session.into_inner().title)
             .await?,
     ))
+}
+
+#[get("/timeline")]
+pub async fn get_session_timeline(
+    session_service: Data<SessionService>,
+    user: User,
+    ids: Path<(String, String)>,
+    page: Query<CursorPageRequest>,
+) -> Result<impl Responder> {
+    let (workspace_id, session_id) = ids.into_inner();
+    let timeline = session_service
+        .get_session_timeline_cursor(user, workspace_id, session_id, page.into_inner())
+        .await?;
+    Ok(ApiResponse::ok(timeline))
 }
 
 #[get("")]

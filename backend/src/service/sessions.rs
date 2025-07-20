@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use crate::{
     driver::llm::ollama::Ollama,
     dto::{
-        page::{PageInfo, PageRequest, PageResponse},
+        page::{PageInfo, PageRequest, PageResponse, CursorPageRequest, CursorPageResponse},
         session::FullSession,
     },
     model::{
@@ -127,18 +127,122 @@ impl SessionService {
             return Ok(None);
         };
 
-        let page_response = self
-            .get_session_timeline(
+        let cursor_response = self
+            .get_session_timeline_cursor(
                 user,
                 workspace_id.clone(),
                 id.clone(),
-                PageRequest::default(),
+                CursorPageRequest::limit(50), // Explicitly request 50 messages for initial load
             )
             .await?;
+        
+        // Convert cursor response to page response for backward compatibility
+        let page_response = PageResponse::new(
+            PageInfo::new(
+                std::num::NonZeroI64::new(1).unwrap(),
+                cursor_response.data.len() as i64,
+                cursor_response.data.len() as i64, // We don't have total count in cursor pagination
+            ),
+            cursor_response.data,
+        );
         let spec = self.get_latest_spec(id.clone()).await?;
         let shell = self.get_shell_state(id.clone()).await?;
 
         Ok(Some(FullSession::new(session, page_response, spec, shell)))
+    }
+
+    pub async fn get_session_timeline_cursor(
+        &self,
+        user: User,
+        workspace_id: String,
+        id: String,
+        cursor_page: CursorPageRequest,
+    ) -> Result<CursorPageResponse<TimelineEntry>> {
+        use crate::schema::timeline_entries::dsl as te;
+
+        let session_opt = self
+            .get_user_session_by_id(user, workspace_id.clone(), id.clone())
+            .await?;
+
+        if session_opt.is_none() {
+            return Err(Error::NotFound);
+        }
+
+        let conn = self.repository.get().await?;
+        let id_clone = id.clone();
+        let cursor_page_clone = cursor_page.clone();
+        let limit = cursor_page_clone.limit;
+
+        // Build the query based on cursor pagination
+        let mut entries = conn
+            .interact(move |conn| {
+                let mut query = te::timeline_entries
+                    .filter(te::session_id.eq(id_clone))
+                    .into_boxed();
+
+                // Add cursor-based filtering
+                if let Some(before) = cursor_page_clone.before {
+                    query = query.filter(te::created_at.lt(before));
+                } else if let Some(after) = cursor_page_clone.after {
+                    query = query.filter(te::created_at.gt(after));
+                }
+
+                // For "before" cursor (loading older), order desc to get older entries
+                // For "after" cursor (loading newer), order asc to get newer entries  
+                // For no cursor (initial load), order desc to get latest entries first
+                if cursor_page_clone.after.is_some() {
+                    // Loading newer messages - get entries after cursor in asc order
+                    query
+                        .order(te::created_at.asc())
+                        .limit(limit + 1)
+                        .load::<TimelineEntry>(conn)
+                } else {
+                    // Loading older messages OR initial load - get entries in desc order
+                    query
+                        .order(te::created_at.desc())
+                        .limit(limit + 1)
+                        .load::<TimelineEntry>(conn)
+                }
+            })
+            .await??;
+
+        // Check if there are more entries
+        let has_more = entries.len() > limit as usize;
+        if has_more {
+            entries.pop(); // Remove the extra entry
+        }
+
+        // Determine cursors based on the data we got
+        let next_cursor = if has_more && !entries.is_empty() {
+            if cursor_page.before.is_some() {
+                // When loading older entries, the "next" cursor is the oldest entry we just loaded
+                Some(entries.last().unwrap().created_at)
+            } else {
+                // When loading newer entries, the "next" cursor is the newest entry we just loaded
+                Some(entries.last().unwrap().created_at)
+            }
+        } else {
+            None
+        };
+
+        let prev_cursor = if !entries.is_empty() {
+            Some(entries.first().unwrap().created_at)
+        } else {
+            None
+        };
+
+        // For loading older entries OR initial load, we need to reverse to get chronological order
+        // since we queried in desc order
+        if cursor_page.after.is_none() {
+            entries.reverse();
+        }
+
+        Ok(CursorPageResponse::new(
+            entries,
+            has_more,
+            next_cursor,
+            prev_cursor,
+        ))
     }
 
     pub async fn get_session_timeline(

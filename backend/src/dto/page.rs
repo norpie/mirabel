@@ -1,5 +1,6 @@
 use std::num::NonZeroI64;
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -54,7 +55,7 @@ impl Default for PageRequest {
     fn default() -> Self {
         Self {
             page: NonZeroI64::new(1).unwrap(),
-            size: 20,
+            size: 10,
         }
     }
 }
@@ -95,5 +96,95 @@ impl PageInfo {
 
     pub fn total(&self) -> i64 {
         self.total
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CursorPageRequest {
+    pub before: Option<DateTime<Utc>>,
+    pub after: Option<DateTime<Utc>>,
+    pub limit: i64,
+}
+
+impl Default for CursorPageRequest {
+    fn default() -> Self {
+        Self {
+            before: None,
+            after: None,
+            limit: 50, // Increased from 20 to ensure scrollbar on initial load
+        }
+    }
+}
+
+impl CursorPageRequest {
+    pub fn new(before: Option<DateTime<Utc>>, after: Option<DateTime<Utc>>, limit: i64) -> Self {
+        Self {
+            before,
+            after,
+            limit,
+        }
+    }
+
+    pub fn before(before: DateTime<Utc>, limit: i64) -> Self {
+        Self {
+            before: Some(before),
+            after: None,
+            limit,
+        }
+    }
+
+    pub fn after(after: DateTime<Utc>, limit: i64) -> Self {
+        Self {
+            before: None,
+            after: Some(after),
+            limit,
+        }
+    }
+
+    pub fn limit(limit: i64) -> Self {
+        Self {
+            before: None,
+            after: None,
+            limit,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CursorPageResponse<T> {
+    pub data: Vec<T>,
+    #[serde(rename = "hasMore")]
+    pub has_more: bool,
+    #[serde(rename = "nextCursor")]
+    pub next_cursor: Option<DateTime<Utc>>,
+    #[serde(rename = "prevCursor")]
+    pub prev_cursor: Option<DateTime<Utc>>,
+}
+
+impl<T> CursorPageResponse<T> {
+    pub fn new(
+        data: Vec<T>,
+        has_more: bool,
+        next_cursor: Option<DateTime<Utc>>,
+        prev_cursor: Option<DateTime<Utc>>,
+    ) -> Self {
+        Self {
+            data,
+            has_more,
+            next_cursor,
+            prev_cursor,
+        }
+    }
+
+    pub fn to<R>(self) -> CursorPageResponse<R>
+    where
+        T: Into<R>,
+    {
+        CursorPageResponse {
+            data: self.data.into_iter().map(Into::into).collect(),
+            has_more: self.has_more,
+            next_cursor: self.next_cursor,
+            prev_cursor: self.prev_cursor,
+        }
     }
 }
