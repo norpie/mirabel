@@ -12,6 +12,7 @@
         scrollbarYClasses = '',
         thumbClass = '',
         fadeout = 'none',
+        onScrollCapture,
         children,
         ...restProps
     }: WithoutChild<ScrollAreaPrimitive.RootProps> & {
@@ -21,6 +22,7 @@
         scrollbarYClasses?: string | undefined;
         thumbClass?: string | undefined;
         fadeout?: 'none' | 'both' | 'top' | 'bottom' | undefined;
+        onScrollCapture?: () => void;
     } = $props();
 
     let showTopFade = $state(false);
@@ -71,6 +73,16 @@
                 viewportRef?.removeEventListener('scroll', updateFadeVisibility);
                 resizeObserver.disconnect();
                 mutationObserver.disconnect();
+            };
+        }
+    });
+
+    // Handle onScrollCapture prop
+    $effect(() => {
+        if (viewportRef && onScrollCapture) {
+            viewportRef.addEventListener('scroll', onScrollCapture);
+            return () => {
+                viewportRef?.removeEventListener('scroll', onScrollCapture);
             };
         }
     });
