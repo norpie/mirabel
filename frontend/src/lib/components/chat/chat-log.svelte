@@ -56,17 +56,7 @@
     bind:viewportRef={scrollArea}
     onScrollCapture={handleScroll}
 >
-    {#if onLoadMore}
-        <div class="flex justify-center p-2 border-b">
-            <button
-                class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md disabled:opacity-50"
-                onclick={onLoadMore}
-                disabled={isLoading}
-            >
-                {isLoading ? 'Loading...' : 'Load More Messages'}
-            </button>
-        </div>
-    {/if}
+
     {#if isLoading}
         <div class="flex justify-center p-4">
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
