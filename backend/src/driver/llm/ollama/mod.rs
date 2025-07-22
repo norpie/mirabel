@@ -1,8 +1,14 @@
-use futures::{Stream, TryStreamExt};
-use models::{GenerateRequest, GenerateRequestInternal, GenerateResponse, StreamGenerateResponse};
-use reqwest::{Client, Method};
+use futures::Stream;
+use futures::TryStreamExt;
+use models::GenerateRequest;
+use models::GenerateRequestInternal;
+use models::GenerateResponse;
+use models::StreamGenerateResponse;
+use reqwest::Client;
+use reqwest::Method;
 use reqwest_streams::JsonStreamResponse;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::Serialize;
+use serde::de::DeserializeOwned;
 
 use crate::prelude::*;
 

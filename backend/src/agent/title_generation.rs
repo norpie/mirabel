@@ -3,9 +3,11 @@ use crate::prelude::*;
 use std::sync::Arc;
 
 use indoc::indoc;
-use tera::{Context, Tera};
+use tera::Context;
+use tera::Tera;
 
-use crate::{agent::AgentResponse, driver::llm::Llm};
+use crate::agent::AgentResponse;
+use crate::driver::llm::Llm;
 
 const PROMPT: &str = indoc! {"
     Generate a concise and descriptive title for the following session based on the provided messages and any existing title.

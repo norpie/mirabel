@@ -1,6 +1,9 @@
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
+use diesel::ExpressionMethods;
+use diesel::OptionalExtension;
+use diesel::QueryDsl;
+use diesel::RunQueryDsl;
 
 use crate::dto::login_user::LoginUser;
 use crate::dto::register_user::RegisterUser;

@@ -1,12 +1,16 @@
-use std::future::{Ready, ready};
+use std::future::Ready;
+use std::future::ready;
 
 use actix_web::{
     Error, HttpMessage, HttpResponse,
     body::EitherBody,
     dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
 };
+
 use futures_util::future::LocalBoxFuture;
-use log::{debug, error, info};
+use log::debug;
+use log::error;
+use log::info;
 
 use crate::security::jwt_util::TokenFactory;
 

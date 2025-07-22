@@ -1,4 +1,5 @@
-use crate::{model::user::User, prelude::*};
+use crate::model::user::User;
+use crate::prelude::*;
 
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;

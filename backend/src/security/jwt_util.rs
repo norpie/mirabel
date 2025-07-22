@@ -1,8 +1,11 @@
 use crate::prelude::*;
 
-use chrono::{Duration, Utc};
-use jsonwebtoken::{DecodingKey, EncodingKey};
-use serde::{Deserialize, Serialize};
+use chrono::Duration;
+use chrono::Utc;
+use jsonwebtoken::DecodingKey;
+use jsonwebtoken::EncodingKey;
+use serde::Deserialize;
+use serde::Serialize;
 
 #[derive(Clone)]
 pub struct TokenFactory {
@@ -123,7 +126,8 @@ impl TokenPair {
 
 #[cfg(test)]
 mod tests {
-    use super::{TokenFactory, TokenPair};
+use super::TokenFactory;
+use super::TokenPair;
     use crate::prelude::*;
 
     fn make_test_factory() -> TokenFactory {

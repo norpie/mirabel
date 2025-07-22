@@ -1,4 +1,5 @@
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
+use chrono::Utc;
 use diesel::{
     Selectable,
     deserialize::{FromSql, FromSqlRow},
@@ -8,7 +9,9 @@ use diesel::{
     serialize::ToSql,
     sql_types::Jsonb,
 };
-use serde::{Deserialize, Serialize};
+
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::driver::id::id;
 

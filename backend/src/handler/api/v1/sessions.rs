@@ -1,4 +1,6 @@
-use std::{rc::Rc, sync::Arc, time::Duration};
+use std::rc::Rc;
+use std::sync::Arc;
+use std::time::Duration;
 
 use crate::{
     dto::{api_response::ApiResponse, page::CursorPageRequest, session::FullSession, updated_session::UpdatedSession},
@@ -8,17 +10,22 @@ use crate::{
     session::models::{UserInteraction, WorkerEvent},
 };
 
+
 use actix_web::{
     HttpRequest, HttpResponse, Responder, Scope, delete, get, patch,
     web::{self, Data, Json, Path, Query},
 };
-use actix_ws::{Message, Session};
+
+use actix_ws::Message;
+use actix_ws::Session;
 use futures::StreamExt;
-use log::{debug, warn};
+use log::debug;
+use log::warn;
 use tokio::{
     sync::{Mutex, mpsc},
     time::Instant,
 };
+
 
 // Constants
 const PING_INTERVAL_SECS: u64 = 5;

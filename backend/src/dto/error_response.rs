@@ -1,5 +1,8 @@
-use actix_web::{ResponseError, body::BoxBody, http::StatusCode};
-use log::{debug, error};
+use actix_web::ResponseError;
+use actix_web::body::BoxBody;
+use actix_web::http::StatusCode;
+use log::debug;
+use log::error;
 
 use crate::Error;
 

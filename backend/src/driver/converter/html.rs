@@ -2,7 +2,8 @@ use crate::prelude::*;
 
 use std::fmt::Display;
 
-use super::{Converter, markdown::Markdown};
+use super::Converter;
+use super::markdown::Markdown;
 
 pub struct Html(pub(super) String);
 

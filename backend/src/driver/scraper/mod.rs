@@ -1,4 +1,5 @@
-use log::{debug, warn};
+use log::debug;
+use log::warn;
 use std::time::Duration;
 use tokio::time;
 

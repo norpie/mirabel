@@ -4,6 +4,7 @@ use std::{
     time::Duration,
 };
 
+
 use crate::{
     driver::{id::id, llm::ollama::Ollama},
     model::{
@@ -14,11 +15,14 @@ use crate::{
     session::models::{Interupt, Queueable, UserInteraction},
 };
 
+
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
 use diesel::RunQueryDsl;
 use log::warn;
-use models::{SessionWorker, SessionWorkerState, WorkerEvent};
+use models::SessionWorker;
+use models::SessionWorkerState;
+use models::WorkerEvent;
 use tokio::{
     sync::{
         Mutex,
@@ -26,6 +30,7 @@ use tokio::{
     },
     time::sleep,
 };
+
 
 pub mod models;
 

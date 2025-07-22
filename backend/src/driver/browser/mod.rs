@@ -1,8 +1,11 @@
 use std::env;
 
-use deadpool::unmanaged::{Object, Pool};
-use fantoccini::{Client, ClientBuilder};
-use log::{debug, error};
+use deadpool::unmanaged::Object;
+use deadpool::unmanaged::Pool;
+use fantoccini::Client;
+use fantoccini::ClientBuilder;
+use log::debug;
+use log::error;
 
 use crate::prelude::*;
 

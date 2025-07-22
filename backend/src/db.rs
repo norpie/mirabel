@@ -1,8 +1,13 @@
 use crate::prelude::*;
 
-use deadpool_diesel::postgres::{Manager, Pool, Runtime};
-use diesel::{Connection, PgConnection};
-use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
+use deadpool_diesel::postgres::Manager;
+use deadpool_diesel::postgres::Pool;
+use deadpool_diesel::postgres::Runtime;
+use diesel::Connection;
+use diesel::PgConnection;
+use diesel_migrations::EmbeddedMigrations;
+use diesel_migrations::MigrationHarness;
+use diesel_migrations::embed_migrations;
 use log::debug;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");

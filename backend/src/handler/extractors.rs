@@ -1,8 +1,13 @@
-use crate::{prelude::*, service::users::UserService};
+use crate::prelude::*;
+use crate::service::users::UserService;
 
-use std::{future::Future, pin::Pin};
+use std::future::Future;
+use std::pin::Pin;
 
-use actix_web::{FromRequest, HttpMessage, HttpRequest, web::Data};
+use actix_web::FromRequest;
+use actix_web::HttpMessage;
+use actix_web::HttpRequest;
+use actix_web::web::Data;
 
 use crate::model::user::User;
 

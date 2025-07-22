@@ -3,18 +3,22 @@ use std::{
     sync::Arc,
 };
 
+
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use tokio::sync::{
     Mutex,
     mpsc::{UnboundedReceiver, UnboundedSender},
 };
 
+
 use crate::{
     driver::llm::ollama::Ollama,
     model::{session::Session, timeline::TimelineEntry},
 };
+
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub enum SessionWorkerState {

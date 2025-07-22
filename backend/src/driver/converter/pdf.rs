@@ -1,10 +1,13 @@
 use crate::prelude::*;
 
-use std::io::{BufWriter, Write};
+use std::io::BufWriter;
+use std::io::Write;
 
-use pdf_extract::{Document, HTMLOutput};
+use pdf_extract::Document;
+use pdf_extract::HTMLOutput;
 
-use super::{Converter, html::Html};
+use super::Converter;
+use super::html::Html;
 
 pub struct Pdf(pub(super) Vec<u8>);
 

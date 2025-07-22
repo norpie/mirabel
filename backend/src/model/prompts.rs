@@ -1,9 +1,12 @@
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
+use chrono::Utc;
 use diesel::{
     Selectable,
     prelude::{Insertable, Queryable},
 };
-use serde::{Deserialize, Serialize};
+
+use serde::Deserialize;
+use serde::Serialize;
 
 #[derive(
     Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,

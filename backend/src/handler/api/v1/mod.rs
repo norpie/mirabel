@@ -1,4 +1,5 @@
-use actix_web::{Scope, web};
+use actix_web::Scope;
+use actix_web::web;
 
 pub mod auth;
 pub mod me;

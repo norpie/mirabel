@@ -1,11 +1,16 @@
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
+use chrono::Utc;
 use diesel::{
     Selectable,
     prelude::{Associations, Identifiable, Insertable, Queryable},
 };
-use serde::{Deserialize, Serialize};
 
-use crate::{driver::id::id, model::workspace::Workspace, schema::sessions};
+use serde::Deserialize;
+use serde::Serialize;
+
+use crate::driver::id::id;
+use crate::model::workspace::Workspace;
+use crate::schema::sessions;
 
 #[derive(
     Queryable,

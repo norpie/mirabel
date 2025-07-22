@@ -7,6 +7,7 @@ use crate::{
     },
 };
 
+
 use std::env;
 
 use actix_cors::Cors;
@@ -15,6 +16,7 @@ use actix_web::{
     middleware::Logger,
     web::{self, Data},
 };
+
 use deadpool_diesel::postgres::Pool;
 use log::info;
 

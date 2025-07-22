@@ -1,11 +1,14 @@
 use crate::prelude::*;
 
 use async_trait::async_trait;
-use log::{debug, info};
+use log::debug;
+use log::info;
 use reqwest::Client;
 use serde::Deserialize;
 
-use super::{SearchEngine, SearchPage, models::SearchResult};
+use super::SearchEngine;
+use super::SearchPage;
+use super::models::SearchResult;
 
 #[derive(Default)]
 pub struct SearxNG {

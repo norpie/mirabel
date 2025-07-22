@@ -10,12 +10,16 @@ use crate::{
     prelude::*,
 };
 
+
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;
-use diesel::{
-    Connection, ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl, SelectableHelper,
-    dsl::count,
-};
+use diesel::Connection;
+use diesel::ExpressionMethods;
+use diesel::OptionalExtension;
+use diesel::QueryDsl;
+use diesel::RunQueryDsl;
+use diesel::SelectableHelper;
+use diesel::dsl::count;
 
 pub struct WorkspaceService {
     repository: Data<Pool>,

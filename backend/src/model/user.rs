@@ -1,11 +1,18 @@
 use crate::driver::id::id;
 use crate::prelude::*;
-use argon2::password_hash::{PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng};
-use argon2::{Argon2, PasswordHash};
-use chrono::{DateTime, Utc};
+use argon2::password_hash::PasswordHasher;
+use argon2::password_hash::PasswordVerifier;
+use argon2::password_hash::SaltString;
+use argon2::password_hash::rand_core::OsRng;
+use argon2::Argon2;
+use argon2::PasswordHash;
+use chrono::DateTime;
+use chrono::Utc;
 use diesel::prelude::Queryable;
-use diesel::{Insertable, Selectable};
-use serde::{Deserialize, Serialize};
+use diesel::Insertable;
+use diesel::Selectable;
+use serde::Deserialize;
+use serde::Serialize;
 
 #[derive(
     Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,

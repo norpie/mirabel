@@ -1,4 +1,5 @@
-use std::{error::Error as AStdError, sync::PoisonError};
+use std::error::Error as AStdError;
+use std::sync::PoisonError;
 
 use diesel::PgConnection;
 use miette::Diagnostic;

@@ -1,13 +1,15 @@
-use crate::{dto::frontend_user::FrontendUser, prelude::*};
+use crate::dto::frontend_user::FrontendUser;
+use crate::prelude::*;
 
 use actix_web::{
     Responder, Scope, get,
     web::{self},
 };
 
-use crate::{
-    dto::api_response::ApiResponse, handler::middleware::auth_middleware::Auth, model::user::User,
-};
+
+use crate::dto::api_response::ApiResponse;
+use crate::handler::middleware::auth_middleware::Auth;
+use crate::model::user::User;
 
 pub mod user_workspaces;
 

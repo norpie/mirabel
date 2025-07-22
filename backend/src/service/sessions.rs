@@ -1,4 +1,5 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::{
     driver::llm::ollama::Ollama,
@@ -14,6 +15,7 @@ use crate::{
     prelude::*,
     session::models::SessionWorker,
 };
+
 
 use actix_web::web::Data;
 use deadpool_diesel::postgres::Pool;

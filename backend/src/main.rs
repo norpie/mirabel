@@ -4,11 +4,14 @@ use driver::{
     browser::Browsers,
     search::{SearchEngines, traits::SearchEngine},
 };
-use log::{info, warn};
+
+use log::info;
+use log::warn;
 
 extern crate backend_derive;
 
-use crate::{driver::llm::ollama::Ollama, prelude::*};
+use crate::driver::llm::ollama::Ollama;
+use crate::prelude::*;
 
 pub(crate) mod error;
 pub(crate) mod prelude;

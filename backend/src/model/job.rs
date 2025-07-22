@@ -1,6 +1,7 @@
 use std::io::Write;
 
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
+use chrono::Utc;
 use diesel::{
     Selectable,
     deserialize::{FromSql, FromSqlRow},
@@ -10,7 +11,9 @@ use diesel::{
     serialize::{IsNull, ToSql},
     sql_types::Integer,
 };
-use serde::{Deserialize, Serialize};
+
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::driver::id::id;
 

@@ -5,6 +5,7 @@ use actix_web::{
     body::BoxBody,
     http::{StatusCode, header::ContentType},
 };
+
 use serde::Serialize;
 
 #[derive(Serialize)]
