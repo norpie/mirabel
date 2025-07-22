@@ -18,29 +18,31 @@ use crate::driver::id::id;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
 #[diesel(sql_type = Integer)]
 pub enum JobType {
+    Router = 4,              // Same as the agent of the same name, used to route user input to the
+                             // appropriate agent
     TitleGeneration = 0,     // Generate a title for the session
     SessionSummary = 1,      // Summarize the session
-    CategorizeUserInput = 2, // Categorize user input, to know what to do next (update spec, start a
-    // new task, etc., extract content, etc.)
     ContentExtraction = 3, // Extract content from user input (secret, email, code snippet, etc.)
 }
 
 impl JobType {
     pub fn from_i32(value: i32) -> Option<Self> {
         match value {
+            4 => Some(JobType::Router),
             0 => Some(JobType::TitleGeneration),
             1 => Some(JobType::SessionSummary),
-            2 => Some(JobType::CategorizeUserInput),
+            // 2 => Some(JobType::CategorizeUserInput),
             3 => Some(JobType::ContentExtraction),
             _ => None,
         }
     }
 
-    pub fn to_i32(&self) -> i32 {
+    pub fn to_i32(self) -> i32 {
         match self {
+            JobType::Router => 4,
             JobType::TitleGeneration => 0,
             JobType::SessionSummary => 1,
-            JobType::CategorizeUserInput => 2,
+            // JobType::CategorizeUserInput => 2,
             JobType::ContentExtraction => 3,
         }
     }
@@ -89,7 +91,7 @@ impl JobStatus {
         }
     }
 
-    pub fn to_i32(&self) -> i32 {
+    pub fn to_i32(self) -> i32 {
         match self {
             JobStatus::Pending => 0,
             JobStatus::InProgress => 1,

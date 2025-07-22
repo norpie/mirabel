@@ -1,6 +1,7 @@
 use crate::driver::llm::LlmResponseMetadata;
 
 pub mod title_generation;
+pub mod router;
 
 pub struct AgentResponse<T> {
     pub response: T,
