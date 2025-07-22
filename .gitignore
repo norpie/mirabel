@@ -3,3 +3,4 @@ backend/target
 .env
 surrealdb/.surrealdb
 target
+.archive
