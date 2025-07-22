@@ -8,7 +8,7 @@ use driver::search::traits::SearchEngine;
 use log::info;
 use log::warn;
 
-extern crate backend_derive;
+extern crate mirabel_backend_derive;
 
 use crate::driver::llm::ollama::Ollama;
 use crate::prelude::*;

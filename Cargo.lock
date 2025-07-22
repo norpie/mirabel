@@ -444,66 +444,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
-name = "backend"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-web",
- "actix-ws",
- "anyhow",
- "argon2",
- "async-trait",
- "backend-derive",
- "chrono",
- "deadpool",
- "deadpool-diesel",
- "derive_more 2.0.1",
- "diesel",
- "diesel_migrations",
- "dotenvy",
- "env_logger",
- "eyre",
- "fantoccini",
- "fast_html2md",
- "futures",
- "futures-util",
- "indoc",
- "jsonwebtoken",
- "log",
- "lopdf 0.36.0",
- "markup5ever 0.14.1",
- "mdka",
- "miette",
- "mirabel-core",
- "nanoid",
- "pdf-extract",
- "qstring",
- "rand 0.9.1",
- "regex",
- "reqwest",
- "reqwest-streams",
- "schemars",
- "scraper",
- "serde",
- "serde_json",
- "serde_with",
- "serial_test",
- "tera",
- "thiserror 2.0.12",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "backend-derive"
-version = "0.1.0"
-dependencies = [
- "convert_case 0.8.0",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "backtrace"
 version = "0.3.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2411,6 +2351,66 @@ dependencies = [
 ]
 
 [[package]]
+name = "mirabel-backend"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-web",
+ "actix-ws",
+ "anyhow",
+ "argon2",
+ "async-trait",
+ "chrono",
+ "deadpool",
+ "deadpool-diesel",
+ "derive_more 2.0.1",
+ "diesel",
+ "diesel_migrations",
+ "dotenvy",
+ "env_logger",
+ "eyre",
+ "fantoccini",
+ "fast_html2md",
+ "futures",
+ "futures-util",
+ "indoc",
+ "jsonwebtoken",
+ "log",
+ "lopdf 0.36.0",
+ "markup5ever 0.14.1",
+ "mdka",
+ "miette",
+ "mirabel-backend-derive",
+ "mirabel-core",
+ "nanoid",
+ "pdf-extract",
+ "qstring",
+ "rand 0.9.1",
+ "regex",
+ "reqwest",
+ "reqwest-streams",
+ "schemars",
+ "scraper",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "serial_test",
+ "tera",
+ "thiserror 2.0.12",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "mirabel-backend-derive"
+version = "0.1.0"
+dependencies = [
+ "convert_case 0.8.0",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "mirabel-core"
 version = "0.1.0"
 dependencies = [
@@ -2426,6 +2426,10 @@ dependencies = [
  "serde_json",
  "uuid",
 ]
+
+[[package]]
+name = "mirabel-tui"
+version = "0.1.0"
 
 [[package]]
 name = "nanoid"
@@ -4034,10 +4038,6 @@ name = "try-lock"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
-
-[[package]]
-name = "tui"
-version = "0.1.0"
 
 [[package]]
 name = "type1-encoding-parser"

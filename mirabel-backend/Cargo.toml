@@ -1,11 +1,11 @@
 [package]
-name = "backend"
+name = "mirabel-backend"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 mirabel-core = { path = "../mirabel-core" }
-backend-derive = { path = "../backend-derive" }
+mirabel-backend-derive = { path = "../mirabel-backend-derive" }
 actix-cors = "0.7.0"
 actix-web = { version = "4.9.0", features = ["openssl", "secure-cookies"] }
 argon2 = "0.5.3"

@@ -3,7 +3,7 @@ resolver = "2"
 
 members = [
     "mirabel-backend",
-    "backend-derive", 
-    "tui",
+    "mirabel-backend-derive", 
+    "mirabel-tui",
     "mirabel-core",
 ]
