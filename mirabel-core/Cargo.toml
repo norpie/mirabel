@@ -1,0 +1,26 @@
+[package]
+name = "mirabel-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Database
+diesel = { version = "2.2.11", features = ["chrono", "postgres", "postgres_backend", "serde_json", "time", "uuid"] }
+
+# Web framework (for DTOs)
+actix-web = { version = "4.9.0", features = ["openssl", "secure-cookies"] }
+
+# Serialization
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
+chrono = { version = "0.4.39", features = ["serde"] }
+
+# Utilities
+nanoid = "0.4.0"
+argon2 = "0.5.3"
+uuid = { version = "1.17.0", features = ["v4"] }
+
+# Error handling
+derive_more = { version = "2.0.1", features = ["full"] }
+eyre = "0.6.12"
+log = "0.4.25"

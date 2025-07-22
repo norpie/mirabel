@@ -474,6 +474,7 @@ dependencies = [
  "markup5ever 0.14.1",
  "mdka",
  "miette",
+ "mirabel-core",
  "nanoid",
  "pdf-extract",
  "qstring",
@@ -2407,6 +2408,23 @@ dependencies = [
  "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "mirabel-core"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "argon2",
+ "chrono",
+ "derive_more 2.0.1",
+ "diesel",
+ "eyre",
+ "log",
+ "nanoid",
+ "serde",
+ "serde_json",
+ "uuid",
 ]
 
 [[package]]

@@ -1,0 +1,53 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+mirabel-core = { path = "../mirabel-core" }
+backend-derive = { path = "../backend-derive" }
+actix-cors = "0.7.0"
+actix-web = { version = "4.9.0", features = ["openssl", "secure-cookies"] }
+argon2 = "0.5.3"
+async-trait = "0.1.86"
+chrono = { version = "0.4.39", features = ["serde"] }
+deadpool = "0.12.2"
+derive_more = { version = "2.0.1", features = ["full"] }
+dotenvy = { git = "https://github.com/allan2/dotenvy", features=['macros'] }
+env_logger = "0.11.6"
+eyre = "0.6.12"
+fantoccini = "0.21.4"
+fast_html2md = "0.0.48"
+futures = "0.3.31"
+futures-util = "0.3.31"
+jsonwebtoken = "9.3.1"
+log = "0.4.25"
+lopdf = "0.36.0"
+markup5ever = "0.14.1"
+mdka = "1.4.5"
+miette = { version = "7.5.0", features = ["fancy", "serde"] }
+pdf-extract = "0.8.2"
+rand = "0.9.0"
+regex = "1.11.1"
+reqwest = { version = "0.12.12", features = ["blocking", "json"] }
+reqwest-streams = { version = "0.9.0", features = ["json"] }
+schemars = { version = "0.8.21", features = ["impl_json_schema"] }
+scraper = "0.23.1"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
+serde_with = { version = "3.12.0", features = ["base64", "chrono", "json"] }
+thiserror = "2.0.11"
+tokio = { version = "1.43.0", features = ["full"] }
+qstring = "0.7.2"
+actix-ws = "0.3.0"
+uuid = { version = "1.17.0", features = ["v4"] }
+nanoid = "0.4.0"
+diesel_migrations = { version = "2.2.0", features = ["postgres"] }
+diesel = { version = "2.2.11", features = ["chrono", "postgres", "postgres_backend", "serde_json", "time", "uuid"] }
+deadpool-diesel = { version = "0.6.1", features = ["serde", "postgres"] }
+indoc = "2.0.6"
+tera = "1.20.0"
+
+[dev-dependencies]
+anyhow = "1.0.95"
+serial_test = "3.2.0"
