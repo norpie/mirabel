@@ -10,12 +10,13 @@ use crate::driver::llm::ollama::Ollama;
 use std::env;
 
 use actix_cors::Cors;
+use actix_files::{Files, NamedFile};
 use actix_web::App;
-use actix_web::HttpResponse;
 use actix_web::HttpServer;
 use actix_web::middleware::Logger;
 use actix_web::web;
 use actix_web::web::Data;
+use actix_web::{Result as ActixResult, HttpRequest};
 
 use deadpool_diesel::postgres::Pool;
 use log::info;
@@ -23,6 +24,12 @@ use log::info;
 mod api;
 pub(crate) mod extractors;
 pub(crate) mod middleware;
+
+// SPA fallback handler for frontend routes
+async fn spa_fallback(_req: HttpRequest) -> ActixResult<NamedFile> {
+    let path = std::path::Path::new("mirabel-web/build/200.html");
+    Ok(NamedFile::open(path)?)
+}
 
 pub async fn run(db: Data<Pool>, llm: Data<Ollama>) -> Result<()> {
     let host = env::var("BACKEND_HOST")?;
@@ -54,7 +61,12 @@ pub async fn run(db: Data<Pool>, llm: Data<Ollama>) -> Result<()> {
             .wrap(cors)
             .wrap(logger)
             .configure(api::scope)
-            .default_service(web::route().to(HttpResponse::NotFound))
+            // Serve static files from the web build directory
+            .service(
+                Files::new("/", "mirabel-web/build/")
+                    .index_file("200.html")
+                    .default_handler(web::get().to(spa_fallback))
+            )
     })
     .bind((host, port))?
     .run()
