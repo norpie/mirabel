@@ -1,25 +1,48 @@
 # AGENTS.md
 
-## Backend (Rust)
+## Project Structure
+The project has been migrated to a workspace architecture:
+- **mirabel-core**: Shared library containing models, DTOs, schema, and utilities
+- **mirabel-backend**: API server that depends on mirabel-core
+- **mirabel-tui**: Terminal interface that depends on mirabel-core
+- **mirabel-backend-derive**: Derive macros for backend
+- **migrations/**: Database migrations at workspace root
+
+## Core Library (mirabel-core)
 
 ### Build & Test Commands
-- Build: `cargo build`
-- Test all: `cargo test`
-- Test single: `cargo test <test_name>`
-- Run: `cargo run`
-- Check: `cargo check`
+- Build: `cargo build -p mirabel-core`
+- Test: `cargo test -p mirabel-core`
+- Check: `cargo check -p mirabel-core`
+
+### Code Style
+- **Imports**: Use `crate::` for internal imports within core
+- **Models**: Located in `src/models/`, use diesel derives
+- **DTOs**: Located in `src/dto/`, use serde derives
+- **Schema**: Generated at `src/schema.rs` by diesel
+- **Utils**: Located in `src/utils/`, includes ID generation utilities
+- **Dependencies**: diesel, serde, chrono, uuid, nanoid for core functionality
+
+## Backend (mirabel-backend)
+
+### Build & Test Commands
+- Build: `cargo build -p mirabel-backend`
+- Test all: `cargo test -p mirabel-backend`
+- Test single: `cargo test <test_name> -p mirabel-backend`
+- Run: `cargo run -p mirabel-backend`
+- Check: `cargo check -p mirabel-backend`
 - Format: `cargo fmt`
 - Lint: `cargo clippy`
 
 ### Code Style
-- **Imports**: Use `crate::` for internal imports, group std/external/internal separately
+- **Imports**: Use `mirabel_core::models::*` for models, `mirabel_core::dto::*` for DTOs
 - **Error handling**: Use `Result<T>` type alias from prelude, propagate with `?` operator
 - **Naming**: snake_case for functions/variables, PascalCase for types/enums
 - **Types**: Use custom Error enum with thiserror, prefer explicit error variants
 - **Modules**: Use `pub(crate)` for internal visibility, organize by domain
-- **Dependencies**: Use actix-web for HTTP, diesel for DB, tokio for async
+- **Dependencies**: Use actix-web for HTTP, diesel for DB, tokio for async, mirabel-core for shared types
 - **Prelude**: Import common types via `use crate::prelude::*`
-- **Database**: Use diesel migrations, async deadpool connections
+- **Database**: Use diesel migrations from workspace root, async deadpool connections
 - **Tests**: Place in `#[cfg(test)]` modules, use helper functions for setup
 - **Async**: Use tokio runtime, prefer async/await over blocking calls
 
