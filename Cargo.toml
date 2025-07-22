@@ -3,5 +3,5 @@ resolver = "2"
 
 members = [
     "backend",
-    "backend-derive",
+    "backend-derive", "tui",
 ]
