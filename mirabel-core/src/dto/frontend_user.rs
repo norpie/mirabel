@@ -7,7 +7,7 @@ use ts_rs::TS;
 use crate::models::user::User;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../frontend/src/lib/generated/")]
+#[ts(export, export_to = "../../mirabel-web/src/lib/generated/")]
 pub struct FrontendUser {
     id: String,
     username: String,
