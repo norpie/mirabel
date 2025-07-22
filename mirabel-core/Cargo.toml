@@ -3,6 +3,10 @@ name = "mirabel-core"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+generate-types = []
+
 [dependencies]
 # Database
 diesel = { version = "2.2.11", features = ["chrono", "postgres", "postgres_backend", "serde_json", "time", "uuid"] }
@@ -24,3 +28,6 @@ uuid = { version = "1.17.0", features = ["v4"] }
 derive_more = { version = "2.0.1", features = ["full"] }
 eyre = "0.6.12"
 log = "0.4.25"
+
+# TypeScript bindings
+ts-rs = { version = "11.0", features = ["chrono-impl", "serde-compat"] }

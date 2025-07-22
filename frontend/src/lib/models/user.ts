@@ -1,15 +1,12 @@
-export interface User {
-    id: string;
-    email: string;
-    username: string;
-    avatar: string;
-}
+import type { FrontendUser } from '../generated';
+
+export type User = FrontendUser;
 
 export function emptyUser(): User {
     return {
         id: '',
         email: '',
         username: '',
-        avatar: ''
+        createdAt: ''
     };
 }

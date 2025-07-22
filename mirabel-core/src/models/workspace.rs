@@ -14,14 +14,16 @@ use diesel::{
 
 use serde::Deserialize;
 use serde::Serialize;
+use ts_rs::TS;
 
 use crate::utils::id::id;
 
 #[derive(
-    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
+    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize, TS,
 )]
 #[diesel(table_name = crate::schema::workspaces)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[ts(export, export_to = "../../frontend/src/lib/generated/")]
 pub struct Workspace {
     pub id: String,
     pub name: String,
@@ -43,10 +45,11 @@ impl Workspace {
 }
 
 #[derive(
-    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize,
+    Debug, Queryable, Selectable, Insertable, Clone, PartialEq, Eq, Serialize, Deserialize, TS,
 )]
 #[diesel(table_name = crate::schema::workspace_members)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[ts(export, export_to = "../../frontend/src/lib/generated/")]
 pub struct WorkspaceMember {
     pub id: String,
     pub workspace_id: String,
@@ -68,8 +71,9 @@ impl WorkspaceMember {
 }
 
 #[repr(i32)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize, TS)]
 #[diesel(sql_type = Integer)]
+#[ts(export, export_to = "../../frontend/src/lib/generated/")]
 pub enum WorkspaceRole {
     Owner = 0,
     Admin = 1,

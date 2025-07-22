@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { LoginUser, RegisterUser } from '../generated';
 
 export const loginSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -31,3 +32,6 @@ export const registerSchema = z
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+
+// Backend-compatible types
+export type { LoginUser, RegisterUser };
