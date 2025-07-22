@@ -33,7 +33,7 @@
     });
 
     let socket: SocketHandler<TimelineEntry, UserInteraction> | undefined = $derived(
-        sessionState.socket
+        sessionState?.socket
     );
 
     function messageAuthor(sender: string): {

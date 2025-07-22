@@ -82,7 +82,7 @@
         };
     });
 
-    // Socket connection management
+    // Socket connection management - persistent across component unmounting
     $effect(() => {
         if (socket && session) {
             console.log('Connecting socket for session:', session.id);
@@ -95,6 +95,13 @@
                 socket.disconnect();
             }
         };
+    });
+
+    // Ensure sessionState stays connected to socket even when chat unmounts
+    $effect(() => {
+        if (socket && sessionState) {
+            sessionState.socket = socket;
+        }
     });
 </script>
 

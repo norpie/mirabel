@@ -3,6 +3,21 @@ import { authStore } from './auth/store.svelte';
 import { TokenStorage } from './auth/tokens';
 import { goto } from '$app/navigation';
 
+// Global toast management for WebSocket connections
+let globalWebSocketToastId: string | number | null = null;
+let globalRetryCountdownInterval: ReturnType<typeof setInterval> | null = null;
+
+function dismissGlobalWebSocketToasts(): void {
+    if (globalRetryCountdownInterval) {
+        clearInterval(globalRetryCountdownInterval);
+        globalRetryCountdownInterval = null;
+    }
+    if (globalWebSocketToastId) {
+        toast.dismiss(globalWebSocketToastId);
+        globalWebSocketToastId = null;
+    }
+}
+
 export class SocketHandler<T, U> {
     // Internal state
     private baseEndpoint: string;
@@ -24,7 +39,7 @@ export class SocketHandler<T, U> {
     private reconnectInterval: number = 3000;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Toast management
+    // Toast management (now using global state)
     private currentToastId: string | number | null = null;
     private retryCountdownInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -33,6 +48,9 @@ export class SocketHandler<T, U> {
         queryParams: Record<string, string> = {},
         requiresAuth: boolean = true
     ) {
+        // Clean up any existing WebSocket toasts from previous instances
+        dismissGlobalWebSocketToasts();
+        
         // Parse the baseEndpoint to separate URL and query params
         const [url, existingQuery] = baseEndpoint.split('?');
         this.baseEndpoint = url;
@@ -76,10 +94,32 @@ export class SocketHandler<T, U> {
     private shouldAttemptReconnect(): boolean {
         if (!this.autoReconnect) return false;
 
-        // If auth is required, only reconnect if user is still authenticated
-        if (this.requiresAuth && !authStore.isAuthenticated) {
-            console.log('Skipping reconnect: user is no longer authenticated');
-            return false;
+        // If auth is required, check authentication more robustly
+        if (this.requiresAuth) {
+            // Check both auth store and token storage for more reliable auth detection
+            const hasToken = TokenStorage.hasAccessToken();
+            const isAuthenticated = authStore.isAuthenticated;
+            const isInitialized = authStore.isInitialized;
+            
+            // If auth store is not initialized yet, allow reconnection attempt
+            // This handles the timing issue during page load
+            if (!isInitialized) {
+                console.log('Auth store not initialized yet, allowing reconnect attempt');
+                return true;
+            }
+            
+            // If we have a token but auth store says not authenticated,
+            // this might be a temporary inconsistency - allow reconnect
+            if (hasToken && !isAuthenticated) {
+                console.log('Token exists but auth store inconsistent, allowing reconnect attempt');
+                return true;
+            }
+            
+            // Only skip reconnect if both token and auth store agree we're not authenticated
+            if (!hasToken && !isAuthenticated) {
+                console.log('Skipping reconnect: user is no longer authenticated');
+                return false;
+            }
         }
 
         // Check if token has changed (might have been refreshed)
@@ -183,10 +223,11 @@ export class SocketHandler<T, U> {
         this.status = 'open';
         this.isReconnecting = false;
 
+        // Clean up all WebSocket-related toasts when connection succeeds
         this.dismissCurrentToast();
 
         if (wasReconnecting) {
-            this.currentToastId = toast.success('Reconnected to server', {
+            globalWebSocketToastId = toast.success('Reconnected to server', {
                 description: 'Connection restored successfully',
                 duration: 3000
             });
@@ -261,7 +302,7 @@ export class SocketHandler<T, U> {
             console.warn('WebSocket authentication failed - logging out user');
 
             // Show auth error toast
-            this.currentToastId = toast.error('Authentication expired', {
+            globalWebSocketToastId = toast.error('Authentication expired', {
                 description: 'Your session has expired. Please log in again.',
                 duration: 5000,
                 action: {
@@ -278,17 +319,23 @@ export class SocketHandler<T, U> {
     }
 
     private dismissCurrentToast(): void {
+        // Dismiss both local and global toasts
         if (this.retryCountdownInterval) {
             clearInterval(this.retryCountdownInterval);
             this.retryCountdownInterval = null;
         }
-        toast.dismiss();
-        this.currentToastId = null;
+        if (this.currentToastId) {
+            toast.dismiss(this.currentToastId);
+            this.currentToastId = null;
+        }
+        
+        // Also clean up global toasts
+        dismissGlobalWebSocketToasts();
     }
 
     private showConnectionWarning(): void {
         this.dismissCurrentToast();
-        this.currentToastId = toast.warning('Failed to connect to server', {
+        globalWebSocketToastId = toast.warning('Failed to connect to server', {
             description: 'Please check your internet connection',
             duration: 5000
         });
@@ -296,7 +343,7 @@ export class SocketHandler<T, U> {
 
     private showAuthError(): void {
         this.dismissCurrentToast();
-        this.currentToastId = toast.error('Authentication required', {
+        globalWebSocketToastId = toast.error('Authentication required', {
             description: 'Please log in to access this feature',
             duration: 5000,
             action: {
@@ -312,23 +359,35 @@ export class SocketHandler<T, U> {
         this.dismissCurrentToast();
 
         if (!this.shouldAttemptReconnect()) {
-            // Don't show retry countdown if we won't actually retry
-            this.currentToastId = toast.error('Connection lost', {
-                description: 'Unable to reconnect - please refresh the page',
-                duration: Infinity,
-                action: {
-                    label: 'Refresh',
-                    onClick: () => {
-                        window.location.reload();
+            // Only show the permanent error if we're really not going to retry
+            // and it's not a navigation interruption
+            const shouldShowPermanentError = !this.autoReconnect || 
+                (this.requiresAuth && authStore.isInitialized && !authStore.isAuthenticated && !TokenStorage.hasAccessToken());
+                
+            if (shouldShowPermanentError) {
+                globalWebSocketToastId = toast.error('Connection lost', {
+                    description: 'Unable to reconnect - please refresh the page',
+                    duration: Infinity,
+                    action: {
+                        label: 'Refresh',
+                        onClick: () => {
+                            window.location.reload();
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                // For navigation interruptions or temporary auth issues, show a less alarming message
+                globalWebSocketToastId = toast.warning('Connection interrupted', {
+                    description: 'Attempting to reconnect...',
+                    duration: 5000
+                });
+            }
             return;
         }
 
         let countdown = Math.ceil(this.reconnectInterval / 1000);
 
-        this.currentToastId = toast.error('Connection lost', {
+        globalWebSocketToastId = toast.error('Connection lost', {
             description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
             duration: Infinity,
             action: {
@@ -340,7 +399,7 @@ export class SocketHandler<T, U> {
             }
         });
 
-        this.retryCountdownInterval = setInterval(() => {
+        globalRetryCountdownInterval = setInterval(() => {
             countdown--;
             if (countdown <= 0) {
                 this.dismissCurrentToast();
@@ -348,7 +407,7 @@ export class SocketHandler<T, U> {
             }
 
             toast.error('Connection lost', {
-                id: this.currentToastId,
+                id: globalWebSocketToastId || undefined,
                 description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
                 duration: Infinity,
                 action: {
