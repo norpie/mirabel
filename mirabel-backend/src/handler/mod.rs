@@ -27,7 +27,7 @@ pub(crate) mod middleware;
 
 // SPA fallback handler for frontend routes
 async fn spa_fallback(_req: HttpRequest) -> ActixResult<NamedFile> {
-    let path = std::path::Path::new("mirabel-web/build/200.html");
+    let path = std::path::Path::new("../mirabel-web/build/200.html");
     Ok(NamedFile::open(path)?)
 }
 
@@ -63,7 +63,7 @@ pub async fn run(db: Data<Pool>, llm: Data<Ollama>) -> Result<()> {
             .configure(api::scope)
             // Serve static files from the web build directory
             .service(
-                Files::new("/", "mirabel-web/build/")
+                Files::new("/", "../mirabel-web/build/")
                     .index_file("200.html")
                     .default_handler(web::get().to(spa_fallback))
             )
