@@ -96,7 +96,6 @@
         class="absolute right-1 top-1 {color} z-50"
         {title}
         onclick={handleStatusClick}
-        disabled={!(socketStatus === 'closed' || socketStatus === 'error')}
     ></Button>
 
     <Textarea
