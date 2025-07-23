@@ -2,6 +2,7 @@
     import Plus from 'lucide-svelte/icons/plus';
     import { Textarea } from '../ui/textarea';
     import ArrowUp from 'lucide-svelte/icons/arrow-up';
+    import { Button } from '../ui/button';
 
     let {
         value = $bindable(''),
@@ -89,13 +90,14 @@
 </script>
 
 <div id="chat-input" class="relative m-2 flex flex-col justify-between rounded-lg bg-secondary p-2">
-    <span
-        class="absolute right-1 top-1 h-3 w-3 rounded-full border border-secondary {color} z-50"
+    <Button
+        variant="indicator"
+        size="indicator"
+        class="absolute right-1 top-1 {color} z-50"
         {title}
         onclick={handleStatusClick}
-        role={socketStatus === 'closed' || socketStatus === 'error' ? 'button' : undefined}
-        tabindex={socketStatus === 'closed' || socketStatus === 'error' ? 0 : undefined}
-    ></span>
+        disabled={!(socketStatus === 'closed' || socketStatus === 'error')}
+    ></Button>
 
     <Textarea
         class="m-0 w-full rounded-lg border-none bg-transparent p-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
