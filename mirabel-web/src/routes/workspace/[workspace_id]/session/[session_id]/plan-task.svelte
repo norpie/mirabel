@@ -12,6 +12,7 @@
     import ArrowRight from 'lucide-svelte/icons/arrow-right';
     import ChevronRight from 'lucide-svelte/icons/chevron-right';
     import ChevronDown from 'lucide-svelte/icons/chevron-down';
+    import Plan_Task from './plan-task.svelte';
 
     let {
         task,
@@ -271,7 +272,7 @@
     {#if expanded && task.children.length > 0}
         <div class="ml-3 space-y-2">
             {#each task.children as child (child.id)}
-                <svelte:self
+                <Plan_Task
                     task={child}
                     {plan}
                     depth={depth + 1}
