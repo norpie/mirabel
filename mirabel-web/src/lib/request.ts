@@ -8,8 +8,7 @@ function getApiUrl(): string {
     if (typeof window !== 'undefined') {
         const protocol = window.location.protocol;
         const hostname = window.location.hostname;
-        const currentPort = parseInt(window.location.port) || (protocol === 'https:' ? 443 : 80);
-        const apiPort = currentPort + 8080;
+        const apiPort = 8080;
         return `${protocol}//${hostname}:${apiPort}/api`;
     }
     // Fallback for SSR
