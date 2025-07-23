@@ -86,6 +86,7 @@
 - **Package Manager**: pnpm (preferred)
 
 ### Code Style
+- **Documentation**: When working on frontend code, always read `mirabel-web/llms.txt` first for detailed Svelte 5 and SvelteKit syntax and best practices
 - **Imports**: Use `$lib/` for internal imports, group external/internal separately
 - **File naming**: kebab-case for components (`user-settings.svelte`)
 - **Component structure**: Script, markup, then style sections
