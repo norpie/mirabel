@@ -81,7 +81,7 @@
                             <div
                                 class="flex h-12 w-12 items-center justify-center rounded-full border bg-background"
                             >
-                                <svelte:component this={theme.icon} class="h-6 w-6" />
+                                <theme.icon class="h-6 w-6" />
                             </div>
                             <div class="text-center">
                                 <div class="font-medium">{theme.label}</div>
