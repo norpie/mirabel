@@ -3,8 +3,20 @@ import type Result from './models/result';
 import { SocketHandler } from './socket.svelte';
 import { TokenStorage } from './auth/tokens';
 
-// TODO: Get the URL from the environment
-const url = 'http://localhost:8080/api';
+// Dynamically determine API URL based on current domain
+function getApiUrl(): string {
+    if (typeof window !== 'undefined') {
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        const currentPort = parseInt(window.location.port) || (protocol === 'https:' ? 443 : 80);
+        const apiPort = currentPort + 8080;
+        return `${protocol}//${hostname}:${apiPort}/api`;
+    }
+    // Fallback for SSR
+    return 'http://localhost:8080/api';
+}
+
+const url = getApiUrl();
 // WebSocket URL derived from the HTTP URL
 const wsUrl = url.replace(/^http/, 'ws');
 
