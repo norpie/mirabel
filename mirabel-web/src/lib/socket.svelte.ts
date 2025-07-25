@@ -3,21 +3,149 @@ import { authStore } from './auth/store.svelte';
 import { TokenStorage } from './auth/tokens';
 import { goto } from '$app/navigation';
 
-// Global toast management for WebSocket connections
-let globalWebSocketToastId: string | number | null = null;
-let globalRetryCountdownInterval: ReturnType<typeof setInterval> | null = null;
+// Centralized toast management for WebSocket connections
+// This ensures only one connection toast exists across all SocketHandler instances
+class WebSocketToastManager {
+    private static instance: WebSocketToastManager;
+    private currentToastId: string | number | null = null;
+    private countdownInterval: ReturnType<typeof setInterval> | null = null;
+    private isManagingConnectionLost = false;
 
-function dismissGlobalWebSocketToasts(): void {
-    if (globalRetryCountdownInterval) {
-        clearInterval(globalRetryCountdownInterval);
-        globalRetryCountdownInterval = null;
+    static getInstance(): WebSocketToastManager {
+        if (!WebSocketToastManager.instance) {
+            WebSocketToastManager.instance = new WebSocketToastManager();
+        }
+        return WebSocketToastManager.instance;
     }
-    if (globalWebSocketToastId) {
-        toast.dismiss(globalWebSocketToastId);
-        globalWebSocketToastId = null;
+
+    dismissAll(): void {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
+        }
+        if (this.currentToastId) {
+            toast.dismiss(this.currentToastId);
+            this.currentToastId = null;
+        }
+        this.isManagingConnectionLost = false;
+    }
+
+    showConnectionLost(reconnectInterval: number, onRetryNow: () => void): void {
+        // Only allow one instance to manage connection lost toasts
+        if (this.isManagingConnectionLost) {
+            return;
+        }
+
+        this.dismissAll();
+        this.isManagingConnectionLost = true;
+
+        let countdown = Math.ceil(reconnectInterval / 1000);
+
+        this.currentToastId = toast.error('Connection lost', {
+            description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
+            duration: Infinity,
+            action: {
+                label: 'Retry now',
+                onClick: () => {
+                    this.dismissAll();
+                    onRetryNow();
+                }
+            }
+        });
+
+        this.countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown <= 0 || !this.isManagingConnectionLost) {
+                this.dismissAll();
+                return;
+            }
+
+            // Update the existing toast - this should work according to svelte-sonner docs
+            if (this.currentToastId) {
+                toast.error('Connection lost', {
+                    id: this.currentToastId,
+                    description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
+                    duration: Infinity,
+                    action: {
+                        label: 'Retry now',
+                        onClick: () => {
+                            this.dismissAll();
+                            onRetryNow();
+                        }
+                    }
+                });
+            }
+        }, 1000);
+    }
+
+    showConnectionWarning(): void {
+        this.dismissAll();
+        this.currentToastId = toast.warning('Failed to connect to server', {
+            description: 'Please check your internet connection',
+            duration: 5000
+        });
+    }
+
+    showConnectionInterrupted(): void {
+        this.dismissAll();
+        this.currentToastId = toast.warning('Connection interrupted', {
+            description: 'Attempting to reconnect...',
+            duration: 5000
+        });
+    }
+
+    showConnectionLostPermanent(): void {
+        this.dismissAll();
+        this.currentToastId = toast.error('Connection lost', {
+            description: 'Unable to reconnect - please refresh the page',
+            duration: Infinity,
+            action: {
+                label: 'Refresh',
+                onClick: () => {
+                    window.location.reload();
+                }
+            }
+        });
+    }
+
+    showAuthError(): void {
+        this.dismissAll();
+        this.currentToastId = toast.error('Authentication required', {
+            description: 'Please log in to access this feature',
+            duration: 5000,
+            action: {
+                label: 'Login',
+                onClick: () => {
+                    goto('/login');
+                }
+            }
+        });
+    }
+
+    showAuthExpired(): void {
+        this.dismissAll();
+        this.currentToastId = toast.error('Authentication expired', {
+            description: 'Your session has expired. Please log in again.',
+            duration: 5000,
+            action: {
+                label: 'Login',
+                onClick: () => {
+                    goto('/login');
+                }
+            }
+        });
+    }
+
+    showReconnected(): void {
+        this.dismissAll();
+        this.currentToastId = toast.success('Reconnected to server', {
+            description: 'Connection restored successfully',
+            duration: 3000
+        });
     }
 }
 
+const toastManager = WebSocketToastManager.getInstance();
 export class SocketHandler<T, U> {
     // Internal state
     private baseEndpoint: string;
@@ -39,18 +167,14 @@ export class SocketHandler<T, U> {
     private reconnectInterval: number = 3000;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Toast management (now using global state)
-    private currentToastId: string | number | null = null;
-    private retryCountdownInterval: ReturnType<typeof setInterval> | null = null;
-
     constructor(
         baseEndpoint: string,
         queryParams: Record<string, string> = {},
         requiresAuth: boolean = true
     ) {
         // Clean up any existing WebSocket toasts from previous instances
-        dismissGlobalWebSocketToasts();
-        
+        toastManager.dismissAll();
+
         // Parse the baseEndpoint to separate URL and query params
         const [url, existingQuery] = baseEndpoint.split('?');
         this.baseEndpoint = url;
@@ -65,7 +189,6 @@ export class SocketHandler<T, U> {
             }
         }
     }
-
     private buildEndpointWithAuth(): string {
         let params = { ...this.queryParams };
 
@@ -100,21 +223,21 @@ export class SocketHandler<T, U> {
             const hasToken = TokenStorage.hasAccessToken();
             const isAuthenticated = authStore.isAuthenticated;
             const isInitialized = authStore.isInitialized;
-            
+
             // If auth store is not initialized yet, allow reconnection attempt
             // This handles the timing issue during page load
             if (!isInitialized) {
                 console.log('Auth store not initialized yet, allowing reconnect attempt');
                 return true;
             }
-            
+
             // If we have a token but auth store says not authenticated,
             // this might be a temporary inconsistency - allow reconnect
             if (hasToken && !isAuthenticated) {
                 console.log('Token exists but auth store inconsistent, allowing reconnect attempt');
                 return true;
             }
-            
+
             // Only skip reconnect if both token and auth store agree we're not authenticated
             if (!hasToken && !isAuthenticated) {
                 console.log('Skipping reconnect: user is no longer authenticated');
@@ -156,7 +279,7 @@ export class SocketHandler<T, U> {
         if (!endpoint) {
             this.status = 'error';
             if (this.firstConnect) {
-                this.showAuthError();
+                toastManager.showAuthError();
             }
             return;
         }
@@ -168,11 +291,10 @@ export class SocketHandler<T, U> {
         } catch (error) {
             this.status = 'error';
             if (this.firstConnect) {
-                this.showConnectionWarning();
+                toastManager.showConnectionWarning();
             }
             console.log(error);
-        }
-        // Don't reset isReconnecting here - let onOpen handle it
+        } // Don't reset isReconnecting here - let onOpen handle it
     }
 
     public disconnect(): void {
@@ -180,7 +302,7 @@ export class SocketHandler<T, U> {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = null;
         }
-        this.dismissCurrentToast();
+        toastManager.dismissAll();
         this.autoReconnect = false;
         this.socket?.close();
         this.socket = null;
@@ -195,10 +317,9 @@ export class SocketHandler<T, U> {
     private reconnect(): void {
         if (!this.shouldAttemptReconnect() || this.isReconnecting) return;
         this.isReconnecting = true;
-        this.dismissCurrentToast();
+        toastManager.dismissAll();
         this.connect();
     }
-
     public setMessageHandler(handler: (message: T) => void): void {
         this.messageHandler = handler;
     }
@@ -224,16 +345,12 @@ export class SocketHandler<T, U> {
         this.isReconnecting = false;
 
         // Clean up all WebSocket-related toasts when connection succeeds
-        this.dismissCurrentToast();
+        toastManager.dismissAll();
 
         if (wasReconnecting) {
-            globalWebSocketToastId = toast.success('Reconnected to server', {
-                description: 'Connection restored successfully',
-                duration: 3000
-            });
+            toastManager.showReconnected();
         }
     }
-
     private onClose(event: CloseEvent): void {
         this.status = 'closed';
         this.isReconnecting = false;
@@ -263,7 +380,7 @@ export class SocketHandler<T, U> {
 
         // Show appropriate error toast
         if (this.firstConnect) {
-            this.showConnectionWarning();
+            toastManager.showConnectionWarning();
         } else {
             this.showConnectionLostError();
         }
@@ -274,7 +391,6 @@ export class SocketHandler<T, U> {
             }, this.reconnectInterval);
         }
     }
-
     private onMessage(event: MessageEvent): void {
         if (!this.messageHandler) {
             return;
@@ -295,129 +411,42 @@ export class SocketHandler<T, U> {
     }
 
     private handleAuthError(): void {
-        this.dismissCurrentToast();
+        toastManager.dismissAll();
         this.autoReconnect = false; // Stop reconnection attempts
 
         if (this.requiresAuth) {
             console.warn('WebSocket authentication failed - logging out user');
 
             // Show auth error toast
-            globalWebSocketToastId = toast.error('Authentication expired', {
-                description: 'Your session has expired. Please log in again.',
-                duration: 5000,
-                action: {
-                    label: 'Login',
-                    onClick: () => {
-                        goto('/login');
-                    }
-                }
-            });
+            toastManager.showAuthExpired();
 
             // Force logout through auth store
             authStore.logout();
         }
     }
-
-    private dismissCurrentToast(): void {
-        // Dismiss both local and global toasts
-        if (this.retryCountdownInterval) {
-            clearInterval(this.retryCountdownInterval);
-            this.retryCountdownInterval = null;
-        }
-        if (this.currentToastId) {
-            toast.dismiss(this.currentToastId);
-            this.currentToastId = null;
-        }
-        
-        // Also clean up global toasts
-        dismissGlobalWebSocketToasts();
-    }
-
-    private showConnectionWarning(): void {
-        this.dismissCurrentToast();
-        globalWebSocketToastId = toast.warning('Failed to connect to server', {
-            description: 'Please check your internet connection',
-            duration: 5000
-        });
-    }
-
-    private showAuthError(): void {
-        this.dismissCurrentToast();
-        globalWebSocketToastId = toast.error('Authentication required', {
-            description: 'Please log in to access this feature',
-            duration: 5000,
-            action: {
-                label: 'Login',
-                onClick: () => {
-                    goto('/login');
-                }
-            }
-        });
-    }
-
     private showConnectionLostError(): void {
-        this.dismissCurrentToast();
-
         if (!this.shouldAttemptReconnect()) {
             // Only show the permanent error if we're really not going to retry
             // and it's not a navigation interruption
-            const shouldShowPermanentError = !this.autoReconnect || 
-                (this.requiresAuth && authStore.isInitialized && !authStore.isAuthenticated && !TokenStorage.hasAccessToken());
-                
+            const shouldShowPermanentError =
+                !this.autoReconnect ||
+                (this.requiresAuth &&
+                    authStore.isInitialized &&
+                    !authStore.isAuthenticated &&
+                    !TokenStorage.hasAccessToken());
+
             if (shouldShowPermanentError) {
-                globalWebSocketToastId = toast.error('Connection lost', {
-                    description: 'Unable to reconnect - please refresh the page',
-                    duration: Infinity,
-                    action: {
-                        label: 'Refresh',
-                        onClick: () => {
-                            window.location.reload();
-                        }
-                    }
-                });
+                toastManager.showConnectionLostPermanent();
             } else {
                 // For navigation interruptions or temporary auth issues, show a less alarming message
-                globalWebSocketToastId = toast.warning('Connection interrupted', {
-                    description: 'Attempting to reconnect...',
-                    duration: 5000
-                });
+                toastManager.showConnectionInterrupted();
             }
             return;
         }
 
-        let countdown = Math.ceil(this.reconnectInterval / 1000);
-
-        globalWebSocketToastId = toast.error('Connection lost', {
-            description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
-            duration: Infinity,
-            action: {
-                label: 'Retry now',
-                onClick: () => {
-                    this.dismissCurrentToast();
-                    this.manualReconnect();
-                }
-            }
+        // Use the toast manager to handle connection lost with countdown
+        toastManager.showConnectionLost(this.reconnectInterval, () => {
+            this.manualReconnect();
         });
-
-        globalRetryCountdownInterval = setInterval(() => {
-            countdown--;
-            if (countdown <= 0) {
-                this.dismissCurrentToast();
-                return;
-            }
-
-            toast.error('Connection lost', {
-                id: globalWebSocketToastId || undefined,
-                description: `Retrying in ${countdown} second${countdown === 1 ? '' : 's'}`,
-                duration: Infinity,
-                action: {
-                    label: 'Retry now',
-                    onClick: () => {
-                        this.dismissCurrentToast();
-                        this.manualReconnect();
-                    }
-                }
-            });
-        }, 1000);
     }
 }
