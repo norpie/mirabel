@@ -20,7 +20,7 @@ pub struct OllamaProvider {
 
 impl OllamaProvider {
     /// Create a new Ollama provider
-    /// 
+    ///
     /// # Arguments
     /// * `base_url` - Optional base URL for Ollama server (defaults to http://localhost:11434)
     pub fn new(base_url: Option<String>) -> Self {
@@ -31,12 +31,10 @@ impl OllamaProvider {
                 if let Some(host_port) = url.strip_prefix("http://") {
                     if let Some(colon_pos) = host_port.find(':') {
                         let host = &host_port[..colon_pos];
-                        let port = host_port[colon_pos + 1..]
-                            .parse::<u16>()
-                            .unwrap_or(11434);
-                        Ollama::new(format!("http://{}", host), port)
+                        let port = host_port[colon_pos + 1..].parse::<u16>().unwrap_or(11434);
+                        Ollama::new(format!("http://{host}"), port)
                     } else {
-                        Ollama::new(format!("http://{}", host_port), 11434)
+                        Ollama::new(format!("http://{host_port}"), 11434)
                     }
                 } else {
                     Ollama::new(url.to_string(), 11434)
@@ -55,7 +53,8 @@ impl LlmProvider for OllamaProvider {
         let start_time = Utc::now();
 
         // Convert our request to Ollama format
-        let mut ollama_request = GenerationRequest::new(request.model.clone(), request.prompt.clone());
+        let mut ollama_request =
+            GenerationRequest::new(request.model.clone(), request.prompt.clone());
 
         // Add system message if provided
         if let Some(ref system) = request.system {
@@ -121,8 +120,8 @@ impl LlmProvider for OllamaProvider {
             Ok(models) => {
                 let model_name = model.to_lowercase();
                 Ok(models.iter().any(|m| {
-                    m.name.to_lowercase() == model_name || 
-                    m.name.to_lowercase().starts_with(&format!("{}:", model_name))
+                    m.name.to_lowercase() == model_name
+                        || m.name.to_lowercase().starts_with(&format!("{model_name}:"))
                 }))
             }
             Err(_) => {

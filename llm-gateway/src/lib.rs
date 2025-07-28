@@ -9,7 +9,7 @@ pub mod providers;
 
 // Re-export main types
 pub use client::{LlmClient, LlmClientBuilder};
-pub use cost::{BillingModel, CostCapabilities, CostBreakdown, UsageCost};
+pub use cost::{BillingModel, CostBreakdown, CostCapabilities, UsageCost};
 pub use error::{LlmError, Result};
 pub use traits::{LlmProvider, StreamingProvider};
 pub use types::{

@@ -13,10 +13,7 @@ pub enum LlmError {
 
     /// Provider-specific errors
     #[error("Provider error ({provider}): {message}")]
-    Provider {
-        provider: String,
-        message: String,
-    },
+    Provider { provider: String, message: String },
 
     /// Model not found or not available
     #[error("Model '{model}' not found or not available")]
@@ -135,10 +132,7 @@ impl LlmError {
 
     /// Check if this is a server error (5xx type)
     pub fn is_server_error(&self) -> bool {
-        matches!(
-            self,
-            LlmError::Provider { .. } | LlmError::Internal { .. }
-        )
+        matches!(self, LlmError::Provider { .. } | LlmError::Internal { .. })
     }
 }
 

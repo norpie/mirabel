@@ -105,7 +105,7 @@ impl Default for LlmClientBuilder {
 #[cfg(feature = "ollama")]
 impl LlmClient {
     /// Create a client configured for Ollama
-    /// 
+    ///
     /// # Arguments
     /// * `base_url` - Optional base URL for Ollama server (defaults to http://localhost:11434)
     pub fn ollama(base_url: Option<String>) -> Self {

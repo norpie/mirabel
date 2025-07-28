@@ -54,11 +54,7 @@ impl UsageCost {
     }
 
     /// Create a usage cost with total and breakdown
-    pub fn new(
-        total_cost: Decimal,
-        breakdown: CostBreakdown,
-        currency: impl Into<String>,
-    ) -> Self {
+    pub fn new(total_cost: Decimal, breakdown: CostBreakdown, currency: impl Into<String>) -> Self {
         Self {
             total_cost: Some(total_cost),
             breakdown,
