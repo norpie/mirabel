@@ -1,0 +1,23 @@
+[package]
+name = "llm-gateway"
+version = "0.1.0"
+edition = "2021"
+description = "A unified Rust library for interacting with LLM providers with comprehensive cost tracking"
+license = "MIT"
+repository = "https://github.com/norpie/mirabel"
+keywords = ["llm", "ai", "ollama", "openai", "cost-tracking"]
+categories = ["api-bindings", "web-programming::http-client"]
+
+[dependencies]
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+rust_decimal = { version = "1.35", features = ["serde"] }
+
+# Provider dependencies (feature-gated)
+ollama-rs = { version = "0.3.2", optional = true }
+
+[features]
+default = ["ollama"]
+ollama = ["dep:ollama-rs"]

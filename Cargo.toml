@@ -2,8 +2,9 @@
 resolver = "2"
 
 members = [
+    "llm-gateway",
     "mirabel-backend",
     "mirabel-backend-derive", 
+    "mirabel-core", 
     "mirabel-tui",
-    "mirabel-core",
 ]
