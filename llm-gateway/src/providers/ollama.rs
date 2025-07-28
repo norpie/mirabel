@@ -2,12 +2,13 @@ use async_trait::async_trait;
 use chrono::Utc;
 use ollama_rs::{
     generation::completion::{request::GenerationRequest, GenerationResponse},
+    models::ModelOptions,
     Ollama,
 };
 
 use crate::{
     cost::{BillingModel, CostCapabilities, UsageCost},
-    error::{LlmError, Result},
+    error::Result,
     traits::LlmProvider,
     types::{GenerateRequest, GenerateResponse, ResponseMetadata, UsageMetrics},
 };
@@ -63,8 +64,7 @@ impl LlmProvider for OllamaProvider {
 
         // Set temperature if provided
         if let Some(temperature) = request.temperature {
-            let mut options = std::collections::HashMap::new();
-            options.insert("temperature".to_string(), serde_json::Value::from(temperature));
+            let options = ModelOptions::default().temperature(temperature);
             ollama_request = ollama_request.options(options);
         }
 
