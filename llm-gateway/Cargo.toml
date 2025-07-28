@@ -20,6 +20,7 @@ ollama-rs = { version = "0.3.2", optional = true }
 
 # Additional dependencies
 reqwest = "0.12"
+futures = "0.3"
 
 [features]
 default = ["ollama"]
