@@ -9,16 +9,17 @@ LLM Gateway provides a consistent interface for accessing different LLM provider
 ## Features
 
 - **Unified API**: Single interface for multiple LLM providers
-- **Comprehensive Cost Tracking**: Support for diverse billing models including token-based, request-based, and caching costs
+- **Cost Tracking**: Support for diverse billing models including token-based, request-based, and caching costs  
 - **Usage Analytics**: Detailed metrics and metadata for all LLM interactions
-- **Provider Abstraction**: Easy to add new LLM providers
-- **Async/Await Support**: Built for modern Rust async applications
-- **Type Safety**: Strongly typed requests and responses
+- **Provider Abstraction**: Easy to add new LLM providers via trait system
+- **Parameter Validation**: Range checking and validation for all LLM parameters
+- **Builder Pattern**: Flexible, discoverable parameter setting
+- **Error Classification**: Retryable vs non-retryable error handling
 
 ## Supported Providers
 
 ### Current
-- **Ollama** - Local LLM inference (free)
+- **Ollama** - Local LLM inference with comprehensive parameter support
 
 ### Planned
 - **OpenAI** - GPT models with token-based billing
@@ -26,25 +27,24 @@ LLM Gateway provides a consistent interface for accessing different LLM provider
 - **Google** - Gemini models
 - **Groq** - High-speed inference
 - **Azure OpenAI** - Enterprise OpenAI deployment
+- **vLLM** - High-performance inference server
 
 ## Project Structure
 
 ```
 llm-gateway/
-├── Cargo.toml
 ├── src/
-│   ├── lib.rs              # Main exports and public API
-│   ├── client.rs           # LlmClient - main interface
-│   ├── traits.rs           # Core traits (LlmProvider)
-│   ├── types.rs            # Request/Response types
-│   ├── error.rs            # Error handling
-│   ├── cost/               # Cost tracking system
-│   │   ├── mod.rs
-│   │   ├── types.rs        # Cost structure types
-│   │   └── calculator.rs   # Cost calculation logic
-│   └── providers/
-│       ├── mod.rs
-│       └── ollama.rs       # Ollama adapter using ollama-rs
+│   ├── lib.rs                  # Main exports and public API
+│   ├── client.rs               # LlmClient with builder pattern
+│   ├── traits.rs               # Core traits (LlmProvider)
+│   ├── types.rs                # Request/Response types with comprehensive parameters
+│   ├── error.rs                # Error handling with provider mapping
+│   ├── cost/                   # Cost tracking system
+│   │   ├── mod.rs              
+│   │   └── types.rs            # Cost structure types for different billing models
+│   └── providers/              
+│       ├── mod.rs              
+│       └── ollama.rs           # Complete Ollama implementation
 ```
 
 ## Core API Design
@@ -52,121 +52,102 @@ llm-gateway/
 ### Main Client
 
 ```rust
-use llm_gateway::{LlmClient, GenerateRequest};
+use llm_gateway::{LlmClient, LlmParameters};
 
-// Create client for Ollama
-let client = LlmClient::ollama(None); // Uses default localhost:11434
+// Create client with builder pattern
+let client = LlmClient::builder()
+    .with_provider("ollama")
+    .build()
+    .await?;
 
-// Generate text
-let request = GenerateRequest::new("llama2:latest", "Why is the sky blue?");
-let response = client.generate(request).await?;
+// Configure parameters with builder
+let params = LlmParameters::builder()
+    .temperature(0.7)
+    .max_tokens(100)
+    .top_k(40)
+    .stop_sequences(vec!["END".to_string()])
+    .build();
 
-println!("Response: {}", response.content);
-println!("Cost: {:?}", response.cost);
-println!("Usage: {:?}", response.usage);
+// Generate text  
+let response = client.generate("Why is the sky blue?", params).await?;
 ```
 
 ### Core Types
 
 ```rust
-// Main request type
-pub struct GenerateRequest {
-    pub model: String,
-    pub prompt: String,
-    pub system: Option<String>,
+// Comprehensive parameter support
+pub struct LlmParameters {
+    // Core parameters
     pub temperature: Option<f32>,
+    pub top_k: Option<u32>, 
+    pub top_p: Option<f32>,
+    pub min_p: Option<f32>,
+    pub typical_p: Option<f32>,
+    pub max_tokens: Option<u32>,
+    pub context_length: Option<u32>,
+    pub stop_sequences: Option<Vec<String>>,
+    
+    // Advanced parameters
+    pub seed: Option<i32>,
+    pub num_predict: Option<i32>,
+    pub repeat_last_n: Option<i32>,
+    pub repetition_penalty: Option<f32>,
+    pub frequency_penalty: Option<f32>,
+    pub presence_penalty: Option<f32>,
+    
+    // Performance parameters
+    pub num_gpu: Option<u32>,
+    pub num_thread: Option<u32>,
+    pub numa: Option<bool>,
+    pub num_batch: Option<u32>,
+    pub main_gpu: Option<u32>,
+    pub use_mmap: Option<bool>,
+    
+    // Provider-specific parameters
+    pub custom_parameters: Option<HashMap<String, serde_json::Value>>,
 }
 
-// Main response type
-pub struct GenerateResponse {
+// Response with cost tracking
+pub struct LlmResponse {
     pub content: String,
     pub metadata: ResponseMetadata,
     pub usage: UsageMetrics,
     pub cost: UsageCost,
 }
-
-// Usage tracking
-pub struct UsageMetrics {
-    pub prompt_tokens: u32,
-    pub completion_tokens: u32,
-    pub total_tokens: u32,
-    pub cached_tokens: Option<CachedTokenMetrics>,
-    pub provider_specific: HashMap<String, serde_json::Value>,
-}
-
-// Cost tracking
-pub struct UsageCost {
-    pub total_cost: Option<Decimal>,
-    pub breakdown: CostBreakdown,
-    pub currency: String,
-}
 ```
 
 ## Cost Structure System
 
-The library supports various billing models across different providers:
+The library supports various billing models:
 
 ### Billing Models
 
-- **Free** - Ollama, local models (no cost tracking needed)
-- **Pay Per Token** - OpenAI, Anthropic (input/output token pricing)
+- **Free** - Ollama, local models (implemented with "FREE" currency)
+- **Pay Per Token** - OpenAI, Anthropic (input/output token pricing)  
 - **Pay Per Request** - Some API services (fixed cost per call)
 - **Subscription** - Monthly/yearly plans
 - **Hybrid** - Combinations of the above
 
-### Cost Capabilities
-
-Each provider exposes its cost tracking capabilities:
-
-```rust
-pub struct CostCapabilities {
-    pub tracks_token_usage: bool,        // Can count tokens
-    pub supports_token_caching: bool,    // Has caching with separate billing
-    pub provides_cost_estimates: bool,   // Can calculate costs
-    pub has_request_fees: bool,          // Charges per request
-    pub billing_model: BillingModel,
-}
-```
-
 ### Example Cost Breakdowns
 
-**Ollama (Free Provider):**
+**Ollama (Free Provider - Currently Implemented):**
 ```rust
 UsageCost {
     total_cost: None,
-    breakdown: CostBreakdown {
-        input_tokens: TokenCost { count: 0, cost_per_token: None, total_cost: None },
-        output_tokens: TokenCost { count: 0, cost_per_token: None, total_cost: None },
-        cached_tokens: None,
-        request_cost: None,
-        additional_costs: HashMap::new(),
-    },
+    breakdown: CostBreakdown { /* no costs */ },
     currency: "FREE",
 }
 ```
 
-**Future Anthropic (Paid Provider):**
+**Future Anthropic (Paid Provider - Planned):**
 ```rust
 UsageCost {
     total_cost: Some(Decimal::from_str("0.00045")?),
     breakdown: CostBreakdown {
-        input_tokens: TokenCost { 
-            count: 100, 
-            cost_per_token: Some(Decimal::from_str("0.000003")?), 
-            total_cost: Some(Decimal::from_str("0.0003")?),
-        },
-        output_tokens: TokenCost { 
-            count: 50, 
-            cost_per_token: Some(Decimal::from_str("0.000015")?), 
-            total_cost: Some(Decimal::from_str("0.00075")?),
-        },
-        cached_tokens: Some(CachedTokenCost { 
-            cache_read_tokens: TokenCost { count: 20, cost_per_token: Some(...), ... },
-            cache_write_tokens: TokenCost { count: 0, cost_per_token: Some(...), ... },
-            cache_creation_cost: None,
-        }),
-        request_cost: None,
-        additional_costs: HashMap::new(),
+        input_tokens: TokenCost { count: 100, cost_per_token: Some(...), ... },
+        output_tokens: TokenCost { count: 50, cost_per_token: Some(...), ... },
+        cached_tokens: Some(CachedTokenCost { ... }),
+        // ...
     },
     currency: "USD",
 }
@@ -179,66 +160,15 @@ New providers implement the `LlmProvider` trait:
 ```rust
 #[async_trait]
 pub trait LlmProvider: Send + Sync {
-    async fn generate(&self, request: &GenerateRequest) -> Result<GenerateResponse>;
+    async fn generate(&self, prompt: &str, params: &LlmParameters) -> Result<LlmResponse>;
     fn cost_capabilities(&self) -> CostCapabilities;
     fn calculate_cost(&self, usage: &UsageMetrics, model: &str) -> UsageCost;
 }
 ```
 
-## Dependencies
-
-### Core Dependencies
-- `async-trait` - Async trait support
-- `serde` - Serialization
-- `chrono` - Date/time handling
-- `thiserror` - Error handling
-- `rust_decimal` - Precise decimal arithmetic for costs
-
-### Provider Dependencies (Feature-gated)
-- `ollama-rs` - Ollama integration (feature: "ollama")
-- `async-openai` - OpenAI integration (feature: "openai")
-
-## Development Roadmap
-
-### Phase 1: Core Foundation ✅
-- [x] Project structure and planning
-- [ ] Basic types and traits
-- [ ] Error handling
-- [ ] Ollama provider implementation
-
-### Phase 2: Cost System
-- [ ] Cost tracking types
-- [ ] Usage metrics collection
-- [ ] Cost calculation framework
-- [ ] Provider capability system
-
-### Phase 3: Additional Providers
-- [ ] OpenAI provider
-- [ ] Anthropic provider (with caching support)
-- [ ] Provider-specific optimizations
-
-### Phase 4: Advanced Features
-- [ ] Streaming support
-- [ ] Request batching
-- [ ] Cost optimization recommendations
-- [ ] Usage analytics and reporting
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Implement your changes
-4. Add tests
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
-
 ## Related Projects
 
 - [ollama-rs](https://crates.io/crates/ollama-rs) - Ollama Rust SDK (used internally)
-- [async-openai](https://crates.io/crates/async-openai) - OpenAI Rust SDK (planned)
 
 ---
 
