@@ -1,14 +1,20 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub mod client;
+pub mod cost;
+pub mod error;
+pub mod traits;
+pub mod types;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[cfg(feature = "ollama")]
+pub mod providers;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+// Re-export main types
+pub use client::{LlmClient, LlmClientBuilder};
+pub use cost::{BillingModel, CostCapabilities, CostBreakdown, UsageCost};
+pub use error::{LlmError, Result};
+pub use traits::{LlmProvider, StreamingProvider};
+pub use types::{
+    CachedTokenMetrics, GenerateRequest, GenerateResponse, ResponseMetadata, UsageMetrics,
+};
+
+#[cfg(feature = "ollama")]
+pub use providers::ollama::OllamaProvider;
