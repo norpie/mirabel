@@ -13,7 +13,8 @@ pub use cost::{BillingModel, CostBreakdown, CostCapabilities, UsageCost};
 pub use error::{LlmError, Result};
 pub use traits::{LlmProvider, StreamingProvider};
 pub use types::{
-    CachedTokenMetrics, GenerateRequest, GenerateResponse, ResponseMetadata, UsageMetrics,
+    CachedTokenMetrics, GenerateRequest, GenerateResponse, GenerationParameters, ResponseMetadata, 
+    UsageMetrics,
 };
 
 #[cfg(feature = "ollama")]
