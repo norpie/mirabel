@@ -18,6 +18,9 @@ rust_decimal = { version = "1.35", features = ["serde"] }
 # Provider dependencies (feature-gated)
 ollama-rs = { version = "0.3.2", optional = true }
 
+# Additional dependencies
+reqwest = "0.12"
+
 [features]
 default = ["ollama"]
 ollama = ["dep:ollama-rs"]
