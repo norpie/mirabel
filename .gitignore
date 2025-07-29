@@ -4,3 +4,4 @@ backend/target
 surrealdb/.surrealdb
 target
 .archive
+.claude
